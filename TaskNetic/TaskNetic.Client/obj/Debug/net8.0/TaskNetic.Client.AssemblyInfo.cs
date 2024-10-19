@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TaskNetic.Client")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6e40313789bea765cb6830efe7ea776ebd248d58")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f255a05025c2274dd5608fb2d1c790ffdf1d0dce")]
 [assembly: System.Reflection.AssemblyProductAttribute("TaskNetic.Client")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TaskNetic.Client")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
