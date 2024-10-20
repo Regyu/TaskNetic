@@ -1,0 +1,29 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNetic\\TaskNetic.Client\\bin\\Debug\\net8.0\\wwwroot\\_framework\\blazor.webassembly.js",
+      "PackagePath": "staticwebassets\\_framework\\blazor.webassembly.js"
+    },
+    {
+      "Id": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNetic\\TaskNetic.Client\\obj\\Debug\\net8.0\\compressed\\82nkvxxa18.gz",
+      "PackagePath": "staticwebassets\\_framework\\blazor.webassembly.js.gz"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.TaskNetic.Client.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.TaskNetic.Client.props",
+      "PackagePath": "build\\TaskNetic.Client.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.TaskNetic.Client.props",
+      "PackagePath": "buildMultiTargeting\\TaskNetic.Client.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.TaskNetic.Client.props",
+      "PackagePath": "buildTransitive\\TaskNetic.Client.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
