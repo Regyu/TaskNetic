@@ -3,20 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNetic\\TaskNetic\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{D2388167-F069-44C8-9219-5F8C3ABC88A4}|TaskNetic.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\tasknetic\\tasknetic\\components\\layout\\mainlayout.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{D2388167-F069-44C8-9219-5F8C3ABC88A4}|TaskNetic.csproj|solutionrelative:components\\layout\\mainlayout.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{D2388167-F069-44C8-9219-5F8C3ABC88A4}|TaskNetic.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\tasknetic\\tasknetic\\components\\pages\\login.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D2388167-F069-44C8-9219-5F8C3ABC88A4}|TaskNetic.csproj|solutionrelative:components\\pages\\login.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{D2388167-F069-44C8-9219-5F8C3ABC88A4}|TaskNetic.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\tasknetic\\tasknetic\\wwwroot\\app.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
-      "RelativeMoniker": "D:0:0:{D2388167-F069-44C8-9219-5F8C3ABC88A4}|TaskNetic.csproj|solutionrelative:wwwroot\\app.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D2388167-F069-44C8-9219-5F8C3ABC88A4}|TaskNetic.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\tasknetic\\tasknetic\\components\\_imports.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{D2388167-F069-44C8-9219-5F8C3ABC88A4}|TaskNetic.csproj|solutionrelative:components\\_imports.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D2388167-F069-44C8-9219-5F8C3ABC88A4}|TaskNetic.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\tasknetic\\tasknetic\\libman.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{D2388167-F069-44C8-9219-5F8C3ABC88A4}|TaskNetic.csproj|solutionrelative:libman.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{D2388167-F069-44C8-9219-5F8C3ABC88A4}|TaskNetic.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\tasknetic\\tasknetic\\components\\layout\\navbar.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{D2388167-F069-44C8-9219-5F8C3ABC88A4}|TaskNetic.csproj|solutionrelative:components\\layout\\navbar.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,7 +18,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 13,
+          "SelectedChildIndex": 14,
           "Children": [
             {
               "$type": "Bookmark",
@@ -81,60 +73,34 @@
               "Name": "ST:17:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
             },
             {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "MainLayout.razor",
-              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNetic\\TaskNetic\\Components\\Layout\\MainLayout.razor",
-              "RelativeDocumentMoniker": "Components\\Layout\\MainLayout.razor",
-              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNetic\\TaskNetic\\Components\\Layout\\MainLayout.razor",
-              "RelativeToolTip": "Components\\Layout\\MainLayout.razor",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2024-10-20T06:40:48.221Z",
-              "EditorCaption": ""
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "_Imports.razor",
-              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNetic\\TaskNetic\\Components\\_Imports.razor",
-              "RelativeDocumentMoniker": "Components\\_Imports.razor",
-              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNetic\\TaskNetic\\Components\\_Imports.razor",
-              "RelativeToolTip": "Components\\_Imports.razor",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "Login.razor",
+              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNetic\\TaskNetic\\Components\\Pages\\Login.razor",
+              "RelativeDocumentMoniker": "Components\\Pages\\Login.razor",
+              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNetic\\TaskNetic\\Components\\Pages\\Login.razor",
+              "RelativeToolTip": "Components\\Pages\\Login.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2024-10-20T06:39:38.775Z",
+              "WhenOpened": "2024-10-19T07:45:16.572Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "app.css",
-              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNetic\\TaskNetic\\wwwroot\\app.css",
-              "RelativeDocumentMoniker": "wwwroot\\app.css",
-              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNetic\\TaskNetic\\wwwroot\\app.css",
-              "RelativeToolTip": "wwwroot\\app.css",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2024-10-20T06:39:21.548Z",
+              "Title": "Navbar.razor",
+              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNetic\\TaskNetic\\Components\\Layout\\Navbar.razor",
+              "RelativeDocumentMoniker": "Components\\Layout\\Navbar.razor",
+              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNetic\\TaskNetic\\Components\\Layout\\Navbar.razor",
+              "RelativeToolTip": "Components\\Layout\\Navbar.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2024-10-19T07:36:44.494Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "libman.json",
-              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNetic\\TaskNetic\\libman.json",
-              "RelativeDocumentMoniker": "libman.json",
-              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNetic\\TaskNetic\\libman.json",
-              "RelativeToolTip": "libman.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2024-10-20T06:36:38.573Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
             }
           ]
         }
