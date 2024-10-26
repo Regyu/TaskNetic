@@ -22,10 +22,10 @@ jobs:
           dotnet-version: '8.x'
           
       - name: Restore dependencies
-        run: dotnet restore TaskNetic/TaskNetic.sln
+        run: dotnet restore TaskNetic/TaskNetic.csproj
         
       - name: Build with dotnet
-        run: dotnet build TaskNetic/TaskNetic.sln --configuration Release
+        run: dotnet build TaskNetic/TaskNetic.csproj --configuration Release
 
       - name: dotnet publish
         run: dotnet publish TaskNetic/TaskNetic.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
