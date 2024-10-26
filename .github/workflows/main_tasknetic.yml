@@ -22,13 +22,13 @@ jobs:
           dotnet-version: '8.x'
           
       - name: Restore dependencies
-        run: dotnet restore TaskNetic/TaskNetic.csproj
+        run: dotnet restore TaskNetic/TaskNetic/TaskNetic.csproj
         
       - name: Build with dotnet
-        run: dotnet build TaskNetic/TaskNetic.csproj --configuration Release
+        run: dotnet build TaskNetic/TaskNetic/TaskNetic.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish TaskNetic/TaskNetic.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish TaskNetic/TaskNetic/TaskNetic.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
