@@ -42,7 +42,8 @@ if (builder.Environment.IsDevelopment())
 }
 else
 {
-    connectionString = Environment.GetEnvironmentVariable("Tasknetic_DB");
+    //connectionString = Environment.GetEnvironmentVariable("Tasknetic_DB");
+    connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
 }
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
