@@ -1,7 +1,54 @@
 ﻿@page "/"
+@using TaskNetic.Models
+@using TaskNetic.Services
+@inject TestItemService TestItemService
 
 <PageTitle>Home</PageTitle>
 
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
+
+<h3>Test Items</h3>
+
+@if (testItems == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!testItems.Any())
+{
+    <p><em>No test items found.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Created At</th>
+                <th>Updated At</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in testItems)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Name</td>
+                    <td>@item.CreatedAt</td>
+                    <td>@item.UpdatedAt</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<TestItem> testItems;
+
+    protected override async Task OnInitializedAsync()
+    {
+        testItems = await TestItemService.GetTestItemsAsync();
+    }
+}
