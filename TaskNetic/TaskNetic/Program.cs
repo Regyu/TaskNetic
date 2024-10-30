@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Data.Common;
 using TaskNetic.Components;
 using TaskNetic.Components.Account;
 using TaskNetic.Data;
@@ -33,18 +34,20 @@ builder.Services.AddAuthentication(options =>
 //builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 // DO PO£¥CZENIA NA AZURE
-string connectionString;
+//string connectionString;
 
-if (builder.Environment.IsDevelopment())
-{
-    connectionString = builder.Configuration.GetConnectionString("AzurePostgresConnection")
-        ?? throw new InvalidOperationException("Connection string not found.");
-}
-else
-{
-    //connectionString = Environment.GetEnvironmentVariable("Tasknetic_DB");
-    connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
-}
+//if (builder.Environment.IsDevelopment())
+//{
+//    connectionString = builder.Configuration.GetConnectionString("AzurePostgresConnection")
+//        ?? throw new InvalidOperationException("Connection string not found.");
+//}
+//else
+//{
+//    //connectionString = Environment.GetEnvironmentVariable("Tasknetic_DB");
+//    connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
+//}
+
+var connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString)
