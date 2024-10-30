@@ -47,7 +47,8 @@ builder.Services.AddAuthentication(options =>
 //    connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
 //}
 
-var connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
+//var connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
+var connectionString = Environment.GetEnvironmentVariable("Tasknetic_DB");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString)
