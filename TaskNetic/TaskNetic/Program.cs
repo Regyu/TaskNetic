@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using TaskNetic.Components;
 using TaskNetic.Components.Account;
 using TaskNetic.Data;
+using TaskNetic.Services;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,10 +26,36 @@ builder.Services.AddAuthentication(options =>
     })
     .AddIdentityCookies();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+// TO JEST Z DEFAULT CONNECTION
+//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+//builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//    options.UseSqlServer(connectionString));
+//builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+// DO PO£¥CZENIA NA AZURE
+string connectionString;
+
+if (builder.Environment.IsDevelopment())
+{
+    connectionString = builder.Configuration.GetConnectionString("AzurePostgresConnection")
+        ?? throw new InvalidOperationException("Connection string not found.");
+}
+else
+{
+    connectionString = Environment.GetEnvironmentVariable("Tasknetic_DB");
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString)
+);
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+// AZURE POSTGRESQL
+//var connectionString = builder.Configuration.GetConnectionString("AzurePostgresConnection") ?? throw new InvalidOperationException("Connection string not found.");
+//builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//    options.UseNpgsql(connectionString)
+//);
+//builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -35,6 +63,8 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+builder.Services.AddScoped<TestItemService>();
 
 var app = builder.Build();
 
