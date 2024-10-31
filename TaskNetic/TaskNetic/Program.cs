@@ -27,35 +27,25 @@ builder.Services.AddAuthentication(options =>
     })
     .AddIdentityCookies();
 
-// TO JEST Z DEFAULT CONNECTION
-//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-//builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//    options.UseSqlServer(connectionString));
-//builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
 // DO PO£¥CZENIA NA AZURE
-//string connectionString;
+string connectionString;
 
-//if (builder.Environment.IsDevelopment())
-//{
-//    connectionString = builder.Configuration.GetConnectionString("AzurePostgresConnection")
-//        ?? throw new InvalidOperationException("Connection string not found.");
-//}
-//else
-//{
-//    //connectionString = Environment.GetEnvironmentVariable("Tasknetic_DB");
-//    connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
-//}
-
-var connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
-//var connectionString = Environment.GetEnvironmentVariable("Tasknetic_DB");
+if (builder.Environment.IsDevelopment())
+{
+    connectionString = builder.Configuration.GetConnectionString("AzurePostgresConnection");
+}
+else
+{
+    //connectionString = Environment.GetEnvironmentVariable("Tasknetic_DB");
+    connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
+}
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString)
 );
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-// AZURE POSTGRESQL
+// AZURE POSTGRESQL LOKALNE STARE
 //var connectionString = builder.Configuration.GetConnectionString("AzurePostgresConnection") ?? throw new InvalidOperationException("Connection string not found.");
 //builder.Services.AddDbContext<ApplicationDbContext>(options =>
 //    options.UseNpgsql(connectionString)
