@@ -28,7 +28,7 @@ builder.Services.AddAuthentication(options =>
     .AddIdentityCookies();
 
 // DO PO£¥CZENIA NA AZURE
-string connectionString;
+/*string connectionString;
 
 if (builder.Environment.IsDevelopment())
 {
@@ -38,7 +38,9 @@ else
 {
     //connectionString = Environment.GetEnvironmentVariable("Tasknetic_DB");
     connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
-}
+}*/
+
+var connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString)
