@@ -27,32 +27,13 @@ builder.Services.AddAuthentication(options =>
     })
     .AddIdentityCookies();
 
-// DO PO£¥CZENIA NA AZURE
-/*string connectionString;
-
-if (builder.Environment.IsDevelopment())
-{
-    connectionString = builder.Configuration.GetConnectionString("AzurePostgresConnection");
-}
-else
-{
-    //connectionString = Environment.GetEnvironmentVariable("Tasknetic_DB");
-    connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
-}*/
-
+// PO£¥CZENIE Z BAZ¥ - DLA VISUAL STUDIO I AZURE
 var connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString)
 );
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-// AZURE POSTGRESQL LOKALNE STARE
-//var connectionString = builder.Configuration.GetConnectionString("AzurePostgresConnection") ?? throw new InvalidOperationException("Connection string not found.");
-//builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//    options.UseNpgsql(connectionString)
-//);
-//builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
