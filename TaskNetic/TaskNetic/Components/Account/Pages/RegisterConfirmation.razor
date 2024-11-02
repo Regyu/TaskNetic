@@ -6,7 +6,6 @@
 @using TaskNetic.Data
 
 @inject UserManager<ApplicationUser> UserManager
-@inject IEmailSender<ApplicationUser> EmailSender
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
@@ -20,7 +19,6 @@
 
 
 @code {
-    private string? emailConfirmationLink;
     private string? statusMessage;
 
     [CascadingParameter]
