@@ -11,15 +11,13 @@
 @inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Log in</PageTitle>
-
-<h1>Log in</h1>
-<div class="row">
+<div class="row justify-content-center mt-5">
     <div class="col-md-4">
         <section>
             <StatusMessage Message="@errorMessage" />
             <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
                 <DataAnnotationsValidator />
-                <h2>Use a local account to log in.</h2>
+                <h2 class="text-center">Log in to our app :)</h2>
                 <hr />
                 <ValidationSummary class="text-danger" role="alert" />
                 <div class="form-floating mb-3">
@@ -55,15 +53,7 @@
             </EditForm>
         </section>
     </div>
-    <div class="col-md-6 col-md-offset-2">
-        <section>
-            <h3>Use another service to log in.</h3>
-            <hr />
-            <ExternalLoginPicker />
-        </section>
-    </div>
 </div>
-
 @code {
     private string? errorMessage;
 

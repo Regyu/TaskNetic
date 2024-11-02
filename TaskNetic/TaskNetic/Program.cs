@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Data.Common;
 using TaskNetic.Components;
@@ -7,6 +8,7 @@ using TaskNetic.Components.Account;
 using TaskNetic.Data;
 using TaskNetic.Services;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,47 +29,17 @@ builder.Services.AddAuthentication(options =>
     })
     .AddIdentityCookies();
 
-// TO JEST Z DEFAULT CONNECTION
-//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-//builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//    options.UseSqlServer(connectionString));
-//builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-// DO PO£¥CZENIA NA AZURE
-//string connectionString;
-
-//if (builder.Environment.IsDevelopment())
-//{
-//    connectionString = builder.Configuration.GetConnectionString("AzurePostgresConnection")
-//        ?? throw new InvalidOperationException("Connection string not found.");
-//}
-//else
-//{
-//    //connectionString = Environment.GetEnvironmentVariable("Tasknetic_DB");
-//    connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
-//}
-
+// POï¿½ï¿½CZENIE Z BAZï¿½ - DLA VISUAL STUDIO I AZURE
 var connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
-//var connectionString = Environment.GetEnvironmentVariable("Tasknetic_DB");
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString)
 );
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-// AZURE POSTGRESQL
-//var connectionString = builder.Configuration.GetConnectionString("AzurePostgresConnection") ?? throw new InvalidOperationException("Connection string not found.");
-//builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//    options.UseNpgsql(connectionString)
-//);
-//builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
+builder.Services.AddTransient<TaskNetic.Components.Account.IEmailSender, AzureEmailSender>();
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
-
-builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 builder.Services.AddScoped<TestItemService>();
 
