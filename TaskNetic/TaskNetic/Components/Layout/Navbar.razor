@@ -1,4 +1,5 @@
-﻿
+﻿@inject AuthenticationStateProvider GetAuthenticationStateAsync
+
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container fluid">
         <a class="navbar-brand" href="/">
@@ -7,10 +8,8 @@
         </a>
         <AuthorizeView>
             <Authorized>
-                <div class="navbar-nav">
-                    <a class="nav-link active" aria-current="page" href="#">Home</a>
-                    <a class="nav-link" href="#">Features</a>
-                    <a class="nav-link" href="#">Pricing</a>
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link active" aria-current="page" href="#">@user</a>
                 </div>
             </Authorized>
             <NotAuthorized>
@@ -25,5 +24,10 @@
 </nav>
 
 @code {
-
+    private string user;
+    protected async override Task OnInitializedAsync()
+    {
+        var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
+        var user = authstate.User.Identity.Name ?? "User";
+    }
 }
