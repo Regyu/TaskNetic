@@ -1,6 +1,16 @@
 ﻿@inherits LayoutComponentBase
-<Navbar/>
-@Body
+
+<head>
+    <link rel="stylesheet" href="app.css" />
+</head>
+
+<div class="page">
+    <Navbar />
+    <div class="main-content">
+        @Body
+    </div>
+    <Footer/>
+</div>
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.
