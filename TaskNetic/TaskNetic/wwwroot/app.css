@@ -27,3 +27,57 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+
+/* DO STOPKI*/
+.page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensures the page takes up the full viewport height */
+}
+
+.main-content {
+    flex: 1; /* Makes the main content area take up available space */
+}
+
+.footer {
+    /* Optional styling for footer */
+    padding: 1rem;
+    background-color: #333;
+    color: #fff;
+}
+
+
+/* OBRAZEK Z BLUREM DO LANDING PAGE */
+.hero-section {
+    background: url('/images/landing.jpg') no-repeat center center; /* Replace with your image path */
+    background-size: cover;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: inherit;
+    filter: blur(4px); /* Adjust the blur amount as needed */
+    transform: scale(1.1); /* Slight scaling to cover edges due to blur */
+    z-index: 1;
+}
+
+.hero-section .container {
+    position: relative;
+    z-index: 2;
+}
+
+    .hero-section h1,
+    .hero-section p {
+        text-shadow:
+        0 0 10px rgba(255, 255, 255, 1), /* White glow */
+        0 0 20px rgba(255, 255, 255, 0.7), /* Wider glow */
+        0 0 35px rgba(255, 255, 255, 0.5); /* Even wider glow */
+    }
