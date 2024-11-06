@@ -69,9 +69,20 @@ h1:focus {
     z-index: 1;
 }
 
+.hero-section::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.2); /* White with 30% opacity */
+    z-index: 2;
+}
+
 .hero-section .container {
     position: relative;
-    z-index: 2;
+    z-index: 3;
 }
 
     .hero-section h1,
