@@ -1,6 +1,4 @@
-﻿@inject AuthenticationStateProvider GetAuthenticationStateAsync
-
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
+﻿<nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container fluid">
         <a class="navbar-brand" href="/">
             <img src="images/logo.png" alt="TaskNetic" width="35" height="35" class="d-inline-block align-text-bottom">
@@ -24,10 +22,11 @@
 </nav>
 
 @code {
+    [CascadingParameter] private Task<AuthenticationState> authenticationStateTask { get; set; }
     private string user = "My account";
     protected async override Task OnParametersSetAsync()
     {
-        var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
+        var authstate = await authenticationStateTask;
         var user = authstate.User.Identity.Name;
     }
 }
