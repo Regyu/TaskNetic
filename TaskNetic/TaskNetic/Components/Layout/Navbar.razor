@@ -24,10 +24,10 @@
 </nav>
 
 @code {
-    private string user;
-    protected async override Task OnInitializedAsync()
+    private string user = "My account";
+    protected async override Task OnParametersSetAsync()
     {
         var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
-        var user = authstate.User.Identity.Name ?? "User";
+        var user = authstate.User.Identity.Name;
     }
 }
