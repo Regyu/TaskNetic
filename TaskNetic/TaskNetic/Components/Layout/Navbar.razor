@@ -1,4 +1,6 @@
-﻿<nav class="navbar navbar-expand-lg bg-body-tertiary">
+﻿@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container fluid">
         <a class="navbar-brand" href="/">
             <img src="images/logo.png" alt="TaskNetic" width="35" height="35" class="d-inline-block align-text-bottom">
@@ -6,8 +8,17 @@
         </a>
         <AuthorizeView>
             <Authorized>
-                <div class="navbar-nav ms-auto">
-                    <a class="nav-link active" aria-current="page" href="#">@user</a>
+                <div class="navbar-nav ms-auto align-items-center">
+                    <Dropdown>
+                        <DropdownToggleButton>
+                            <img src="images/person.svg" alt="Person Image" width="25" height="25" class="d-inline-block" />
+                            @username
+                        </DropdownToggleButton>
+                        <DropdownMenu>
+                            <DropdownItem To="/Account/Manage" Type="DropdownItemType.Link">Profile</DropdownItem>
+                            <DropdownItem To="/logout" Type="DropdownItemType.Link">Logout</DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
                 </div>
             </Authorized>
             <NotAuthorized>
@@ -21,12 +32,13 @@
     </div>
 </nav>
 
+
+
 @code {
-    [CascadingParameter] private Task<AuthenticationState> authenticationStateTask { get; set; }
-    private string user = "My account";
-    protected async override Task OnParametersSetAsync()
+    private string? username;
+    protected override async Task OnInitializedAsync()
     {
-        var authstate = await authenticationStateTask;
-        var user = authstate.User.Identity.Name;
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        username = authState.User.Identity.Name;
     }
 }
