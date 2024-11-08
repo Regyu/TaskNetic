@@ -12,13 +12,13 @@
 
 <PageTitle>Log in</PageTitle>
 <div class="row justify-content-center mt-5">
-    <div class="col-md-4">
+    <div class="col-md-3">
         <section>
             <StatusMessage Message="@errorMessage" />
             <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
                 <DataAnnotationsValidator />
                 <h2 class="text-center">Log in to our app :)</h2>
-                <hr />
+                <hr class="mb-3" />
                 <ValidationSummary class="text-danger" role="alert" />
                 <div class="form-floating mb-3">
                     <InputText @bind-Value="Input.UserName" class="form-control" autocomplete="username" aria-required="true" placeholder="username123" />
@@ -39,16 +39,9 @@
                 <div>
                     <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
                 </div>
-                <div>
-                    <p>
-                        <a href="Account/ForgotPassword">Forgot your password?</a>
-                    </p>
-                    <p>
-                        <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register as a new user</a>
-                    </p>
-                    <p>
-                        <a href="Account/ResendEmailConfirmation">Resend email confirmation</a>
-                    </p>
+                <div class="row row-cols-2 mt-2">
+                    <a href="Account/ForgotPassword" class="me-auto text-decoration-none text-body-secondary">Forgot your password?</a>
+                    <a href="Account/ResendEmailConfirmation" class="text-end text-decoration-none text-body-secondary">Resend email confirmation</a>
                 </div>
             </EditForm>
         </section>

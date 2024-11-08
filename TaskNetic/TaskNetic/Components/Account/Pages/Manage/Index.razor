@@ -11,11 +11,11 @@
 
 <PageTitle>Profile</PageTitle>
 
-<h3>Profile</h3>
+<h3 class="text-center">Profile</h3>
 <StatusMessage />
 
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-max">
         <EditForm Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert" />

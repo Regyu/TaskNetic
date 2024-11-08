@@ -8,17 +8,17 @@
 @using TaskNetic.Data
 
 @inject UserManager<ApplicationUser> UserManager
-@inject IEmailSender<ApplicationUser> EmailSender
+@inject TaskNetic.Components.Account.IEmailSender EmailSender
 @inject IdentityUserAccessor UserAccessor
 @inject NavigationManager NavigationManager
 
 <PageTitle>Manage email</PageTitle>
 
-<h3>Manage email</h3>
+<h3 class="text-center">Manage email</h3>
 
 <StatusMessage Message="@message"/>
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-max">
         <form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post">
             <AntiforgeryToken />
         </form>

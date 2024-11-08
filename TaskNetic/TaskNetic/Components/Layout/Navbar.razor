@@ -10,8 +10,10 @@
         <AuthorizeView>
             <Authorized>
                 <div class="navbar-nav ms-auto align-items-center">
-                    <img src="images/person.svg" alt="Person Image" width="25" height="25" class="d-inline-block me-2" />
-                    <span class="navbar-text me-4">@username</span>
+                    <a href="/Account/Manage" class="text-decoration-none">
+                        <img src="images/person.svg" alt="Person Image" width="20" height="20" class="d-inline-block me-1" />
+                        <span class="navbar-text me-4">@username</span>
+                    </a>
                     <a class="nav-link text-dark" href="/Account/Logout">Sign out</a>
                 </div>
             </Authorized>
