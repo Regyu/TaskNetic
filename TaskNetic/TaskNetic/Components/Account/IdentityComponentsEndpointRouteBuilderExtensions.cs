@@ -9,6 +9,7 @@ using System.Text.Json;
 using TaskNetic.Components.Account.Pages;
 using TaskNetic.Components.Account.Pages.Manage;
 using TaskNetic.Data;
+using TaskNetic.Models;
 
 namespace Microsoft.AspNetCore.Routing
 {

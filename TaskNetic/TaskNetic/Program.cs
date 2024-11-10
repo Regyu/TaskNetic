@@ -6,7 +6,7 @@ using System.Data.Common;
 using TaskNetic.Components;
 using TaskNetic.Components.Account;
 using TaskNetic.Data;
-using TaskNetic.Services;
+using TaskNetic.Models;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 
@@ -46,7 +46,7 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
 });
 
-builder.Services.AddScoped<TestItemService>();
+
 
 var app = builder.Build();
 

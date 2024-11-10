@@ -2,6 +2,7 @@
 using Azure;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using TaskNetic.Data;
+using TaskNetic.Models;
 
 namespace TaskNetic.Components.Account
 {

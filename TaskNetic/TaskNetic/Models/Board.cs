@@ -13,7 +13,7 @@ namespace TaskNetic.Models
 
         public ICollection<Label> Labels { get; set; } = new List<Label>();
 
-        int BackgroundId { get; set; }
+        public int BackgroundId { get; set; }
 
 
 
