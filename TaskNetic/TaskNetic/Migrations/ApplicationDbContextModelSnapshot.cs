@@ -268,6 +268,9 @@ namespace TaskNetic.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("BoardId"));
 
+                    b.Property<int>("BackgroundId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
@@ -347,6 +350,9 @@ namespace TaskNetic.Migrations
                     b.Property<string>("CommentText")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("timestamp")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
