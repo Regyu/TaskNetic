@@ -1,15 +1,8 @@
 ﻿<footer class="bg-dark text-white text-center p-4">
     <div class="container">
-        <p>&copy; <span id="year"></span> TaskNetic. All rights reserved.</p>
+        <p>&copy; <span>@DateTime.Now.Year</span> TaskNetic. All rights reserved.</p>
         <a href="mailto:contact@yourapp.com" class="text-white me-2">Contact Us</a> |
         <a href="#privacy" class="text-white me-2">Privacy Policy</a> |
         <a href="#terms" class="text-white">Terms of Service</a>
     </div>
 </footer>
-
-<script>
-    // Sets the current year in the footer
-    document.addEventListener("DOMContentLoaded", function () {
-        document.getElementById("year").textContent = new Date().getFullYear();
-    });
-</script>
