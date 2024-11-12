@@ -7,7 +7,6 @@ using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Security.Claims;
 using TaskNetic.Client;
-using TaskNetic.Data;
 using TaskNetic.Models;
 
 namespace TaskNetic.Components.Account

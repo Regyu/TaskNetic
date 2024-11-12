@@ -8,6 +8,7 @@ using TaskNetic.Components.Account;
 using TaskNetic.Data;
 using TaskNetic.Models;
 using TaskNetic.Data.Repository;
+using TaskNetic.Models;
 using TaskNetic.Services;
 using TaskNetic.Services.Implementations;
 using TaskNetic.Services.Interfaces;

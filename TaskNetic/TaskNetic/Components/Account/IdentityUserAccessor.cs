@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Identity;
-using TaskNetic.Data;
 using TaskNetic.Models;
 
 namespace TaskNetic.Components.Account

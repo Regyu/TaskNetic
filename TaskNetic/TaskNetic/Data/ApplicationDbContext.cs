@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TaskNetic.Models;
-using Microsoft.AspNetCore.Identity;
 
 namespace TaskNetic.Data
 {
@@ -9,14 +8,11 @@ namespace TaskNetic.Data
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
-        { }
+        {
+        }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-
-            // Zmiana nazwy tabeli dla u¿ytkowników
-            builder.Entity<ApplicationUser>()
-                .ToTable("ApplicationUsers");  // Ustalamy niestandardow¹ nazwê tabeli
         }
         public DbSet<Project> Projects { get; set; }
         public DbSet<ProjectRole> ProjectRoles { get; set; }

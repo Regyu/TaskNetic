@@ -12,8 +12,8 @@ using TaskNetic.Data;
 namespace TaskNetic.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241110192818_addField")]
-    partial class addField
+    [Migration("20241112171738_initialDB")]
+    partial class initialDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -215,6 +215,9 @@ namespace TaskNetic.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("ImagePath")
+                        .HasColumnType("text");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
 
@@ -257,7 +260,7 @@ namespace TaskNetic.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.ToTable("ApplicationUsers", (string)null);
+                    b.ToTable("AspNetUsers", (string)null);
                 });
 
             modelBuilder.Entity("TaskNetic.Models.Board", b =>
@@ -267,9 +270,6 @@ namespace TaskNetic.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("BoardId"));
-
-                    b.Property<int>("BackgroundId")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -350,9 +350,6 @@ namespace TaskNetic.Migrations
                     b.Property<string>("CommentText")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<DateTime>("timestamp")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
