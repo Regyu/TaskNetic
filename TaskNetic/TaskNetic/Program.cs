@@ -7,6 +7,7 @@ using TaskNetic.Components;
 using TaskNetic.Components.Account;
 using TaskNetic.Data;
 using TaskNetic.Data.Repository;
+using TaskNetic.Models;
 using TaskNetic.Services;
 using TaskNetic.Services.Implementations;
 using TaskNetic.Services.Interfaces;
@@ -62,7 +63,6 @@ builder.Services.AddScoped<IProjectRoleService, ProjectRoleService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<ITaskListService, TaskListService>();
 builder.Services.AddScoped<ITodoTaskService, TodoTaskService>();
-builder.Services.AddScoped<TestItemService>();
 
 var app = builder.Build();
 

@@ -1,13 +1,19 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TaskNetic.Models;
-using Microsoft.AspNetCore.Identity;
 
 namespace TaskNetic.Data
 {
-    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser, ApplicationRole, string>(options)
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        public DbSet<TestItem> TestItems { get; set; }      // OBJEKT TESTOWY, MO¯NA WYWALIÆ
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
+        {
+        }
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+        }
         public DbSet<Project> Projects { get; set; }
         public DbSet<ProjectRole> ProjectRoles { get; set; }
         public DbSet<Board> Boards { get; set; }
