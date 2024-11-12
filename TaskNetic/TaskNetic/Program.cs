@@ -6,6 +6,7 @@ using System.Data.Common;
 using TaskNetic.Components;
 using TaskNetic.Components.Account;
 using TaskNetic.Data;
+using TaskNetic.Models;
 using TaskNetic.Data.Repository;
 using TaskNetic.Models;
 using TaskNetic.Services;
@@ -49,6 +50,7 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.User.RequireUniqueEmail = true;
     options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
 });
+
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IBoardService, BoardService>();
