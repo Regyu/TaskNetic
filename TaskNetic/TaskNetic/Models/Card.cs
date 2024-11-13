@@ -5,7 +5,7 @@ namespace TaskNetic.Models
     public class Card
     {
         public int CardId { get; set; }
-        public String? CardTitle { get; set; }
+        public string? CardTitle { get; set; }
         public required string CardDescription { get; set; }
          public DateTime CreatedAt { get; set; }
          public ICollection<Comment> Comments { get; set; } =new List<Comment>();

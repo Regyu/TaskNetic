@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TaskNetic.Data;
@@ -11,9 +12,11 @@ using TaskNetic.Data;
 namespace TaskNetic.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241112200728_projectTableFix")]
+    partial class projectTableFix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,7 +37,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("BoardsBoardId");
 
-                    b.ToTable("ApplicationUserBoard", (string)null);
+                    b.ToTable("ApplicationUserBoard");
                 });
 
             modelBuilder.Entity("ApplicationUserCard", b =>
@@ -49,7 +52,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("CardsCardId");
 
-                    b.ToTable("ApplicationUserCard", (string)null);
+                    b.ToTable("ApplicationUserCard");
                 });
 
             modelBuilder.Entity("ApplicationUserProject", b =>
@@ -64,7 +67,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("ProjectsId");
 
-                    b.ToTable("ApplicationUserProject", (string)null);
+                    b.ToTable("ApplicationUserProject");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -297,7 +300,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Boards", (string)null);
+                    b.ToTable("Boards");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.Card", b =>
@@ -333,7 +336,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("TaskListId");
 
-                    b.ToTable("Cards", (string)null);
+                    b.ToTable("Cards");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.Color", b =>
@@ -350,7 +353,7 @@ namespace TaskNetic.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Colors", (string)null);
+                    b.ToTable("Colors");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.Comment", b =>
@@ -378,7 +381,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("CardId");
 
-                    b.ToTable("Comments", (string)null);
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.FileAttachment", b =>
@@ -410,7 +413,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("CardId");
 
-                    b.ToTable("Attachments", (string)null);
+                    b.ToTable("Attachments");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.Label", b =>
@@ -445,7 +448,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("ColorId");
 
-                    b.ToTable("Labels", (string)null);
+                    b.ToTable("Labels");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.List", b =>
@@ -467,7 +470,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("BoardId");
 
-                    b.ToTable("Lists", (string)null);
+                    b.ToTable("Lists");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.NotificationUser", b =>
@@ -490,7 +493,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("NotificationUsers", (string)null);
+                    b.ToTable("NotificationUsers");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.Project", b =>
@@ -506,7 +509,7 @@ namespace TaskNetic.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Projects", (string)null);
+                    b.ToTable("Projects");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.ProjectRole", b =>
@@ -535,7 +538,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("ProjectRoles", (string)null);
+                    b.ToTable("ProjectRoles");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.TaskList", b =>
@@ -548,7 +551,7 @@ namespace TaskNetic.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TaskLists", (string)null);
+                    b.ToTable("TaskLists");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.TodoTask", b =>
@@ -572,7 +575,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("TaskListId");
 
-                    b.ToTable("TodoTasks", (string)null);
+                    b.ToTable("TodoTasks");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.ApplicationRole", b =>
