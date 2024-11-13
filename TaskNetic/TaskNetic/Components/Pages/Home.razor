@@ -1,0 +1,15 @@
+﻿@page "/"
+
+<AuthorizeView>
+    <Authorized>
+        <Dashboard/>
+    </Authorized>
+    <NotAuthorized>
+        <LandingPage/>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+
+}
+
