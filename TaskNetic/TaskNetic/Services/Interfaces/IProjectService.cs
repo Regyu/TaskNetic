@@ -6,5 +6,6 @@ namespace TaskNetic.Services.Interfaces
     public interface IProjectService : IRepository<Project>
     {
         Task<IEnumerable<Project>> GetCurrentUserProjectsAsync();
+        Task AddProjectWithCurrentUserAsync(Project project);
     }
 }

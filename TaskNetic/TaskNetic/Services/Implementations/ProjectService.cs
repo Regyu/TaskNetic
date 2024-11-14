@@ -41,5 +41,41 @@ namespace TaskNetic.Services.Implementations
                 .Where(p => p.ProjectUsers.Any(u => u.Id == userId))
                 .ToListAsync();
         }
+
+        public async Task AddProjectWithCurrentUserAsync(Project project)
+        {
+            // Get the current user's ID from the AuthenticationStateProvider
+            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            // Ensure user is authenticated
+            if (user.Identity?.IsAuthenticated != true)
+            {
+                throw new UnauthorizedAccessException("User is not authenticated.");
+            }
+
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                throw new InvalidOperationException("User ID is not available.");
+            }
+
+            // Find the current user from the database
+            var currentUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (currentUser == null)
+            {
+                throw new InvalidOperationException("Current user not found.");
+            }
+
+            // Add the current user to the project's ProjectUsers list
+            project.ProjectUsers.Add(currentUser);
+
+            // Add the project to the database
+            await _context.Projects.AddAsync(project);
+            await _context.SaveChangesAsync();
+        }
+
     }
 }
