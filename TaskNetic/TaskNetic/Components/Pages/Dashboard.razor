@@ -1,23 +1,36 @@
-﻿@using TaskNetic.Components.Layout
+﻿@inject IProjectService ProjectService
+@using TaskNetic.Components.Layout
+@rendermode InteractiveServer
 
 <div class="projects-container bg-dark min-vh-100 p-5">
     <div class="container">
         <div class="row g-4">
-            <ProjectCard 
-                Title="Sample Project" 
-                ImageUrl="path/to/mountain-image.jpg"
-                OnClick="@(() => HandleProjectClick(1))" />
+            @if (projects == null)
+            {
+                <p>Loading...</p>
+            }
+            else
+            {
+                @foreach (var project in projects)
+                {
+                    <ProjectCard 
+                        Title="@project.ProjectName" 
+                        BackgroundId="@project.BackgroundImageId"
+                        OnClick="@(() => HandleProjectClick(project.Id))" />
+                }
 
-            <ProjectCard 
-                Title="Empty Project"
-                OnClick="@(() => HandleProjectClick(2))" />
-
-            <ProjectCard 
-                IsCreateCard="true"
-                OnClick="@HandleCreateProject" />
+                <ProjectCard 
+                    IsCreateCard="true"
+                    OnClick="ShowCreateModal" />
+            }
         </div>
     </div>
 </div>
+
+<CreateProjectModal 
+    Show="showCreateModal"
+    ShowChanged="(value => showCreateModal = value)"
+    OnCreate="HandleCreateProject" />
 
 <style>
     .projects-container {
@@ -26,13 +39,40 @@
 </style>
 
 @code {
+    private IEnumerable<Project>? projects;
+    private bool showCreateModal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProjects();
+    }
+
+    private async Task LoadProjects()
+    {
+        projects = await ProjectService.GetCurrentUserProjectsAsync();
+    }
+
     private void HandleProjectClick(int projectId)
     {
         // Handle project click
     }
 
-    private void HandleCreateProject()
+    private void ShowCreateModal()
     {
-        // Handle create project
+        Console.WriteLine("Show Modal");
+        showCreateModal = true;
+        StateHasChanged();
+    }
+
+    private async Task HandleCreateProject(CreateProjectModal.ProjectModel model)
+    {
+        var project = new Project
+            {
+                ProjectName = model.Name,
+                // Set other properties as needed
+            };
+
+        await ProjectService.AddProjectWithCurrentUserAsync(project);
+        await LoadProjects();
     }
 }

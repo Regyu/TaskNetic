@@ -1,5 +1,7 @@
-﻿<div class="col-lg-3 col-md-4 col-sm-6">
-    <div class="project-card card @(IsCreateCard ? "create-card" : "")">
+﻿@using TaskNetic.Components.Pages
+
+<div class="col-lg-3 col-md-4 col-sm-6">
+    <div class="project-card card @(IsCreateCard ? "create-card" : "")" @onclick="HandleClick">
         <div class="card-body position-relative">
             @if (IsCreateCard)
             {
@@ -8,9 +10,9 @@
                     <img src="images/plus.svg" width="30" height="30" />
                 </div>
             }
-            else if (!string.IsNullOrEmpty(ImageUrl))
+            else if (!string.IsNullOrEmpty(BackgroundId))
             {
-                <img src="@ImageUrl" class="card-img" alt="@Title">
+                <img src="images/backgrounds/background@(BackgroundId).jpg" class="card-img" alt="@Title">
                 <div class="card-overlay">
                     <h5 class="card-title">@Title</h5>
                 </div>
@@ -27,7 +29,7 @@
 
 @code {
     [Parameter]
-    public string? ImageUrl { get; set; }
+    public string? BackgroundId  { get; set; }
 
     [Parameter]
     public string Title { get; set; } = string.Empty;
@@ -37,6 +39,12 @@
 
     [Parameter]
     public EventCallback OnClick { get; set; }
+
+    private async Task HandleClick()
+    {
+        Console.WriteLine("onclick event");
+        await OnClick.InvokeAsync();
+    }
 }
 
 <style>

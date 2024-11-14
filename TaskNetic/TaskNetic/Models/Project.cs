@@ -4,6 +4,7 @@
     {
         public int Id { get; set; }
         public string? ProjectName { get; set; }
+        public string? BackgroundImageId { get; set; }
 
         public ICollection<ApplicationUser> ProjectUsers { get; set; } = new List<ApplicationUser>();
 
