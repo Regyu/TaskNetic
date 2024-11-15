@@ -3,20 +3,21 @@
 @using System.Text
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
-@using TaskNetic.Data
+@using TaskNetic.Models
 
 @inject UserManager<ApplicationUser> UserManager
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Register confirmation</PageTitle>
+<div class="row text-center" style="height: 5%;">
+    <h1>Register confirmation</h1>
 
-<h1>Register confirmation</h1>
+    <StatusMessage Message="@statusMessage" />
 
-<StatusMessage Message="@statusMessage" />
-
-<p>Please check your email to confirm your account.</p>
-
+    <p>Please check your email to confirm your account.</p>
+</div>
+    
 
 @code {
     private string? statusMessage;

@@ -3,15 +3,17 @@
 @using System.Text
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
-@using TaskNetic.Data
+@using TaskNetic.Models
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Confirm email</PageTitle>
+<div class="row text-center" style="height: 5%;">
+    <h1>Email confirmation</h1>
+    <StatusMessage Message="@statusMessage"/>
+</div>
 
-<h1>Confirm email</h1>
-<StatusMessage Message="@statusMessage" />
 
 @code {
     private string? statusMessage;

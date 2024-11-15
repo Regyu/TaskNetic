@@ -6,7 +6,11 @@ using System.Data.Common;
 using TaskNetic.Components;
 using TaskNetic.Components.Account;
 using TaskNetic.Data;
+using TaskNetic.Models;
+using TaskNetic.Data.Repository;
 using TaskNetic.Services;
+using TaskNetic.Services.Implementations;
+using TaskNetic.Services.Interfaces;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 
@@ -40,8 +44,26 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.User.RequireUniqueEmail = true;
+    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+});
 
-builder.Services.AddScoped<TestItemService>();
+
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<IBoardService, BoardService>();
+builder.Services.AddScoped<ICardService, CardService>();
+builder.Services.AddScoped<IColorService, ColorService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IFileAttachmentService, FileAttachmentService>();
+builder.Services.AddScoped<ILabelService, LabelService>();
+builder.Services.AddScoped<IListService, ListService>();
+builder.Services.AddScoped<INotificationUserService, NotificationUserService>();
+builder.Services.AddScoped<IProjectRoleService, ProjectRoleService>();
+builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<ITaskListService, TaskListService>();
+builder.Services.AddScoped<ITodoTaskService, TodoTaskService>();
 
 var app = builder.Build();
 

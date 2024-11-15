@@ -1,0 +1,63 @@
+﻿<div class="modal @(Show ? "show" : "")" style="display: @(Show ? "block" : "none")" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Project</h5>
+                <button type="button" class="btn-close" @onclick="OnCancel"></button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="@projectModel" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label for="projectName" class="form-label">Project Name</label>
+                        <InputText id="projectName" 
+                                 @bind-Value="projectModel.Name" 
+                                 class="form-control" />
+                        <ValidationMessage For="@(() => projectModel.Name)" />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Show)
+{
+    <div class="modal-backdrop show"></div>
+}
+
+@code {
+    private ProjectModel projectModel = new();
+
+    [Parameter]
+    public bool Show { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> ShowChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<ProjectModel> OnCreate { get; set; }
+
+    private async Task HandleValidSubmit()
+    {
+        await OnCreate.InvokeAsync(projectModel);
+        projectModel = new();
+        await OnCancel();
+    }
+
+    private async Task OnCancel()
+    {
+        await ShowChanged.InvokeAsync(false);
+    }
+
+    public class ProjectModel
+    {
+        [Required(ErrorMessage = "Project name is required")]
+        [StringLength(50, ErrorMessage = "Name is too long")]
+        public string Name { get; set; } = string.Empty;
+    }
+}

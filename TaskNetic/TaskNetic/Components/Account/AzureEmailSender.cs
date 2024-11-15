@@ -1,7 +1,7 @@
 ﻿using Azure.Communication.Email;
 using Azure;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using TaskNetic.Data;
+using TaskNetic.Models;
 
 namespace TaskNetic.Components.Account
 {
@@ -21,8 +21,15 @@ namespace TaskNetic.Components.Account
         {
             var connectionString = configuration.GetConnectionString("AzureCommunication");
             _senderAddress = "DoNotReply@ebf1f529-6ee2-4c8e-8c11-e32978833c65.azurecomm.net";
-            _emailClient = new EmailClient(connectionString);
             _logger = logger;
+            try
+            {
+                _emailClient = new EmailClient(connectionString);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create email client");
+            }
         }
 
         public async Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink)

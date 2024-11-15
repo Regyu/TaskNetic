@@ -1,4 +1,15 @@
 ﻿@page "/"
-@using TaskNetic.Components.Layout
 
-<PageTitle>TaskNetic</PageTitle>
+<AuthorizeView>
+    <Authorized>
+        <Dashboard/>
+    </Authorized>
+    <NotAuthorized>
+        <LandingPage/>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+
+}
+

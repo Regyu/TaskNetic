@@ -1,35 +1,40 @@
-﻿<nav class="navbar navbar-expand-lg bg-body-tertiary">
+﻿@inject AuthenticationStateProvider AuthenticationStateProvider
+@using Microsoft.AspNetCore.Identity
+
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container fluid">
         <a class="navbar-brand" href="/">
             <img src="images/logo.png" alt="TaskNetic" width="35" height="35" class="d-inline-block align-text-bottom">
             <span class="fs-4">TaskNetic</span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
         <AuthorizeView>
             <Authorized>
-                <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                    <div class="navbar-nav">
-                        <a class="nav-link active" aria-current="page" href="#">Home</a>
-                        <a class="nav-link" href="#">Features</a>
-                        <a class="nav-link" href="#">Pricing</a>
-                    </div>
+                <div class="navbar-nav ms-auto align-items-center">
+                    <a href="/Account/Manage" class="text-decoration-none">
+                        <img src="images/person.svg" alt="Person Image" width="20" height="20" class="d-inline-block me-1" />
+                        <span class="navbar-text me-4">@username</span>
+                    </a>
+                    <a class="nav-link text-dark" href="/Account/Logout">Sign out</a>
                 </div>
             </Authorized>
             <NotAuthorized>
-                <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                    <div class="navbar-nav ms-auto">
-                        <a class="nav-link active" aria-current="page" href="/account/login">Sign in</a>
-                        <a class="nav-link" href="/account/register">Sign up</a>
-                    </div>
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link active" aria-current="page" href="/account/login">Sign in</a>
+                    <a class="nav-link" href="/account/register">Sign up</a>
                 </div>
             </NotAuthorized>
         </AuthorizeView>
-        
+
     </div>
 </nav>
 
-@code {
 
+
+@code {
+    private string? username;
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        username = authState.User.Identity.Name;
+    }
 }
