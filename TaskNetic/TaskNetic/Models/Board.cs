@@ -15,7 +15,5 @@ namespace TaskNetic.Models
 
         public int BackgroundId { get; set; }
 
-
-
     }
 }

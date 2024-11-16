@@ -20,11 +20,9 @@ namespace TaskNetic.Services.Implementations
 
         public async Task<IEnumerable<Project>> GetCurrentUserProjectsAsync()
         {
-            // Get the current user's ID from the AuthenticationStateProvider
             var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
             var user = authState.User;
 
-            // Ensure user is authenticated
             if (user.Identity?.IsAuthenticated != true)
             {
                 return Enumerable.Empty<Project>();
@@ -36,7 +34,6 @@ namespace TaskNetic.Services.Implementations
                 return Enumerable.Empty<Project>();
             }
 
-            // Retrieve projects where the user is part of ProjectUsers
             return await _context.Projects
                 .Where(p => p.ProjectUsers.Any(u => u.Id == userId))
                 .ToListAsync();
@@ -44,11 +41,9 @@ namespace TaskNetic.Services.Implementations
 
         public async Task AddProjectWithCurrentUserAsync(Project project)
         {
-            // Get the current user's ID from the AuthenticationStateProvider
             var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
             var user = authState.User;
 
-            // Ensure user is authenticated
             if (user.Identity?.IsAuthenticated != true)
             {
                 throw new UnauthorizedAccessException("User is not authenticated.");
@@ -60,7 +55,6 @@ namespace TaskNetic.Services.Implementations
                 throw new InvalidOperationException("User ID is not available.");
             }
 
-            // Find the current user from the database
             var currentUser = await _context.Users
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
@@ -69,13 +63,26 @@ namespace TaskNetic.Services.Implementations
                 throw new InvalidOperationException("Current user not found.");
             }
 
-            // Add the current user to the project's ProjectUsers list
             project.ProjectUsers.Add(currentUser);
 
-            // Add the project to the database
             await _context.Projects.AddAsync(project);
             await _context.SaveChangesAsync();
         }
+        public async Task DeleteProjectAndUsersAsync(int projectId)
+        {
+            var project = await _context.Projects
+                .Include(p => p.ProjectUsers)
+                .FirstOrDefaultAsync(p => p.Id == projectId);
 
+            if (project == null)
+            {
+                throw new KeyNotFoundException("Project ID is invalid.");
+            }
+
+            project.ProjectUsers.Clear();
+            _context.Projects.Remove(project);
+            await _context.SaveChangesAsync();
+        }
     }
+
 }

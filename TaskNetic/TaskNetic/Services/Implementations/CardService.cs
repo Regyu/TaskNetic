@@ -14,5 +14,11 @@ namespace TaskNetic.Services.Implementations
         {
             throw new NotImplementedException();
         }
+
+        public async Task AddCardByListIdAsync(int listId)
+        {  throw new NotImplementedException(); }
+
+        public async Task DeleteCardByListIdAsync(int listId)
+        { throw new NotImplementedException(); }
     }
 }

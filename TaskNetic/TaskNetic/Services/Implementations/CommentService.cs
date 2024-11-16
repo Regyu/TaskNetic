@@ -13,5 +13,15 @@ namespace TaskNetic.Services.Implementations
         {
             throw new NotImplementedException();
         }
+
+        public async Task AddCommentByCardIdAsync(int cardId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task DeleteCommentByCardIdAsync(int cardId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
