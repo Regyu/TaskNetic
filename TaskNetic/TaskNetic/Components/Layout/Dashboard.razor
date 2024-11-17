@@ -82,7 +82,6 @@
         var project = new Project
             {
                 ProjectName = model.Name,
-                // Set other properties as needed
             };
 
         await ProjectService.AddProjectWithCurrentUserAsync(project);
@@ -91,14 +90,9 @@
 
     private async Task HandleDeleteProject(int projectId)
     {
-        // Call service to delete the project
         await ProjectService.DeleteProjectAndUsersAsync(projectId);
-
-        // Reload the updated list of projects
         await LoadProjects();
-
-        // Close the modal after deletion
         showEditModal = false;
-        StateHasChanged(); // Trigger UI refresh
+        StateHasChanged();
     }
 }

@@ -10,7 +10,6 @@
             </div>
 
             <div class="modal-body">
-                <!-- Tabs -->
                 <ul class="nav nav-tabs" id="editProjectTabs">
                     <li class="nav-item">
                         <a class="nav-link @(activeTab == "general" ? "active" : "")"
@@ -33,11 +32,8 @@
                            @onclick="@(() => SetActiveTab("danger zone"))">Danger Zone</a>
                     </li>
                 </ul>
-
-                <!-- Tab Content -->
                 @if (activeTab == "general")
                 {
-                    <!-- General Tab Content -->
                     @if (Project != null)
                     {
                         <div class="my-3">
@@ -54,21 +50,17 @@
                 }
                 else if (activeTab == "team")
                 {
-                    <!-- Team Tab Content -->
                     <p>Team management UI goes here.</p>
                 }
                 else if (activeTab == "background")
                 {
-                    <!-- Background Tab Content -->
                     @if (availableBackgrounds != null && availableBackgrounds.Any())
                     {
-                        <!-- Display current selected background -->
-                        <div class="mb-3">
-                            <h6>Current Background:</h6>
+                        <div class="mb-3 text-center">
+                            <h5 class="py-3">Current Background:</h5>
                             <img src="@currentBackgroundUrl" alt="Current Background" class="img-fluid mb-3" />
                         </div>
 
-                        <!-- Display list of available backgrounds as thumbnails -->
                         <div class="row">
                             @foreach (var background in availableBackgrounds)
                             {
@@ -88,10 +80,8 @@
                 }
                 else if (activeTab == "danger zone")
                 {
-                    <!-- Settings Tab Content -->
                     @if (Project != null)
                     {
-                        <!-- Delete Project Button in Settings Tab -->
                         <div class="mt-3 text-center">
                             <h5 class="text-danger mb-3">Deleting a project is irreversible!</h5>
                             <button type="button"
@@ -124,7 +114,6 @@
 
 @if (Show)
 {
-    <!-- Modal backdrop -->
     <div class="modal-backdrop fade show"></div>
 }
 
@@ -151,13 +140,11 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        // Load available backgrounds when the modal is opened
         if (Show)
         {
             await LoadAvailableBackgrounds();
         }
 
-        // Set current background if project has one
         if (Project != null && !string.IsNullOrEmpty(Project.BackgroundImageId))
         {
             currentBackgroundUrl = $"images/backgrounds/background{Project.BackgroundImageId}.jpg";
@@ -166,13 +153,10 @@
 
     private async Task LoadAvailableBackgrounds()
     {
-        // Path to the folder containing background images
         var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/backgrounds");
 
-        // Ensure the folder exists
         if (Directory.Exists(folderPath))
         {
-            // Get all files that match the pattern "background(Id).jpg"
             var allBackgrounds = Directory.GetFiles(folderPath, "background*.jpg")
                                           .Select(f => $"/images/backgrounds/{Path.GetFileName(f)}")
                                           .Distinct()
@@ -182,7 +166,6 @@
         }
         else
         {
-            // Folder does not exist, handle accordingly (e.g., log error or provide a default)
             availableBackgrounds = new List<string>();
         }
         await Task.CompletedTask;
@@ -190,10 +173,8 @@
 
     private void SelectBackground(string backgroundUrl)
     {
-        // Set selected background as current
         currentBackgroundUrl = backgroundUrl;
 
-        // Optionally, update the project model's ImageUrl to save later
         if (Project != null)
         {
             Project.BackgroundImageId = string.Concat(currentBackgroundUrl.Where(Char.IsDigit));
