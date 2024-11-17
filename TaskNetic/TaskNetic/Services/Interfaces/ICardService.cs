@@ -5,8 +5,8 @@ namespace TaskNetic.Services.Interfaces
 {
     public interface ICardService : IRepository<Card>
     {
-        Task<IEnumerable<Card>> GetCardsByListIdAsync(int listId);
-        Task AddCardByListIdAsync(int listId);
-        Task DeleteCardByListIdAsync(int listId);
+        Task<IEnumerable<Card>> GetCardsForListAsync(List list);
+        Task AddCardToListAsync(List list, Card card);
+        Task DeleteCardAsync(Card card);
     }
 }

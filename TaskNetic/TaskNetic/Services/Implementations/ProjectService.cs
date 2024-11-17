@@ -68,7 +68,7 @@ namespace TaskNetic.Services.Implementations
             await _context.Projects.AddAsync(project);
             await _context.SaveChangesAsync();
         }
-        public async Task DeleteProjectAndUsersAsync(int projectId)
+        public async Task DeleteProjectAndUsersAsync(int projectId) // przerobić na Project project
         {
             var project = await _context.Projects
                 .Include(p => p.ProjectUsers)

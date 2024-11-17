@@ -5,6 +5,8 @@ namespace TaskNetic.Services.Interfaces
 {
     public interface ILabelService : IRepository<Label>
     {
-        Task<IEnumerable<Label>> GetLabelsByBoardIdAsync(int boardId);
+        Task<IEnumerable<Label>> GetLabelsByCardAsync(Card card);
+        Task AddLabelToCardAsync(Card card, Label label);
+        Task DeleteLabelAsync(Label label);
     }
 }
