@@ -22,10 +22,6 @@ namespace TaskNetic.Services.Implementations
 
             await _context.Entry(board).Collection(b => b.Lists).LoadAsync();
 
-            // Filter boards for the current user
-            //var lists = board.Lists
-            //    .ToList();
-
             return board.Lists.AsEnumerable();
         }
 
@@ -42,7 +38,6 @@ namespace TaskNetic.Services.Implementations
                 throw new ArgumentNullException(nameof(list), "List cannot be null.");
             }
 
-            // Add the new board to the project
             board.Lists.Add(list);
 
             await _context.SaveChangesAsync();
@@ -56,13 +51,10 @@ namespace TaskNetic.Services.Implementations
                 throw new ArgumentNullException(nameof(list), "List cannot be null.");
             }
 
-            // Ensure related BoardUsers are loaded
             _context.Entry(list).Collection(l => l.Cards).Load();
 
-            // Clear the BoardUsers relation to avoid orphaned entries
             list.Cards.Clear();
 
-            // Remove the board
             _context.Lists.Remove(list);
 
             await _context.SaveChangesAsync();

@@ -69,21 +69,6 @@ namespace TaskNetic.Services.Implementations
             await _context.Projects.AddAsync(project);
             await _context.SaveChangesAsync();
         }
-        /*public async Task DeleteProjectAndUsersAsync(int projectId) // usunąć
-        {
-            var project = await _context.Projects
-                .Include(p => p.ProjectUsers)
-                .FirstOrDefaultAsync(p => p.Id == projectId);
-
-            if (project == null)
-            {
-                throw new KeyNotFoundException("Project ID is invalid.");
-            }
-
-            project.ProjectUsers.Clear();
-            _context.Projects.Remove(project);
-            await _context.SaveChangesAsync();
-        }*/
 
         public async Task DeleteProjectAndUsersAsync(Project project)
         {
@@ -101,6 +86,17 @@ namespace TaskNetic.Services.Implementations
             await _context.SaveChangesAsync();
         }
 
+        public async Task<IEnumerable<ApplicationUser>> GetProjectUsers(Project project)
+        {
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project), "Project cannot be null.");
+            }
+
+            await _context.Entry(project).Collection(l => l.ProjectUsers).LoadAsync();
+
+            return project.ProjectUsers.AsEnumerable();
+        }
     }
 
 }

@@ -5,17 +5,16 @@ using TaskNetic.Data.Repository;
 using TaskNetic.Models;
 using TaskNetic.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
+using System.Diagnostics;
 
 namespace TaskNetic.Services.Implementations
 {
     public class BoardService : Repository<Board>, IBoardService
     {
-        //private readonly ApplicationDbContext _context;
         private readonly AuthenticationStateProvider _authenticationStateProvider;
 
         public BoardService(ApplicationDbContext context, AuthenticationStateProvider authenticationStateProvider) : base(context)
         {
-            //_context = context;
             _authenticationStateProvider = authenticationStateProvider;
         }
         public async Task<IEnumerable<Board>> GetBoardsForCurrentUserAsync(Project project)
@@ -25,32 +24,32 @@ namespace TaskNetic.Services.Implementations
                 throw new ArgumentNullException(nameof(project), "Project cannot be null.");
             }
 
-            // Get the current authentication state
             var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
             var user = authState.User;
 
-            // Ensure the user is authenticated
             if (user.Identity?.IsAuthenticated != true)
             {
                 throw new UnauthorizedAccessException("User is not authenticated.");
             }
 
-            // Get the user's ID
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
             {
                 throw new InvalidOperationException("User ID is not available.");
             }
 
-            // Ensure the ProjectBoards navigation property is loaded
-            _context.Entry(project).Collection(p => p.ProjectBoards).Load();
+            //_context.Entry(project).Collection(p => p.ProjectBoards).Load();
+            await _context.Entry(project).Collection(c => c.ProjectBoards).LoadAsync();
 
-            // Filter boards for the current user
+            /*
             var boards = project.ProjectBoards
                 .Where(b => b.BoardUsers.Any(u => u.Id == userId))
                 .ToList();
+            return boards;*/
 
-            return boards;
+            return project.ProjectBoards
+                .Where(b => b.BoardUsers.Any(u => u.Id == userId))
+                .AsEnumerable();
         }
 
         public async Task AddBoardToProjectAsync(Project project, Board board)
@@ -88,13 +87,10 @@ namespace TaskNetic.Services.Implementations
                 throw new InvalidOperationException("Current user not found.");
             }
 
-            // Ensure the ProjectBoards navigation property is loaded
             _context.Entry(project).Collection(p => p.ProjectBoards).Load();
 
-            // Add the current user to the board's users
             board.BoardUsers.Add(currentUser);
 
-            // Add the new board to the project
             project.ProjectBoards.Add(board);
 
             await _context.SaveChangesAsync();
@@ -108,13 +104,10 @@ namespace TaskNetic.Services.Implementations
                 throw new ArgumentNullException(nameof(board), "Board cannot be null.");
             }
 
-            // Ensure related BoardUsers are loaded
             _context.Entry(board).Collection(b => b.BoardUsers).Load();
 
-            // Clear the BoardUsers relation to avoid orphaned entries
             board.BoardUsers.Clear();
 
-            // Remove the board
             _context.Boards.Remove(board);
 
             await _context.SaveChangesAsync();

@@ -88,14 +88,6 @@
         await LoadProjects();
     }
 
-    /*private async Task HandleDeleteProject(int projectId)
-    {
-        await ProjectService.DeleteProjectAndUsersAsync(projectId);
-        await LoadProjects();
-        showEditModal = false;
-        StateHasChanged();
-    }*/
-
     private async Task HandleDeleteProject(Project project)
     {
         await ProjectService.DeleteProjectAndUsersAsync(project);
