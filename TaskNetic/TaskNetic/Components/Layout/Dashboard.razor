@@ -16,7 +16,8 @@
                     <ProjectCard 
                         Title="@project.ProjectName" 
                         BackgroundId="@project.BackgroundImageId"
-                        OnClick="@(() => HandleProjectClick(project.Id))" />
+                        OnClick="@(() => HandleProjectClick(project.Id))" 
+                        OnEditClick="@(() => ShowEditModal(project))"/>
                 }
 
                 <ProjectCard 
@@ -26,6 +27,11 @@
         </div>
     </div>
 </div>
+<EditProjectModal Show="@showEditModal"
+                  ShowChanged="@((value) => showEditModal = value)" 
+                  Project="@selectedProject"
+                  OnSave="@LoadProjects"
+                  OnDelete="@(() => HandleDeleteProject(selectedProject.Id))"/>
 
 <CreateProjectModal 
     Show="showCreateModal"
@@ -41,6 +47,8 @@
 @code {
     private IEnumerable<Project>? projects;
     private bool showCreateModal;
+    private bool showEditModal;
+    private Project? selectedProject;
 
     protected override async Task OnInitializedAsync()
     {
@@ -50,6 +58,7 @@
     private async Task LoadProjects()
     {
         projects = await ProjectService.GetCurrentUserProjectsAsync();
+        StateHasChanged();
     }
 
     private void HandleProjectClick(int projectId)
@@ -59,9 +68,13 @@
 
     private void ShowCreateModal()
     {
-        Console.WriteLine("Show Modal");
         showCreateModal = true;
-        StateHasChanged();
+    }
+
+    private void ShowEditModal(Project project)
+    {
+        selectedProject = project;
+        showEditModal = true;
     }
 
     private async Task HandleCreateProject(CreateProjectModal.ProjectModel model)
@@ -74,5 +87,18 @@
 
         await ProjectService.AddProjectWithCurrentUserAsync(project);
         await LoadProjects();
+    }
+
+    private async Task HandleDeleteProject(int projectId)
+    {
+        // Call service to delete the project
+        await ProjectService.DeleteProjectAndUsersAsync(projectId);
+
+        // Reload the updated list of projects
+        await LoadProjects();
+
+        // Close the modal after deletion
+        showEditModal = false;
+        StateHasChanged(); // Trigger UI refresh
     }
 }

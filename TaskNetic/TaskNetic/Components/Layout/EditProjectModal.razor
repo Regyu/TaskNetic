@@ -1,0 +1,242 @@
+﻿@using TaskNetic.Models
+@inject IProjectService ProjectService
+
+<div class="modal @(Show ? "show d-block" : "d-none")" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Project</h5>
+                <button type="button" class="btn-close" @onclick="OnCancel"></button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Tabs -->
+                <ul class="nav nav-tabs" id="editProjectTabs">
+                    <li class="nav-item">
+                        <a class="nav-link @(activeTab == "general" ? "active" : "")"
+                           href="#"
+                           @onclick="@(() => SetActiveTab("general"))">General</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(activeTab == "team" ? "active" : "")"
+                           href="#"
+                           @onclick="@(() => SetActiveTab("team"))">Team</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(activeTab == "background" ? "active" : "")"
+                           href="#"
+                           @onclick="@(() => SetActiveTab("background"))">Background</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(activeTab == "danger zone" ? "active" : "")"
+                           href="#"
+                           @onclick="@(() => SetActiveTab("danger zone"))">Danger Zone</a>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                @if (activeTab == "general")
+                {
+                    <!-- General Tab Content -->
+                    @if (Project != null)
+                    {
+                        <div class="my-3">
+                            <label for="projectName">Project Name:</label>
+                            <InputText id="projectName"
+                                       @bind-Value="@Project.ProjectName"
+                                       class="form-control my-3" />
+                        </div>
+                    }
+                    else
+                    {
+                        <p>Loading project details...</p>
+                    }
+                }
+                else if (activeTab == "team")
+                {
+                    <!-- Team Tab Content -->
+                    <p>Team management UI goes here.</p>
+                }
+                else if (activeTab == "background")
+                {
+                    <!-- Background Tab Content -->
+                    @if (availableBackgrounds != null && availableBackgrounds.Any())
+                    {
+                        <!-- Display current selected background -->
+                        <div class="mb-3">
+                            <h6>Current Background:</h6>
+                            <img src="@currentBackgroundUrl" alt="Current Background" class="img-fluid mb-3" />
+                        </div>
+
+                        <!-- Display list of available backgrounds as thumbnails -->
+                        <div class="row">
+                            @foreach (var background in availableBackgrounds)
+                            {
+                                <div class="col-md-3 col-sm-4 col-6 mb-3">
+                                    <img src="@background"
+                                         alt="Available Background"
+                                         class="img-thumbnail clickable-thumbnail"
+                                         @onclick="@(() => SelectBackground(background))" />
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p>No backgrounds available.</p>
+                    }
+                }
+                else if (activeTab == "danger zone")
+                {
+                    <!-- Settings Tab Content -->
+                    @if (Project != null)
+                    {
+                        <!-- Delete Project Button in Settings Tab -->
+                        <div class="mt-3 text-center">
+                            <h5 class="text-danger mb-3">Deleting a project is irreversible!</h5>
+                            <button type="button"
+                                    class="btn btn-danger"
+                                    @onclick="@DeleteProject">
+                                Delete Project
+                            </button>
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
+                        @onclick="@OnCancel">
+                    Close
+                </button>
+
+                <button type="submit"
+                        formnovalidate
+                        class="btn btn-primary"
+                        @onclick="@SaveChanges">
+                    Save changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Show)
+{
+    <!-- Modal backdrop -->
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    private string activeTab = "general";
+
+    [Parameter]
+    public bool Show { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> ShowChanged { get; set; }
+
+    [Parameter]
+    public Project? Project { get; set; }
+
+    [Parameter]
+    public EventCallback OnSave { get; set; }
+
+    [Parameter]
+    public EventCallback OnDelete { get; set; }
+
+    private List<string> availableBackgrounds = new();
+    private string currentBackgroundUrl = string.Empty;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Load available backgrounds when the modal is opened
+        if (Show)
+        {
+            await LoadAvailableBackgrounds();
+        }
+
+        // Set current background if project has one
+        if (Project != null && !string.IsNullOrEmpty(Project.BackgroundImageId))
+        {
+            currentBackgroundUrl = $"images/backgrounds/background{Project.BackgroundImageId}.jpg";
+        }
+    }
+
+    private async Task LoadAvailableBackgrounds()
+    {
+        // Path to the folder containing background images
+        var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/backgrounds");
+
+        // Ensure the folder exists
+        if (Directory.Exists(folderPath))
+        {
+            // Get all files that match the pattern "background(Id).jpg"
+            var allBackgrounds = Directory.GetFiles(folderPath, "background*.jpg")
+                                          .Select(f => $"/images/backgrounds/{Path.GetFileName(f)}")
+                                          .Distinct()
+                                          .ToList();
+
+            availableBackgrounds = allBackgrounds;
+        }
+        else
+        {
+            // Folder does not exist, handle accordingly (e.g., log error or provide a default)
+            availableBackgrounds = new List<string>();
+        }
+        await Task.CompletedTask;
+    }
+
+    private void SelectBackground(string backgroundUrl)
+    {
+        // Set selected background as current
+        currentBackgroundUrl = backgroundUrl;
+
+        // Optionally, update the project model's ImageUrl to save later
+        if (Project != null)
+        {
+            Project.BackgroundImageId = string.Concat(currentBackgroundUrl.Where(Char.IsDigit));
+        }
+    }
+
+    private void SetActiveTab(string tab)
+    {
+        activeTab = tab;
+    }
+
+    private async Task SaveChanges()
+    {
+        if (Project != null)
+        {
+            await ProjectService.UpdateAsync(Project);
+            await OnSave.InvokeAsync();
+            Show = false;
+            await ShowChanged.InvokeAsync(false);
+        }
+    }
+
+    private async Task DeleteProject()
+    {
+        await OnDelete.InvokeAsync();
+        Show = false;
+        await ShowChanged.InvokeAsync(false);
+    }
+
+    private void OnCancel()
+    {
+        Show = false;
+        ShowChanged.InvokeAsync(false);
+    }
+
+}
+
+<style>
+    .clickable-thumbnail {
+        cursor: pointer;
+    }
+
+    .clickable-thumbnail:hover {
+        opacity: 0.8;
+     }
+</style>
