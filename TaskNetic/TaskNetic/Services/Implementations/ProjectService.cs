@@ -5,6 +5,7 @@ using TaskNetic.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace TaskNetic.Services.Implementations
 {
@@ -68,7 +69,7 @@ namespace TaskNetic.Services.Implementations
             await _context.Projects.AddAsync(project);
             await _context.SaveChangesAsync();
         }
-        public async Task DeleteProjectAndUsersAsync(int projectId) // przerobić na Project project
+        /*public async Task DeleteProjectAndUsersAsync(int projectId) // usunąć
         {
             var project = await _context.Projects
                 .Include(p => p.ProjectUsers)
@@ -82,7 +83,24 @@ namespace TaskNetic.Services.Implementations
             project.ProjectUsers.Clear();
             _context.Projects.Remove(project);
             await _context.SaveChangesAsync();
+        }*/
+
+        public async Task DeleteProjectAndUsersAsync(Project project)
+        {
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project), "Project cannot be null.");
+            }
+
+            _context.Entry(project).Collection(p => p.ProjectUsers).Load();
+
+            project.ProjectUsers.Clear();
+
+            _context.Projects.Remove(project);
+
+            await _context.SaveChangesAsync();
         }
+
     }
 
 }

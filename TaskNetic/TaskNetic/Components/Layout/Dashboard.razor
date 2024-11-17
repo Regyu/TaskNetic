@@ -31,7 +31,7 @@
                   ShowChanged="@((value) => showEditModal = value)" 
                   Project="@selectedProject"
                   OnSave="@LoadProjects"
-                  OnDelete="@(() => HandleDeleteProject(selectedProject.Id))"/>
+                  OnDelete="@(() => HandleDeleteProject(selectedProject))"/>
 
 <CreateProjectModal 
     Show="showCreateModal"
@@ -88,9 +88,17 @@
         await LoadProjects();
     }
 
-    private async Task HandleDeleteProject(int projectId)
+    /*private async Task HandleDeleteProject(int projectId)
     {
         await ProjectService.DeleteProjectAndUsersAsync(projectId);
+        await LoadProjects();
+        showEditModal = false;
+        StateHasChanged();
+    }*/
+
+    private async Task HandleDeleteProject(Project project)
+    {
+        await ProjectService.DeleteProjectAndUsersAsync(project);
         await LoadProjects();
         showEditModal = false;
         StateHasChanged();
