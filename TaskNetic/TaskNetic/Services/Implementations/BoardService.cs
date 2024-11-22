@@ -19,7 +19,7 @@ namespace TaskNetic.Services.Implementations
             _context = context;
             _authenticationStateProvider = authenticationStateProvider;
         }
-        public async Task<IEnumerable<Board>> GetBoardsForCurrentUserAsync(Project project)
+        private async Task<string?> GetCurrentUserIdAsync()
         {
             var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
             var user = authState.User;
@@ -57,7 +57,6 @@ namespace TaskNetic.Services.Implementations
             if (currentUserId == null)
                 throw new InvalidOperationException("No signed-in user found.");
 
-            // Fetch the project to ensure it exists
             var project = await _context.Projects
             .Include(p => p.ProjectRoles)
             .FirstOrDefaultAsync(p => p.Id == projectId);
@@ -65,7 +64,6 @@ namespace TaskNetic.Services.Implementations
             if (project == null)
                 throw new KeyNotFoundException($"Project with ID {projectId} not found.");
 
-            // Check if the user has a role in this project
             var userRole = project.ProjectRoles.FirstOrDefault(pr => pr.ApplicationUser.Id == currentUserId);
             if (userRole == null)
             {
@@ -90,25 +88,6 @@ namespace TaskNetic.Services.Implementations
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteBoardByIdAsync(int boardId)
-        {
-            var board = await _context.Boards
-            .Include(b => b.BoardPermissions)
-            .FirstOrDefaultAsync(b => b.BoardId == boardId);
-
-            if (board == null)
-            {
-                throw new InvalidOperationException($"Board with ID {boardId} not found.");
-            }
-
-            _context.BoardPermissions.RemoveRange(board.BoardPermissions);
-
-            _context.Boards.Remove(board);
-
-            await _context.SaveChangesAsync();
-        }
-
-
         public async Task DeleteBoardAsync(Board board)
         {
             if (board == null)
@@ -116,9 +95,9 @@ namespace TaskNetic.Services.Implementations
                 throw new ArgumentNullException(nameof(board), "Board cannot be null.");
             }
 
-            _context.Entry(board).Collection(b => b.BoardUsers).Load();
+            await _context.Entry(board).Collection(b => b.BoardPermissions).LoadAsync();
 
-            board.BoardUsers.Clear();
+            board.BoardPermissions.Clear();
 
             _context.Boards.Remove(board);
 

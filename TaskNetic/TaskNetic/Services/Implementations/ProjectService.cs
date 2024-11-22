@@ -97,9 +97,11 @@ namespace TaskNetic.Services.Implementations
                 throw new ArgumentNullException(nameof(project), "Project cannot be null.");
             }
 
-            await _context.Entry(project).Collection(l => l.ProjectUsers).LoadAsync();
-
-            return project.ProjectUsers.AsEnumerable();
+            return await _context.ProjectRoles
+            .Where(pr => pr.Project.Id == project.Id)
+            .Select(pr => pr.ApplicationUser)
+            .Distinct()
+            .ToListAsync();
         }
     }
 

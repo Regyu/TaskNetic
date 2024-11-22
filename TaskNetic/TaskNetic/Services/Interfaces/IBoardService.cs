@@ -7,6 +7,6 @@ namespace TaskNetic.Services.Interfaces
     {
         Task<IEnumerable<Board>> GetBoardsByProjectIdForCurrentUserAsync(int projectId);
         Task AddBoardByProjectIdAsync(int projectId, string boardTitle);
-        Task DeleteBoardByIdAsync(int boardId);
+        Task DeleteBoardAsync(Board board);
     }
 }
