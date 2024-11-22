@@ -5,6 +5,7 @@ using TaskNetic.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace TaskNetic.Services.Implementations
 {
@@ -75,20 +76,30 @@ namespace TaskNetic.Services.Implementations
             await _context.ProjectRoles.AddAsync(projectRole);
             await _context.SaveChangesAsync();
         }
-        public async Task DeleteProjectAndUsersAsync(int projectId)
-        {
-            var project = await _context.Projects
-            .Include(p => p.ProjectRoles)
-            .FirstOrDefaultAsync(p => p.Id == projectId);
 
+        public async Task DeleteProjectAndUsersAsync(Project project)
+        {
             if (project == null)
             {
-                throw new KeyNotFoundException("Project ID is invalid.");
+                throw new ArgumentNullException(nameof(project), "Project cannot be null.");
             }
 
             _context.ProjectRoles.RemoveRange(project.ProjectRoles);
             _context.Projects.Remove(project);
+
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<ApplicationUser>> GetProjectUsers(Project project)
+        {
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project), "Project cannot be null.");
+            }
+
+            await _context.Entry(project).Collection(l => l.ProjectUsers).LoadAsync();
+
+            return project.ProjectUsers.AsEnumerable();
         }
     }
 

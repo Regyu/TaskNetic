@@ -5,6 +5,7 @@ using TaskNetic.Data.Repository;
 using TaskNetic.Models;
 using TaskNetic.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
+using System.Diagnostics;
 
 namespace TaskNetic.Services.Implementations
 {
@@ -18,8 +19,7 @@ namespace TaskNetic.Services.Implementations
             _context = context;
             _authenticationStateProvider = authenticationStateProvider;
         }
-
-        private async Task<string?> GetCurrentUserIdAsync()
+        public async Task<IEnumerable<Board>> GetBoardsForCurrentUserAsync(Project project)
         {
             var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
             var user = authState.User;
@@ -107,5 +107,23 @@ namespace TaskNetic.Services.Implementations
 
             await _context.SaveChangesAsync();
         }
+
+
+        public async Task DeleteBoardAsync(Board board)
+        {
+            if (board == null)
+            {
+                throw new ArgumentNullException(nameof(board), "Board cannot be null.");
+            }
+
+            _context.Entry(board).Collection(b => b.BoardUsers).Load();
+
+            board.BoardUsers.Clear();
+
+            _context.Boards.Remove(board);
+
+            await _context.SaveChangesAsync();
+        }
+
     }
 }

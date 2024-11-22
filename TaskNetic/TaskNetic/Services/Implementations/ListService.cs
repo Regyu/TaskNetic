@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using TaskNetic.Data;
 using TaskNetic.Data.Repository;
 using TaskNetic.Models;
@@ -8,71 +10,55 @@ namespace TaskNetic.Services.Implementations
 {
     public class ListService : Repository<List>, IListService
     {
-        //private readonly ApplicationDbContext _context;
 
-        public ListService(ApplicationDbContext context) : base(context)
+        public ListService(ApplicationDbContext context) : base(context) { }
+
+        public async Task<IEnumerable<List>> GetListsForBoardAsync(Board board)
         {
-            //_context = context;
-        }
-
-        public async Task<IEnumerable<List>> GetListsByBoardIdAsync(int boardId)
-        {
-            // Fetch lists belonging to a specific board
-            return await _context.Set<Board>()
-                .Where(board => board.BoardId == boardId)
-                .SelectMany(board => board.Lists) // Extract the Lists collection from the Board
-                .Include(list => list.Cards) // Eagerly load associated Cards
-                .ToListAsync();
-        }
-
-        public async Task AddListByBoardIdAsync(int boardId, string listTitle)
-        {
-            // Find the board by ID
-            var board = await _context.Set<Board>()
-                .Include(b => b.Lists) // Ensure the Lists collection is loaded
-                .FirstOrDefaultAsync(b => b.BoardId == boardId);
-
             if (board == null)
-                throw new ArgumentException("Board not found.", nameof(boardId));
-
-            // Create a new List and add it to the board's Lists collection
-            var newList = new List
             {
-                Title = listTitle,
-                Cards = new List<Card>() // Initialize an empty card collection
-            };
+                throw new ArgumentNullException(nameof(board), "Board cannot be null.");
+            }
 
-            board.Lists.Add(newList);
+            await _context.Entry(board).Collection(b => b.Lists).LoadAsync();
 
-            // Save changes
-            await _context.SaveChangesAsync();
+            return board.Lists.AsEnumerable();
         }
 
-        public async Task DeleteListByBoardIdAsync(int boardId, int listId)
+        public async Task AddListToBoardsAsync(Board board, List list)
         {
-            // Find the board with the specified ID and include its Lists
-            var board = await _context.Set<Board>()
-                .Include(b => b.Lists)
-                .ThenInclude(list => list.Cards) // Include Cards for all Lists
-                .FirstOrDefaultAsync(b => b.BoardId == boardId);
 
             if (board == null)
-                throw new ArgumentException("Board not found.", nameof(boardId));
-
-            // Find the specific list within the board
-            var list = board.Lists.FirstOrDefault(l => l.Id == listId);
+            {
+                throw new ArgumentNullException(nameof(board), "Board cannot be null.");
+            }
 
             if (list == null)
-                throw new ArgumentException("List not found in the specified board.", nameof(listId));
+            {
+                throw new ArgumentNullException(nameof(list), "List cannot be null.");
+            }
 
-            // Remove associated cards
-            _context.Set<Card>().RemoveRange(list.Cards);
+            board.Lists.Add(list);
 
-            // Remove the list from the board
-            board.Lists.Remove(list);
-
-            // Save changes
             await _context.SaveChangesAsync();
         }
+
+
+        public async Task DeleteListAsync(List list)
+        {
+            if (list == null)
+            {
+                throw new ArgumentNullException(nameof(list), "List cannot be null.");
+            }
+
+            _context.Entry(list).Collection(l => l.Cards).Load();
+
+            list.Cards.Clear();
+
+            _context.Lists.Remove(list);
+
+            await _context.SaveChangesAsync();
+        }
+
     }
 }

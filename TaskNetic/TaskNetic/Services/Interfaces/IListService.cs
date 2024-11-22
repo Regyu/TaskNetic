@@ -5,8 +5,8 @@ namespace TaskNetic.Services.Interfaces
 {
     public interface IListService : IRepository<List>
     {
-        Task<IEnumerable<List>> GetListsByBoardIdAsync(int boardId);
-        Task AddListByBoardIdAsync(int boardId, string listTitle);
-        Task DeleteListByBoardIdAsync(int boardId, int listId);
+        Task<IEnumerable<List>> GetListsForBoardAsync(Board board);
+        Task AddListToBoardsAsync(Board board, List list);
+        Task DeleteListAsync(List list);
     }
 }
