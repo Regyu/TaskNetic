@@ -9,11 +9,9 @@ namespace TaskNetic.Models
 
         public ICollection<List> Lists { get; set; } = new List<List>();
 
-        public ICollection<ApplicationUser> BoardUsers { get; set; } = new List<ApplicationUser>();
+        public ICollection<BoardPermission> BoardPermissions { get; set; } = new List<BoardPermission>();
 
         public ICollection<Label> Labels { get; set; } = new List<Label>();
-
-        public int BackgroundId { get; set; }
 
     }
 }

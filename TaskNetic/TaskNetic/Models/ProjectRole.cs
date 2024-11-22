@@ -2,8 +2,10 @@
 {
     public class ProjectRole
     {
-      public int Id { get; set; }
-      public ApplicationUser ApplicationUser { get; set; } = null!;
-      public ApplicationRole ApplicationRole { get; set; } = null!;
+        public int Id { get; set; }
+        public required ApplicationUser ApplicationUser { get; set; }
+        public required Project Project { get; set; }
+        public ICollection<BoardPermission> BoardPermissions { get; set; } = new List<BoardPermission>();
+        public bool isAdmin { get; set; }
     }
 }

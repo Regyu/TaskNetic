@@ -34,8 +34,9 @@ namespace TaskNetic.Services.Implementations
                 return Enumerable.Empty<Project>();
             }
 
-            return await _context.Projects
-                .Where(p => p.ProjectUsers.Any(u => u.Id == userId))
+            return await _context.ProjectRoles
+                .Where(pr => pr.ApplicationUser.Id == userId)
+                .Select(pr => pr.Project)
                 .ToListAsync();
         }
 
@@ -63,23 +64,29 @@ namespace TaskNetic.Services.Implementations
                 throw new InvalidOperationException("Current user not found.");
             }
 
-            project.ProjectUsers.Add(currentUser);
+            var projectRole = new ProjectRole
+            {
+                ApplicationUser = currentUser,
+                Project = project,
+                isAdmin = true
+            };
 
             await _context.Projects.AddAsync(project);
+            await _context.ProjectRoles.AddAsync(projectRole);
             await _context.SaveChangesAsync();
         }
         public async Task DeleteProjectAndUsersAsync(int projectId)
         {
             var project = await _context.Projects
-                .Include(p => p.ProjectUsers)
-                .FirstOrDefaultAsync(p => p.Id == projectId);
+            .Include(p => p.ProjectRoles)
+            .FirstOrDefaultAsync(p => p.Id == projectId);
 
             if (project == null)
             {
                 throw new KeyNotFoundException("Project ID is invalid.");
             }
 
-            project.ProjectUsers.Clear();
+            _context.ProjectRoles.RemoveRange(project.ProjectRoles);
             _context.Projects.Remove(project);
             await _context.SaveChangesAsync();
         }

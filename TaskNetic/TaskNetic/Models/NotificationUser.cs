@@ -3,6 +3,6 @@
     public class NotificationUser
     {
     public int Id { get; set; }
-    public ApplicationUser User { get; set; } = null!;
+    public required ApplicationUser User { get; set; }
     }
 }

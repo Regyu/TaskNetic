@@ -10,52 +10,47 @@ namespace TaskNetic.Services.Implementations
 {
     public class BoardService : Repository<Board>, IBoardService
     {
-        //private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
         private readonly AuthenticationStateProvider _authenticationStateProvider;
 
         public BoardService(ApplicationDbContext context, AuthenticationStateProvider authenticationStateProvider) : base(context)
         {
-            //_context = context;
+            _context = context;
             _authenticationStateProvider = authenticationStateProvider;
         }
 
         private async Task<string?> GetCurrentUserIdAsync()
         {
-            // Get the authentication state
             var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
             var user = authState.User;
 
-            // Return the user's ID if authenticated
             return user.Identity?.IsAuthenticated == true
                 ? user.FindFirstValue(ClaimTypes.NameIdentifier)
                 : null;
         }
 
-        public async Task<IEnumerable<Board>> GetBoardsByProjectIdAsync(int projectId)
+        public async Task<IEnumerable<Board>> GetBoardsByProjectIdForCurrentUserAsync(int projectId)
         {
             var currentUserId = await GetCurrentUserIdAsync();
 
             if (currentUserId == null)
                 throw new InvalidOperationException("No signed-in user found.");
 
-            // Fetch the project and its boards where the current user has access
-            var project = await _context.Projects
-                .Include(p => p.ProjectBoards) // Include boards related to the project
-                .ThenInclude(b => b.BoardUsers) // Include users of each board
-                .FirstOrDefaultAsync(p => p.Id == projectId);
+            var projectRoles = await _context.ProjectRoles
+                .Where(pr => pr.ApplicationUser.Id == currentUserId && pr.Project.Id == projectId)
+                .Include(pr => pr.BoardPermissions)
+                    .ThenInclude(bp => bp.Board)
+                .ToListAsync();
 
-            if (project == null)
-                throw new KeyNotFoundException($"Project with ID {projectId} not found.");
-
-            // Filter boards where the current user is in BoardUsers
-            var boards = project.ProjectBoards
-                .Where(b => b.BoardUsers.Any(u => u.Id == currentUserId))
+            var boards = projectRoles
+                .SelectMany(pr => pr.BoardPermissions.Select(bp => bp.Board))
+                .Distinct()
                 .ToList();
 
             return boards;
         }
 
-        public async Task AddBoardByProjectIdAsync(int projectId)
+        public async Task AddBoardByProjectIdAsync(int projectId, string boardTitle)
         {
             var currentUserId = await GetCurrentUserIdAsync();
 
@@ -64,54 +59,51 @@ namespace TaskNetic.Services.Implementations
 
             // Fetch the project to ensure it exists
             var project = await _context.Projects
-                .Include(p => p.ProjectBoards)
-                .FirstOrDefaultAsync(p => p.Id == projectId);
+            .Include(p => p.ProjectRoles)
+            .FirstOrDefaultAsync(p => p.Id == projectId);
 
             if (project == null)
                 throw new KeyNotFoundException($"Project with ID {projectId} not found.");
 
-            // Create a new board and add the current user
+            // Check if the user has a role in this project
+            var userRole = project.ProjectRoles.FirstOrDefault(pr => pr.ApplicationUser.Id == currentUserId);
+            if (userRole == null)
+            {
+                throw new InvalidOperationException("User does not have a role in this project.");
+            }
+
             var newBoard = new Board
             {
-                Title = "New Board",
-                BoardUsers = new List<ApplicationUser>
-                {
-                    new ApplicationUser { Id = currentUserId }
-                },
-                BackgroundId = 0
+                Title = boardTitle,
             };
 
-            project.ProjectBoards.Add(newBoard);
+            var boardPermission = new BoardPermission
+            {
+                Role = userRole,
+                Board = newBoard,
+                CanEdit = true
+            };
+
+            await _context.Boards.AddAsync(newBoard);
+            await _context.BoardPermissions.AddAsync(boardPermission);
+
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteBoardByProjectIdAsync(int projectId, int boardId)
+        public async Task DeleteBoardByIdAsync(int boardId)
         {
-            var currentUserId = await GetCurrentUserIdAsync();
+            var board = await _context.Boards
+            .Include(b => b.BoardPermissions)
+            .FirstOrDefaultAsync(b => b.BoardId == boardId);
 
-            if (currentUserId == null)
-                throw new InvalidOperationException("No signed-in user found.");
+            if (board == null)
+            {
+                throw new InvalidOperationException($"Board with ID {boardId} not found.");
+            }
 
-            // Fetch the project and its boards
-            var project = await _context.Projects
-                .Include(p => p.ProjectBoards) // Include related boards
-                .ThenInclude(b => b.BoardUsers) // Include users of each board
-                .FirstOrDefaultAsync(p => p.Id == projectId);
+            _context.BoardPermissions.RemoveRange(board.BoardPermissions);
 
-            if (project == null)
-                throw new KeyNotFoundException($"Project with ID {projectId} not found.");
-
-            // Find the specific board to delete
-            var boardToDelete = project.ProjectBoards.FirstOrDefault(b => b.BoardId == boardId);
-
-            if (boardToDelete == null)
-                throw new KeyNotFoundException($"Board with ID {boardId} not found in project with ID {projectId}.");
-
-            // Clear the BoardUsers relation to avoid leftovers
-            boardToDelete.BoardUsers.Clear();
-
-            // Remove the specific board
-            _context.Boards.Remove(boardToDelete);
+            _context.Boards.Remove(board);
 
             await _context.SaveChangesAsync();
         }
