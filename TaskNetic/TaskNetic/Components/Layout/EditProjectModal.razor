@@ -1,5 +1,7 @@
 ﻿@using TaskNetic.Models
 @inject IProjectService ProjectService
+@inject IApplicationUserService ApplicationUserService
+@inject IProjectRoleService ProjectRoleService
 
 <div class="modal @(Show ? "show d-block" : "d-none")" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -50,7 +52,70 @@
                 }
                 else if (activeTab == "team")
                 {
-                    <p>Team management UI goes here.</p>
+
+                    <table class="table table-hover my-3">
+                        <thead>
+                            <tr class="text-center">
+                                <th scope="col">User</th>
+                                <th scope="col">E-mail</th>
+                                <th scope="col">Administrator</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (teamMembers != null && teamMembers.Any())
+                            {
+                                @foreach (var member in teamMembers)
+                                {
+                                    <tr class="text-center align-middle">
+                                        <td class="d-flex align-items-center">
+                                            <!-- Avatar -->
+                                            <div class="avatar-circle me-2">
+                                                @GetInitials(member.Username)
+                                            </div>
+                                            @member.Username
+                                        </td>
+                                        <td class="">@member.Email</td>
+                                        <td class="text-center">
+                                            <!-- Admin Toggle -->
+                                            <input type="checkbox"
+                                                   @bind="@member.IsAdmin"
+                                                   class="form-check-input" />
+                                        </td>
+                                        <td class="text-center">
+                                            <!-- Delete Button -->
+                                            <button class="btn btn-danger btn-sm"
+                                                    @onclick="@(() => RemoveMember(member.Id))">
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center">No team members found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    <!-- Add New Member -->
+                    <div class="mt-4">
+                        <h6>Dodaj nowego członka zespołu</h6>
+                        <div class="input-group mb-3">
+                            <input type="text"
+                                   placeholder="Wprowadź nazwę użytkownika"
+                                   @bind-value="@newMemberUsername"
+                                   class="form-control" />
+                            <button class="btn btn-primary" @onclick="AddMember">Dodaj</button>
+                        </div>
+                        @if (!string.IsNullOrEmpty(addMemberError))
+                        {
+                            <p class="text-danger">@addMemberError</p>
+                        }
+                    </div>
                 }
                 else if (activeTab == "background")
                 {
@@ -137,17 +202,23 @@
 
     private List<string> availableBackgrounds = new();
     private string currentBackgroundUrl = string.Empty;
+    private List<TeamMember> teamMembers = new();
+    private string newMemberUsername = string.Empty;
+    private string addMemberError = string.Empty;
 
-    protected override async Task OnParametersSetAsync()
+    private async Task LoadTeamMembers()
     {
-        if (Show)
+        if (Project != null)
         {
-            await LoadAvailableBackgrounds();
-        }
-
-        if (Project != null && !string.IsNullOrEmpty(Project.BackgroundImageId))
-        {
-            currentBackgroundUrl = $"images/backgrounds/background{Project.BackgroundImageId}.jpg";
+            // Fetch team members using ProjectService
+            var roles = await ProjectService.GetProjectRoles(Project);
+            teamMembers = roles.Select(role => new TeamMember
+                {
+                    Id = role.ApplicationUser.Id,
+                    Username = role.ApplicationUser.UserName,
+                    Email = role.ApplicationUser.Email,
+                    IsAdmin = role.isAdmin
+                }).ToList();
         }
     }
 
@@ -171,6 +242,41 @@
         await Task.CompletedTask;
     }
 
+    private async Task AddMember()
+    {
+        if (string.IsNullOrWhiteSpace(newMemberUsername))
+        {
+            addMemberError = "Nazwa użytkownika nie może być pusta.";
+            return;
+        }
+
+        var user = await ApplicationUserService.GetByUserNameAsync(newMemberUsername);
+        var newProjectRole = new ProjectRole
+            {
+                Project = Project,
+                ApplicationUser = user,
+                isAdmin = false
+            };
+        if (user == null)
+        {
+            addMemberError = "Nie znaleziono użytkownika o podanej nazwie.";
+            return;
+        }
+        try
+        {
+            await ProjectRoleService.AddAsync(newProjectRole);
+
+            newMemberUsername = string.Empty;
+            addMemberError = string.Empty;
+            await LoadTeamMembers();
+        }
+        catch (Exception ex)
+        {
+            addMemberError = $"Nie udało się dodać członka: {ex.Message}";
+        }
+    }
+
+
     private void SelectBackground(string backgroundUrl)
     {
         currentBackgroundUrl = backgroundUrl;
@@ -181,9 +287,30 @@
         }
     }
 
-    private void SetActiveTab(string tab)
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "??";
+        var parts = name.Split(' ');
+        return parts.Length > 1 ? $"{parts[0][0]}{parts[1][0]}" : $"{parts[0][0]}";
+    }
+
+    private async Task SetActiveTab(string tab)
     {
         activeTab = tab;
+
+        if (tab == "team")
+        {
+            await LoadTeamMembers();
+        }
+        else if (tab == "background")
+        {
+            await LoadAvailableBackgrounds();
+
+            if (Project != null && !string.IsNullOrEmpty(Project.BackgroundImageId))
+            {
+                currentBackgroundUrl = $"images/backgrounds/background{Project.BackgroundImageId}.jpg";
+            }
+        }
     }
 
     private async Task SaveChanges()
@@ -191,10 +318,20 @@
         if (Project != null)
         {
             await ProjectService.UpdateAsync(Project);
+            foreach (var member in teamMembers)
+            {
+                await ProjectRoleService.UpdateProjectRoleWithParametersAsync(Project.Id, member.Id, member.IsAdmin);
+            }
             await OnSave.InvokeAsync();
             Show = false;
             await ShowChanged.InvokeAsync(false);
         }
+    }
+
+    private async Task RemoveMember(string memberId)
+    {
+        await ProjectRoleService.RemoveUserFromProjectAsync(Project.Id, memberId);
+        await LoadTeamMembers();
     }
 
     private async Task DeleteProject()
@@ -209,7 +346,13 @@
         Show = false;
         ShowChanged.InvokeAsync(false);
     }
-
+    public class TeamMember
+    {
+        public string Id { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public bool IsAdmin { get; set; }
+    }
 }
 
 <style>
@@ -217,7 +360,19 @@
         cursor: pointer;
     }
 
-    .clickable-thumbnail:hover {
-        opacity: 0.8;
-     }
+        .clickable-thumbnail:hover {
+            opacity: 0.8;
+        }
+
+    .avatar-circle {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #007bff;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
 </style>

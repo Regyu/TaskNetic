@@ -90,7 +90,7 @@ namespace TaskNetic.Services.Implementations
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<ApplicationUser>> GetProjectUsers(Project project)
+        public async Task<IEnumerable<ProjectRole>> GetProjectRoles(Project project)
         {
             if (project == null)
             {
@@ -98,11 +98,11 @@ namespace TaskNetic.Services.Implementations
             }
 
             return await _context.ProjectRoles
-            .Where(pr => pr.Project.Id == project.Id)
-            .Select(pr => pr.ApplicationUser)
-            .Distinct()
-            .ToListAsync();
+        .Where(pr => pr.Project.Id == project.Id)
+        .Include(pr => pr.ApplicationUser)
+        .ToListAsync();
         }
+
     }
 
 }

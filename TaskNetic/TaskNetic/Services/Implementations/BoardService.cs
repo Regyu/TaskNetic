@@ -11,12 +11,10 @@ namespace TaskNetic.Services.Implementations
 {
     public class BoardService : Repository<Board>, IBoardService
     {
-        private readonly ApplicationDbContext _context;
         private readonly AuthenticationStateProvider _authenticationStateProvider;
 
         public BoardService(ApplicationDbContext context, AuthenticationStateProvider authenticationStateProvider) : base(context)
         {
-            _context = context;
             _authenticationStateProvider = authenticationStateProvider;
         }
         private async Task<string?> GetCurrentUserIdAsync()

@@ -5,6 +5,9 @@ namespace TaskNetic.Services.Interfaces
 {
     public interface IProjectRoleService : IRepository<ProjectRole>
     {
-        Task<IEnumerable<ProjectRole>> GetProjectRoleById(string userId);
+        Task<IEnumerable<ProjectRole>> GetProjectRoleByUserId(string userId);
+
+        Task UpdateProjectRoleWithParametersAsync(int projectId, string userId, bool isAdmin);
+        Task RemoveUserFromProjectAsync(int projectId, string userId);
     }
 }
