@@ -4,7 +4,7 @@
 @inject IProjectRoleService ProjectRoleService
 
 <div class="modal @(Show ? "show d-block" : "d-none")" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Edit Project</h5>
@@ -38,11 +38,11 @@
                 {
                     @if (Project != null)
                     {
-                        <div class="my-3">
-                            <label for="projectName">Project Name:</label>
+                        <div class="my-3 text-center d-flex flex-column justify-content-center align-items-center">
+                            <label for="projectName" class="fw-semibold fs-5">Project Name:</label>
                             <InputText id="projectName"
                                        @bind-Value="@Project.ProjectName"
-                                       class="form-control my-3" />
+                                       class="form-control my-3" style="width:50%; text-align:center;"/>
                         </div>
                     }
                     else
@@ -69,7 +69,6 @@
                                 {
                                     <tr class="text-center align-middle">
                                         <td class="d-flex align-items-center">
-                                            <!-- Avatar -->
                                             <div class="avatar-circle me-2">
                                                 @GetInitials(member.Username)
                                             </div>
@@ -77,13 +76,14 @@
                                         </td>
                                         <td class="">@member.Email</td>
                                         <td class="text-center">
-                                            <!-- Admin Toggle -->
+                                            <div class="form-switch">
                                             <input type="checkbox"
                                                    @bind="@member.IsAdmin"
-                                                   class="form-check-input" />
+                                                   class="form-check-input" 
+                                                   role="switch"/>
+                                            </div>
                                         </td>
                                         <td class="text-center">
-                                            <!-- Delete Button -->
                                             <button class="btn btn-danger btn-sm"
                                                     @onclick="@(() => RemoveMember(member.Id))">
                                                 Delete
@@ -101,15 +101,14 @@
                         </tbody>
                     </table>
 
-                    <!-- Add New Member -->
                     <div class="mt-4">
-                        <h6>Dodaj nowego członka zespołu</h6>
-                        <div class="input-group mb-3">
+                        <h6>Add your new member of the team:</h6>
+                        <div class="input-group mb-3" style="width:60%">
                             <input type="text"
-                                   placeholder="Wprowadź nazwę użytkownika"
+                                   placeholder="Enter username"
                                    @bind-value="@newMemberUsername"
                                    class="form-control" />
-                            <button class="btn btn-primary" @onclick="AddMember">Dodaj</button>
+                            <button class="btn btn-primary" @onclick="AddMember">Add member</button>
                         </div>
                         @if (!string.IsNullOrEmpty(addMemberError))
                         {
@@ -123,7 +122,7 @@
                     {
                         <div class="mb-3 text-center">
                             <h5 class="py-3">Current Background:</h5>
-                            <img src="@currentBackgroundUrl" alt="Current Background" class="img-fluid mb-3" />
+                            <img src="@currentBackgroundUrl" alt="Current Background" class="img-fluid mb-3"/>
                         </div>
 
                         <div class="row">
@@ -247,6 +246,12 @@
         if (string.IsNullOrWhiteSpace(newMemberUsername))
         {
             addMemberError = "Nazwa użytkownika nie może być pusta.";
+            return;
+        }
+
+        if (teamMembers.Any(member => member.Username.Equals(newMemberUsername, StringComparison.OrdinalIgnoreCase)))
+        {
+            addMemberError = "This user is already part of the team.";
             return;
         }
 
