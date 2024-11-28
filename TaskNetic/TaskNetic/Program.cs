@@ -59,6 +59,7 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IFileAttachmentService, FileAttachmentService>();
 builder.Services.AddScoped<ILabelService, LabelService>();
 builder.Services.AddScoped<IListService, ListService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<INotificationUserService, NotificationUserService>();
 builder.Services.AddScoped<IProjectRoleService, ProjectRoleService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();

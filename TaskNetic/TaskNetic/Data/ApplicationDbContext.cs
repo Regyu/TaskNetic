@@ -27,6 +27,7 @@ namespace TaskNetic.Data
         public DbSet<TaskList> TaskLists { get; set; }
         public DbSet<TodoTask> TodoTasks { get; set; }
         public DbSet<NotificationUser> NotificationUsers { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
     }
 
 }
