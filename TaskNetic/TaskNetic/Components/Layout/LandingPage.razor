@@ -1,6 +1,7 @@
 ﻿@using TaskNetic.Components.Layout
 <PageTitle>TaskNetic</PageTitle>
 
+<div class="main-content">
 <section class="hero-section text-dark text-center p-5">
     <div class="container">
         <h1 class="display-4">Welcome to TaskNetic</h1>
@@ -48,6 +49,56 @@
         <a href="/account/register" class="btn btn-dark btn-lg mt-3">Sign Up Now</a>
     </div>
 </section>
+</div>
+<Footer />
+
+<style>
+    .main-content {
+        flex: 1;
+    }
+    .hero-section {
+        background: url('/images/landing.jpg') no-repeat center center;
+        background-size: cover;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: inherit;
+            filter: blur(4px);
+            transform: scale(1.1);
+            z-index: 1;
+        }
+
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            z-index: 2;
+        }
+
+        .hero-section .container {
+            position: relative;
+            z-index: 3;
+        }
+
+        .hero-section h1,
+        .hero-section p {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 1),
+            0 0 20px rgba(255, 255, 255, 0.7),
+            0 0 35px rgba(255, 255, 255, 0.5);
+        }
+</style>
 
 @code {
 

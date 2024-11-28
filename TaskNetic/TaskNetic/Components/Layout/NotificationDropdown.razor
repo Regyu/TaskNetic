@@ -1,0 +1,48 @@
+﻿
+<div class="dropdown-menu @(Show ? "show d-block" : "d-none"); position-absolute end-1 mt-2" style="width: 450px;">
+    <div class="dropdown-header">
+        Powiadomienia
+    </div>
+    @if (Notifications.Count > 0)
+    {
+        @foreach (var notification in Notifications)
+        {
+            <div class="dropdown-item d-flex justify-content-between align-items-start">
+                <div>
+                    <strong>@notification.User</strong> zamieścił nowy komentarz
+                    <br />
+                    <span>@notification.Message</span>
+                </div>
+                <button class="btn btn-sm text-danger" @onclick="() => RemoveNotification(notification)">×</button>
+            </div>
+            <hr class="dropdown-divider" />
+        }
+    }
+    else
+    {
+        <div class="dropdown-item text-muted">Brak nowych powiadomień</div>
+    }
+</div>
+@code {
+    [Parameter]
+    public bool Show { get; set; }
+
+    private List<Notification> Notifications { get; set; } = new List<Notification>
+    {
+        new Notification { User = "Rees Pearce", Message = "Just a comment...", Url = "card-with-everything" },
+        new Notification { User = "Alayah Vang", Message = "How are you?", Url = "card-with-notifications" },
+        new Notification { User = "Alayah Vang", Message = "Hey!", Url = "card-with-notifications" }
+    };
+
+    private class Notification()
+    {
+        public string User { get; set; }
+        public string Message { get; set; }
+        public string Url { get; set; }
+    }
+
+    private void RemoveNotification(Notification notification)
+    {
+        Notifications.Remove(notification);
+    }
+}
