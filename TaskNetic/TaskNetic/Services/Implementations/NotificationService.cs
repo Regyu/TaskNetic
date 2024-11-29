@@ -5,7 +5,7 @@ using TaskNetic.Services.Interfaces;
 
 namespace TaskNetic.Services.Implementations
 {
-    public class NotificationService : Repository<NotificationUser>, INotificationService
+    public class NotificationService : Repository<Notification>, INotificationService
     {
         public NotificationService(ApplicationDbContext context) : base(context) { }
 
