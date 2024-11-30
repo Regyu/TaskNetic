@@ -26,13 +26,13 @@ namespace TaskNetic.Services.Implementations
 
             if (user.Identity?.IsAuthenticated != true)
             {
-                return Enumerable.Empty<Project>();
+                throw new UnauthorizedAccessException("User is not authenticated.");
             }
 
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
             {
-                return Enumerable.Empty<Project>();
+                throw new InvalidOperationException("User ID is not available.");
             }
 
             return await _context.ProjectRoles
@@ -101,6 +101,16 @@ namespace TaskNetic.Services.Implementations
         .Where(pr => pr.Project.Id == project.Id)
         .Include(pr => pr.ApplicationUser)
         .ToListAsync();
+        }
+
+        public async Task<string?> GetProjectBackgroundId(Project project)
+        {
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project), "Project cannot be null.");
+            }
+
+            return project.BackgroundImageId;
         }
 
     }
