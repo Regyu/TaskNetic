@@ -7,7 +7,6 @@ namespace TaskNetic.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // Enforce authentication for API access
     public class BoardsController : ControllerBase
     {
         private readonly IBoardService _boardService;

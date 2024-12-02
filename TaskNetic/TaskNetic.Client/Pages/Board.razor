@@ -1,0 +1,58 @@
+﻿@page "/board/{projectId:int}"
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+
+<AuthorizeView>
+    <Authorized>
+        @if (!isAuthorized)
+        {
+            <p>You do not have permission to view this board.</p>
+        }
+        else
+        {
+            <div style="background-image: url('images/backgrounds/background@(backgroundImageId).jpg'); height: 100vh; background-size: cover;">
+                <Navbar />
+            </div>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <RedirectToLogin />
+    </NotAuthorized>
+
+</AuthorizeView>
+
+@code {
+    [Parameter] public int projectId { get; set; }
+    private bool isAuthorized = false;
+    private string backgroundImageId = "1";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var BaseAdress = NavigationManager.BaseUri;
+            var response = await Http.GetAsync(NavigationManager.ToAbsoluteUri($"api/boards/project/{projectId}"));
+            if (response.IsSuccessStatusCode)
+            {
+                isAuthorized = true;
+                // Load board data
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                isAuthorized = false;
+                NavigationManager.NavigateTo("/unauthorized");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+            NavigationManager.NavigateTo("/error");
+        }
+    }
+}
+
+<style>
+    .navbar {
+        background-color: rgba(255, 255, 255, 0.8);
+    }
+</style>

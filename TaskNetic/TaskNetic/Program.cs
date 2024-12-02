@@ -20,6 +20,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+builder.Services.AddControllers();
+builder.Services.AddRazorPages();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
@@ -66,6 +68,7 @@ builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<ITaskListService, TaskListService>();
 builder.Services.AddScoped<ITodoTaskService, TodoTaskService>();
 builder.Services.AddScoped<IApplicationUserService, ApplicationUserService>();
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
@@ -83,10 +86,12 @@ else
 }
 
 app.UseHttpsRedirection();
-
+app.UseRouting();
+app.MapControllers();
 app.UseStaticFiles();
 app.UseAntiforgery();
-
+app.MapRazorPages();
+app.MapDefaultControllerRoute();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()

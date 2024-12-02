@@ -12,24 +12,18 @@ namespace TaskNetic.Services.Implementations
     public class BoardService : Repository<Board>, IBoardService
     {
         private readonly AuthenticationStateProvider _authenticationStateProvider;
+        private readonly ApplicationUserService _applicationUserService;
 
         public BoardService(ApplicationDbContext context, AuthenticationStateProvider authenticationStateProvider) : base(context)
         {
             _authenticationStateProvider = authenticationStateProvider;
+            _applicationUserService = new ApplicationUserService(context, authenticationStateProvider);
         }
-        private async Task<string?> GetCurrentUserIdAsync()
-        {
-            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
 
-            return user.Identity?.IsAuthenticated == true
-                ? user.FindFirstValue(ClaimTypes.NameIdentifier)
-                : null;
-        }
 
         public async Task<IEnumerable<Board>> GetBoardsByProjectIdForCurrentUserAsync(int projectId)
         {
-            var currentUserId = await GetCurrentUserIdAsync();
+            var currentUserId = await _applicationUserService.GetCurrentUserIdAsync();
 
             if (currentUserId == null)
                 throw new InvalidOperationException("No signed-in user found.");
@@ -50,7 +44,7 @@ namespace TaskNetic.Services.Implementations
 
         public async Task AddBoardByProjectIdAsync(int projectId, string boardTitle)
         {
-            var currentUserId = await GetCurrentUserIdAsync();
+            var currentUserId = await _applicationUserService.GetCurrentUserIdAsync();
 
             if (currentUserId == null)
                 throw new InvalidOperationException("No signed-in user found.");
