@@ -6,5 +6,6 @@ namespace TaskNetic.Services.Interfaces
     {
         Task<ApplicationUser> GetByUserNameAsync(string userName);
         Task<string?> GetCurrentUserIdAsync();
+        Task<bool> CheckIfUserExists(string userId);
     }
 }

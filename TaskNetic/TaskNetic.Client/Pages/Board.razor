@@ -1,6 +1,7 @@
 ﻿@page "/board/{projectId:int}"
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
+@inject IUserService UserService
 
 <AuthorizeView>
     <Authorized>
@@ -25,13 +26,15 @@
     [Parameter] public int projectId { get; set; }
     private bool isAuthorized = false;
     private string backgroundImageId = "1";
+    private string userId;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            userId = await UserService.GetCurrentUserIdAsync();
             var BaseAdress = NavigationManager.BaseUri;
-            var response = await Http.GetAsync(NavigationManager.ToAbsoluteUri($"api/boards/project/{projectId}"));
+            var response = await Http.GetAsync(NavigationManager.ToAbsoluteUri($"api/boards/{projectId}/{userId}"));
             if (response.IsSuccessStatusCode)
             {
                 isAuthorized = true;

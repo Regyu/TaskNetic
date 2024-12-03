@@ -16,12 +16,12 @@ namespace TaskNetic.Api.Controllers
             _boardService = boardService;
         }
 
-        [HttpGet("project/{projectId}")]
-        public async Task<IActionResult> GetBoardsByProjectId(int projectId)
+        [HttpGet("{projectId}/{userId}")]
+        public async Task<IActionResult> GetBoardsByProjectId(int projectId, string userId)
         {
             try
             {
-                var boards = await _boardService.GetBoardsByProjectIdForCurrentUserAsync(projectId);
+                var boards = await _boardService.GetBoardsByProjectAndUserIdAsync(projectId, userId);
                 return Ok(boards);
             }
             catch (InvalidOperationException ex)

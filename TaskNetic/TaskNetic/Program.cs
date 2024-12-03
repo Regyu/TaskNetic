@@ -11,12 +11,11 @@ using TaskNetic.Data.Repository;
 using TaskNetic.Services;
 using TaskNetic.Services.Implementations;
 using TaskNetic.Services.Interfaces;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using TaskNetic.Client;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
@@ -35,7 +34,6 @@ builder.Services.AddAuthentication(options =>
     })
     .AddIdentityCookies();
 
-// PO��CZENIE Z BAZ� - DLA VISUAL STUDIO I AZURE
 var connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString)
@@ -69,7 +67,7 @@ builder.Services.AddScoped<ITaskListService, TaskListService>();
 builder.Services.AddScoped<ITodoTaskService, TodoTaskService>();
 builder.Services.AddScoped<IApplicationUserService, ApplicationUserService>();
 builder.Services.AddHttpClient();
-
+ClientRegistry.RegisterServices(builder.Services);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

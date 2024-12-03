@@ -4,6 +4,7 @@ using TaskNetic.Data.Repository;
 using TaskNetic.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 
 namespace TaskNetic.Services.Implementations
 {
@@ -28,6 +29,16 @@ namespace TaskNetic.Services.Implementations
             return user.Identity?.IsAuthenticated == true
                 ? user.FindFirstValue(ClaimTypes.NameIdentifier)
                 : null;
+        }
+
+        public async Task<bool> CheckIfUserExists(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentException("User ID cannot be null or empty.", nameof(userId));
+            }
+
+            return await _context.Users.AnyAsync(u => u.Id == userId);
         }
     }
 }

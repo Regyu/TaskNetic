@@ -16,20 +16,17 @@ namespace TaskNetic.Services.Implementations
 
         public BoardService(ApplicationDbContext context, AuthenticationStateProvider authenticationStateProvider) : base(context)
         {
-            _authenticationStateProvider = authenticationStateProvider;
             _applicationUserService = new ApplicationUserService(context, authenticationStateProvider);
         }
 
 
-        public async Task<IEnumerable<Board>> GetBoardsByProjectIdForCurrentUserAsync(int projectId)
+        public async Task<IEnumerable<Board>> GetBoardsByProjectAndUserIdAsync(int projectId, string userId)
         {
-            var currentUserId = await _applicationUserService.GetCurrentUserIdAsync();
-
-            if (currentUserId == null)
-                throw new InvalidOperationException("No signed-in user found.");
+            if (!await _applicationUserService.CheckIfUserExists(userId))
+                throw new InvalidOperationException("There is no user with that id.");
 
             var projectRoles = await _context.ProjectRoles
-                .Where(pr => pr.ApplicationUser.Id == currentUserId && pr.Project.Id == projectId)
+                .Where(pr => pr.ApplicationUser.Id == userId && pr.Project.Id == projectId)
                 .Include(pr => pr.BoardPermissions)
                     .ThenInclude(bp => bp.Board)
                 .ToListAsync();
