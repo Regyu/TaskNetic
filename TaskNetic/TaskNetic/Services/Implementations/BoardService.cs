@@ -25,6 +25,12 @@ namespace TaskNetic.Services.Implementations
             if (!await _applicationUserService.CheckIfUserExists(userId))
                 throw new InvalidOperationException("There is no user with that id.");
 
+            var hasProjectRole = await _context.ProjectRoles
+                .AnyAsync(pr => pr.ApplicationUser.Id == userId && pr.Project.Id == projectId);
+
+            if (!hasProjectRole)
+                throw new InvalidOperationException("The user does not have a role in this project.");
+
             var projectRoles = await _context.ProjectRoles
                 .Where(pr => pr.ApplicationUser.Id == userId && pr.Project.Id == projectId)
                 .Include(pr => pr.BoardPermissions)
@@ -39,21 +45,21 @@ namespace TaskNetic.Services.Implementations
             return boards;
         }
 
-        public async Task AddBoardByProjectIdAsync(int projectId, string boardTitle)
+        public async Task AddBoardByProjectAndUserIdAsync(int projectId, string userId, string boardTitle)
         {
-            var currentUserId = await _applicationUserService.GetCurrentUserIdAsync();
-
-            if (currentUserId == null)
+            if (userId == null)
                 throw new InvalidOperationException("No signed-in user found.");
 
             var project = await _context.Projects
             .Include(p => p.ProjectRoles)
+            .ThenInclude(p => p.ApplicationUser)
             .FirstOrDefaultAsync(p => p.Id == projectId);
+            
 
             if (project == null)
                 throw new KeyNotFoundException($"Project with ID {projectId} not found.");
 
-            var userRole = project.ProjectRoles.FirstOrDefault(pr => pr.ApplicationUser.Id == currentUserId);
+            var userRole = project.ProjectRoles.FirstOrDefault(pr => pr.ApplicationUser.Id == userId);
             if (userRole == null)
             {
                 throw new InvalidOperationException("User does not have a role in this project.");

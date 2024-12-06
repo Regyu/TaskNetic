@@ -8,7 +8,7 @@
                 <img src="images/edit.svg"
                      class="edit-icon"
                      alt="Edit Project"
-                     @onclick="HandleEditClick" />
+                     @onclick="HandleEditClick" @onclick:stopPropagation />
             }
             @if (IsCreateCard)
             {

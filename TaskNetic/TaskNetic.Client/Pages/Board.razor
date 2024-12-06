@@ -1,7 +1,12 @@
 ﻿@page "/board/{projectId:int}"
+@using TaskNetic.Client.DTO
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 @inject IUserService UserService
+@inject IProjectService ProjectService
+@using static TaskNetic.Client.Models.BoardModel
+@rendermode InteractiveWebAssembly
+
 
 <AuthorizeView>
     <Authorized>
@@ -11,8 +16,52 @@
         }
         else
         {
-            <div style="background-image: url('images/backgrounds/background@(backgroundImageId).jpg'); height: 100vh; background-size: cover;">
-                <Navbar />
+            <div style="background-image: @(string.IsNullOrEmpty(projectInfo?.BackgroundId) ? "linear-gradient(135deg, #00c6ff, #7a2fff)"
+    : $"url('images/backgrounds/background{projectInfo.BackgroundId}.jpg')"); flex-grow: 1; background-size: cover;">
+                <div class="navbar-container">
+                    <nav class="navbar navbar-expand-lg navbar-light transparent-navbar">
+                        <div class="container-fluid justify-content-start">
+                            <!-- Project Title -->
+                            <a class="navbar-brand text-white mx-5" href="#">@projectInfo.Name</a>
+
+                            <!-- Boards Tabs -->
+                            <ul class="nav nav-tabs">
+                                @foreach (var board in boards)
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link @(currentBoard?.BoardId == board.BoardId ? "active" : "")"
+                                           @onclick="@(() => SwitchBoard(board))">
+                                            @board.Title
+                                        </a>
+                                    </li>
+                                }
+
+                                <!-- Add New Board Tab -->
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" @onclick="ShowCreateBoardModal">+</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- Modal -->
+                        @if (isCreateBoardModalVisible)
+                        {
+                            <div class="modal-overlay">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5>Create new board</h5>
+                                        <button class="close-button mb-2" @onclick="CloseCreateBoardModal">×</button>
+                                    </div>
+                                    <div class="modal-body mb-3">
+                                        <input type="text" placeholder="Board name" @bind="newBoardName" class="form-control" />
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button class="btn btn-success" @onclick="CreateBoard">Create board</button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </nav>
+                </div>
             </div>
         }
     </Authorized>
@@ -25,26 +74,21 @@
 @code {
     [Parameter] public int projectId { get; set; }
     private bool isAuthorized = false;
-    private string backgroundImageId = "1";
-    private string userId;
+    private string? userId;
+    private ProjectInfo projectInfo;
+    private IEnumerable<BoardModel>? boards;
+    private BoardModel? currentBoard;
+    private bool isCreateBoardModalVisible = false;
+    private string newBoardName = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            projectInfo = await ProjectService.GetProjectInfoAsync(projectId);
             userId = await UserService.GetCurrentUserIdAsync();
             var BaseAdress = NavigationManager.BaseUri;
-            var response = await Http.GetAsync(NavigationManager.ToAbsoluteUri($"api/boards/{projectId}/{userId}"));
-            if (response.IsSuccessStatusCode)
-            {
-                isAuthorized = true;
-                // Load board data
-            }
-            else if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
-            {
-                isAuthorized = false;
-                NavigationManager.NavigateTo("/unauthorized");
-            }
+            await LoadBoards();
         }
         catch (Exception ex)
         {
@@ -52,10 +96,114 @@
             NavigationManager.NavigateTo("/error");
         }
     }
+
+    private void SwitchBoard(BoardModel board)
+    {
+        currentBoard = board;
+    }
+
+    private void ShowCreateBoardModal()
+    {
+        isCreateBoardModalVisible = true;
+    }
+
+    private void CloseCreateBoardModal()
+    {
+        isCreateBoardModalVisible = false;
+    }
+
+    private async void CreateBoard()
+    {
+        if (!String.IsNullOrWhiteSpace(newBoardName))
+        {
+            isCreateBoardModalVisible = false;
+            var response = await Http.PostAsJsonAsync($"api/boards/{projectId}/{userId}", newBoardName);
+            if(response.IsSuccessStatusCode)
+            {
+                await LoadBoards();
+                StateHasChanged();
+            }
+            else
+            {
+                Console.WriteLine($"Error: {response.StatusCode}");
+            }
+            newBoardName = string.Empty;
+        }
+    }
+
+    private async Task LoadBoards()
+    {
+        var response = await Http.GetAsync($"api/boards/{projectId}/{userId}");
+        if (response.IsSuccessStatusCode)
+        {
+            isAuthorized = true;
+            boards = await response.Content.ReadFromJsonAsync<IEnumerable<BoardModel>>();
+            currentBoard = boards.FirstOrDefault();
+        }
+        else
+        {
+            isAuthorized = false;
+        }
+    }
 }
 
 <style>
-    .navbar {
-        background-color: rgba(255, 255, 255, 0.8);
+    .transparent-navbar {
+        background-color: rgba(255, 255, 255, 0.2); /* Transparent */
+        backdrop-filter: blur(5px);
+    }
+
+    .transparent-navbar .nav-link {
+       color: #fff;
+       white-space: nowrap;
+       overflow: hidden;
+       text-overflow: ellipsis;
+       cursor: context-menu;
+    }
+
+    .transparent-navbar .nav-link.active {
+        background-color: rgba(255, 255, 255, 0.4);
+        color: #000;
+    }
+
+    .transparent-navbar .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: #000;
+     }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0px;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+        width: 300px;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .close-button {
+        background-color: transparent;
+        border: none;
+        font-size: 1.5rem;
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
     }
 </style>

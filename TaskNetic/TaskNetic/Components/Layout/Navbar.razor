@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.Identity
 @rendermode InteractiveServer
 
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
+<nav class="navbar navbar-expand-lg bg-body-tertiary py-1">
     <div class="container fluid">
         <a class="navbar-brand" href="/">
             <img src="images/logo.png" alt="TaskNetic" width="35" height="35" class="d-inline-block align-text-bottom">
@@ -11,12 +11,12 @@
         <AuthorizeView>
             <Authorized>
                 <div class="navbar-nav ms-auto align-items-center">
-                    <div class="nav-item me-4 dropdow">
+                    <div class="nav-item me-4 dropdown">
                         <a class="nav-link position-relative" @onclick="ShowDropdown" style="cursor: pointer;">
                             <img src="images/bell.svg" alt="Notifications" width="20" height="20" />
                             @if (UnreadCount > 0)
                             {
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                <span class="position-absolute top-20 start-100 translate-middle badge rounded-pill bg-danger">
                                     @UnreadCount
                                 </span>
                             }

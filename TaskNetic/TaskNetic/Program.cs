@@ -1,20 +1,17 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-using System.Data.Common;
+using TaskNetic.Client;
 using TaskNetic.Components;
 using TaskNetic.Components.Account;
 using TaskNetic.Data;
-using TaskNetic.Models;
 using TaskNetic.Data.Repository;
-using TaskNetic.Services;
+using TaskNetic.Models;
 using TaskNetic.Services.Implementations;
 using TaskNetic.Services.Interfaces;
-using TaskNetic.Client;
 
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
@@ -34,7 +31,7 @@ builder.Services.AddAuthentication(options =>
     })
     .AddIdentityCookies();
 
-var connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
+string? connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString)
 );
@@ -68,7 +65,7 @@ builder.Services.AddScoped<ITodoTaskService, TodoTaskService>();
 builder.Services.AddScoped<IApplicationUserService, ApplicationUserService>();
 builder.Services.AddHttpClient();
 ClientRegistry.RegisterServices(builder.Services);
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -85,6 +82,7 @@ else
 
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseAuthorization();
 app.MapControllers();
 app.UseStaticFiles();
 app.UseAntiforgery();

@@ -1,4 +1,5 @@
 ﻿@inject IProjectService ProjectService
+@inject NavigationManager _navigationManager
 @using TaskNetic.Components.Layout
 @rendermode InteractiveServer
 
@@ -63,7 +64,7 @@
 
     private void HandleProjectClick(int projectId)
     {
-        // Handle project click
+        _navigationManager.NavigateTo($"/board/{projectId}");
     }
 
     private void ShowCreateModal()

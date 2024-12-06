@@ -1,0 +1,5 @@
+﻿@TaskNetic_HostAddress = http://localhost:5200
+
+GET {{TaskNetic_HostAddress}}/api/boards/7/80f94f82-a6fd-48dc-ba7e-1d5367439b17
+
+###

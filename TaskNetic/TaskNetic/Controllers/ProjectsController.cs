@@ -1,15 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using TaskNetic.Data.Repository;
 using TaskNetic.Models;
 using TaskNetic.Services.Interfaces;
+using TaskNetic.Client.DTO;
 
-namespace TaskNetic.Api.Controllers
+namespace TaskNetic.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class ProjectsController : ControllerBase
     {
         private readonly IProjectService _projectService;
@@ -27,11 +26,11 @@ namespace TaskNetic.Api.Controllers
         {
             try
             {
-                var project = await _projectRepository.GetByIdAsync(projectId);
+                Project? project = await _projectRepository.GetByIdAsync(projectId);
                 if (project == null)
                     return NotFound(new { message = $"Project with ID {projectId} not found." });
 
-                var roles = await _projectService.GetProjectRoles(project);
+                IEnumerable<ProjectRole> roles = await _projectService.GetProjectRoles(project);
                 return Ok(roles);
             }
             catch (ArgumentNullException ex)
@@ -44,18 +43,17 @@ namespace TaskNetic.Api.Controllers
             }
         }
 
-        // GET: api/projects/{projectId}/background
-        [HttpGet("{projectId}/background")]
-        public async Task<IActionResult> GetProjectBackgroundId(int projectId)
+        // GET: api/projects/{projectId}/info
+        [HttpGet("{projectId}/info")]
+        public async Task<IActionResult> GetProjectInfo(int projectId)
         {
             try
             {
-                var project = await _projectRepository.GetByIdAsync(projectId);
+                Project? project = await _projectRepository.GetByIdAsync(projectId);
                 if (project == null)
                     return NotFound(new { message = $"Project with ID {projectId} not found." });
 
-                var backgroundId = await _projectService.GetProjectBackgroundId(project);
-                return Ok(new { backgroundId });
+                return Ok(new ProjectInfo { ProjectId = project.Id, Name = project.ProjectName, BackgroundId = project.BackgroundImageId });
             }
             catch (ArgumentNullException ex)
             {
@@ -73,7 +71,7 @@ namespace TaskNetic.Api.Controllers
         {
             try
             {
-                var project = await _projectRepository.GetByIdAsync(projectId);
+                Project? project = await _projectRepository.GetByIdAsync(projectId);
                 if (project == null)
                     return NotFound(new { message = $"Project with ID {projectId} not found." });
 

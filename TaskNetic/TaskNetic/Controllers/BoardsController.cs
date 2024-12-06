@@ -34,12 +34,12 @@ namespace TaskNetic.Api.Controllers
             }
         }
 
-        [HttpPost("project/{projectId}")]
-        public async Task<IActionResult> AddBoard(int projectId, [FromBody] string boardTitle)
+        [HttpPost("{projectId}/{userId}")]
+        public async Task<IActionResult> AddBoard(int projectId, string userId, [FromBody] string boardTitle)
         {
             try
             {
-                await _boardService.AddBoardByProjectIdAsync(projectId, boardTitle);
+                await _boardService.AddBoardByProjectAndUserIdAsync(projectId, userId, boardTitle);
                 return Ok(new { message = "Board added successfully." });
             }
             catch (InvalidOperationException ex)
