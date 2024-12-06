@@ -36,10 +36,11 @@
                                     </li>
                                 }
 
-                                <!-- Add New Board Tab -->
-                                <li class="nav-item">
-                                    <a class="nav-link text-white" @onclick="ShowCreateBoardModal">+</a>
-                                </li>
+                                @if(isUserAdmin){
+                                    <li class="nav-item">
+                                        <a class="nav-link text-white" @onclick="ShowCreateBoardModal">+</a>
+                                    </li>
+                                }
                             </ul>
                         </div>
                         <!-- Modal -->
@@ -75,6 +76,7 @@
     [Parameter] public int projectId { get; set; }
     private bool isAuthorized = false;
     private string? userId;
+    private bool isUserAdmin = false;
     private ProjectInfo projectInfo;
     private IEnumerable<BoardModel>? boards;
     private BoardModel? currentBoard;
@@ -87,7 +89,7 @@
         {
             projectInfo = await ProjectService.GetProjectInfoAsync(projectId);
             userId = await UserService.GetCurrentUserIdAsync();
-            var BaseAdress = NavigationManager.BaseUri;
+            isUserAdmin = await UserService.IsUserAdminInProjectAsync(projectId, userId);
             await LoadBoards();
         }
         catch (Exception ex)

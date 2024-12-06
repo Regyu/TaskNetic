@@ -10,5 +10,7 @@ namespace TaskNetic.Services.Interfaces
         Task UpdateProjectRoleWithParametersAsync(int projectId, string userId, bool isAdmin);
         Task RemoveUserFromProjectAsync(int projectId, string userId);
         Task<bool> IsCurrentUserAdmin(int projectId);
+
+        Task<bool> IsUserAdminInProjectAsync(int projectId, string userId);
     }
 }

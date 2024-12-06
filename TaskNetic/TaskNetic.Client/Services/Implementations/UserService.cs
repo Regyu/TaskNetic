@@ -7,9 +7,11 @@ namespace TaskNetic.Client.Services.Implementations
     public class UserService : IUserService
     {
         private readonly AuthenticationStateProvider _authenticationStateProvider;
-        public UserService(AuthenticationStateProvider authenticationStateProvider)
+        private readonly HttpClient _httpClient;
+        public UserService(AuthenticationStateProvider authenticationStateProvider, HttpClient httpClient)
         {
             _authenticationStateProvider = authenticationStateProvider;
+            _httpClient = httpClient;
         }
 
         public async Task<string?> GetCurrentUserIdAsync()
@@ -19,6 +21,13 @@ namespace TaskNetic.Client.Services.Implementations
 
             return user.Identity?.IsAuthenticated == true
                 ? user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value : null;
+        }
+
+        public async Task<bool> IsUserAdminInProjectAsync(int projectId, string userId)
+        {
+            var request = await _httpClient.GetAsync($"api/projectrole/is-admin/{projectId}/{userId}");
+            var response = await request.Content.ReadAsStringAsync();
+            return bool.Parse(response);
         }
     }
 }
