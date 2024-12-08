@@ -127,17 +127,6 @@
         }
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            await LoadTeamMembers();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error: {ex.Message}");
-        }
-    }
     private void Close()
     {
         IsVisible = false;
@@ -163,7 +152,10 @@
 
     private async Task LoadTeamMembers()
     {
-        BoardMembers = await Http.GetFromJsonAsync<List<BoardMember>>($"api/boardpermissions/{Board.BoardId}/team");
+        if(Board != null)
+        {
+            BoardMembers = await Http.GetFromJsonAsync<List<BoardMember>>($"api/boardpermissions/{Board.BoardId}/team");
+        }
     }
 
     private async Task AddMember()

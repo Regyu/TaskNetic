@@ -29,15 +29,16 @@
                             <ul class="nav nav-tabs">
                                 @foreach (var board in boards)
                                 {
-                                    <li class="nav-item">
-                                        <a class="nav-link @(currentBoard?.BoardId == board.BoardId ? "active" : "")"
-                                           @onclick="@(() => SwitchBoard(board))">
+                                    <li class="nav-item" @onclick:stopPropagation>
+                                        <div class="nav-link @(currentBoard?.BoardId == board.BoardId ? "active" : "")"
+                                           @onclick="@(() => SwitchBoard(board))" @onclick:preventDefault>
                                             @board.Title
                                             @if (currentBoard?.BoardId == board.BoardId && isUserAdmin)
                                             {
-                                                <img src="images/edit.svg" alt="Edit Board" @onclick:stopPropagation @onclick="ShowEditBoardModal" class="editBoard-button" />
+                                                <img src="images/edit.svg" alt="Edit Board" @onclick:preventDefault @onclick="ShowEditBoardModal" class="editBoard-button" />
                                             }
-                                        </a>
+
+                                        </div>
                                     </li>
                                 }
 
@@ -69,10 +70,15 @@
                         }
                     </nav>
                 </div>
-                <EditBoardModal IsVisible="@isEditBoardModalVisible"
-                                OnRemove="@LoadBoards"
-                                projectId="@projectId"
-                                Board="@currentBoard" />
+
+                @if(currentBoard != null)
+                {
+                    <EditBoardModal IsVisible="@isEditBoardModalVisible"
+                                    OnRemove="@LoadBoards"
+                                    projectId="@projectId"
+                                    Board="@currentBoard" />
+                }
+                
             </div>
         }
     </Authorized>
