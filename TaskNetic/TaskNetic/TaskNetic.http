@@ -3,3 +3,7 @@
 GET {{TaskNetic_HostAddress}}/api/boards/7/80f94f82-a6fd-48dc-ba7e-1d5367439b17
 
 ###
+
+GET {{TaskNetic_HostAddress}}/api/boardpermissions/1/team
+
+###

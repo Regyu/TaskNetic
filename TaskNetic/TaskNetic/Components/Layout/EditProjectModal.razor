@@ -209,7 +209,6 @@
     {
         if (Project != null)
         {
-            // Fetch team members using ProjectService
             var roles = await ProjectService.GetProjectRoles(Project);
             teamMembers = roles.Select(role => new TeamMember
                 {

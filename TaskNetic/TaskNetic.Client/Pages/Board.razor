@@ -5,6 +5,7 @@
 @inject IUserService UserService
 @inject IProjectService ProjectService
 @using static TaskNetic.Client.Models.BoardModel
+@using TaskNetic.Client.Components
 @rendermode InteractiveWebAssembly
 
 
@@ -32,11 +33,16 @@
                                         <a class="nav-link @(currentBoard?.BoardId == board.BoardId ? "active" : "")"
                                            @onclick="@(() => SwitchBoard(board))">
                                             @board.Title
-                                        </a>
+                                            @if (currentBoard?.BoardId == board.BoardId && isUserAdmin)
+                                            {
+                                                <img src="images/edit.svg" alt="Edit Board" @onclick:stopPropagation @onclick="ShowEditBoardModal" class="editBoard-button" />
+                                            }
+                                        </a>  
                                     </li>
                                 }
 
-                                @if(isUserAdmin){
+                                @if (isUserAdmin)
+                                {
                                     <li class="nav-item">
                                         <a class="nav-link text-white" @onclick="ShowCreateBoardModal">+</a>
                                     </li>
@@ -63,6 +69,10 @@
                         }
                     </nav>
                 </div>
+                <EditBoardModal IsVisible="@isEditBoardModalVisible"
+                Board="@currentBoard"
+                OnRemove="@LoadBoards"
+                projectId="@projectId"/>
             </div>
         }
     </Authorized>
@@ -81,6 +91,7 @@
     private IEnumerable<BoardModel>? boards;
     private BoardModel? currentBoard;
     private bool isCreateBoardModalVisible = false;
+    private bool isEditBoardModalVisible = false;
     private string newBoardName = string.Empty;
 
     protected override async Task OnInitializedAsync()
@@ -120,7 +131,7 @@
         {
             isCreateBoardModalVisible = false;
             var response = await Http.PostAsJsonAsync($"api/boards/{projectId}/{userId}", newBoardName);
-            if(response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
                 await LoadBoards();
                 StateHasChanged();
@@ -147,6 +158,16 @@
             isAuthorized = false;
         }
     }
+
+    private void ShowEditBoardModal()
+    {
+        isEditBoardModalVisible = true;
+    }
+
+    private void CloseEditBoardModal()
+    {
+        isEditBoardModalVisible = false;
+    }
 }
 
 <style>
@@ -155,23 +176,23 @@
         backdrop-filter: blur(5px);
     }
 
-    .transparent-navbar .nav-link {
-       color: #fff;
-       white-space: nowrap;
-       overflow: hidden;
-       text-overflow: ellipsis;
-       cursor: context-menu;
-    }
+        .transparent-navbar .nav-link {
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: context-menu;
+        }
 
-    .transparent-navbar .nav-link.active {
-        background-color: rgba(255, 255, 255, 0.4);
-        color: #000;
-    }
+            .transparent-navbar .nav-link.active {
+                background-color: rgba(255, 255, 255, 0.4);
+                color: #000;
+            }
 
-    .transparent-navbar .nav-link:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-        color: #000;
-     }
+            .transparent-navbar .nav-link:hover {
+                background-color: rgba(255, 255, 255, 0.2);
+                color: #000;
+            }
 
     .modal-overlay {
         position: fixed;
@@ -207,5 +228,14 @@
     .modal-footer {
         display: flex;
         justify-content: flex-end;
+    }
+
+    .editBoard-button {
+        position: relative;
+        margin-left: 10px;
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        z-index: 1;
     }
 </style>

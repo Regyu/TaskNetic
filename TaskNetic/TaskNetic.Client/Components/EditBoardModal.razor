@@ -1,0 +1,210 @@
+﻿@inject HttpClient Http
+@using TaskNetic.Client.DTO
+
+<div class="modal @(IsVisible ? "show d-block" : "d-none")" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content w-75">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Board</h5>
+                <button type="button" class="btn-close" @onclick="@Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <ul class="nav nav-tabs" id="editBoardTabs">
+                    <li class="nav-item">
+                        <a class="nav-link @(activeTab == "general" ? "active" : "")"
+                           @onclick="@(() => SetActiveTab("general"))">General</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(activeTab == "team" ? "active" : "")"
+                           @onclick="@(() => SetActiveTab("team"))">Team</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(activeTab == "danger zone" ? "active" : "")"
+                           @onclick="@(() => SetActiveTab("danger zone"))">Danger Zone</a>
+                    </li>
+                </ul>
+
+                @if (activeTab == "general")
+                {
+                    <div class="my-3 text-center d-flex flex-column justify-content-center align-items-center">
+                        <label for="boardName" class="fw-semibold fs-5">Board Name:</label>
+                        <InputText id="boardName" @bind-Value="@Board.Title"
+                                   class="form-control my-3 text-center" style="width:50%;" />
+                    </div>
+                }
+                else if (activeTab == "team")
+                {
+                    <table class="table table-hover my-3">
+                        <thead>
+                            <tr class="text-center">
+                                <th scope="col">User</th>
+                                <th scope="col">Edit Permissions</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (BoardMembers != null && BoardMembers.Any())
+                            {
+                                @foreach (var member in BoardMembers)
+                                {
+                                    <tr class="text-center align-middle">
+                                        <td>@member.Name</td>
+                                        <td>
+                                            <input type="checkbox" @bind="@member.CanEdit"
+                                                   class="form-check-input" />
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm"
+                                                    @onclick="@(() => RemoveMember(member.Id))">Remove</button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center">No team members found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    <div class="mt-4">
+                        <h6>Add a new team member:</h6>
+                        <div class="input-group mb-3" style="width:60%;">
+                            <input type="text" placeholder="Enter username"
+                                   @bind-value="@NewMemberUsername"
+                                   class="form-control" />
+                            <button class="btn btn-primary" @onclick="AddMember">Add Member</button>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(AddMemberError))
+                        {
+                            <p class="text-danger">@AddMemberError</p>
+                        }
+                    </div>
+                }
+                else if (activeTab == "danger zone")
+                {
+                    <div class="mt-3 text-center">
+                        <h5 class="text-danger mb-3">Deleting a board is irreversible!</h5>
+                        <button type="button" class="btn btn-danger"
+                                @onclick="@RemoveBoard">Delete Board</button>
+                    </div>
+                }
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="@Close">Close</button>
+                <button type="submit" formnovalidate class="btn btn-primary"
+                        @onclick="@SaveChanges">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public BoardModel Board { get; set; }
+    [Parameter] public EventCallback OnRemove { get; set; }
+    [Parameter] public int projectId { get; set; }
+
+    private string activeTab { get; set; } = "general";
+    private List<BoardMember> BoardMembers { get; set; } = new();
+    private string NewMemberUsername { get; set; } = string.Empty;
+    private string AddMemberError = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadTeamMembers();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+    private void Close()
+    {
+        IsVisible = false;
+    }
+
+    private void SetActiveTab(string tabName)
+    {
+        activeTab = tabName;
+    }
+
+    private async Task SaveChanges()
+    {
+        await Http.PutAsJsonAsync($"api/boards/{Board.BoardId}", Board.Title);
+        foreach (var member in BoardMembers)
+        {
+            var response = await Http.PutAsJsonAsync(
+                $"api/boardpermissions/{Board.BoardId}/user/{member.Id}",
+                member.CanEdit
+            );
+        }
+        Close();
+    }
+
+    private async Task LoadTeamMembers()
+    {
+        BoardMembers = await Http.GetFromJsonAsync<List<BoardMember>>($"api/boardpermissions/{Board.BoardId}/team");
+    }
+
+    private async Task AddMember()
+    {
+        if (!string.IsNullOrWhiteSpace(NewMemberUsername))
+        {
+            var response = await Http.PostAsJsonAsync($"api/boardpermissions", new NewBoardMember(Board.BoardId, NewMemberUsername, false, projectId));
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadTeamMembers();
+                NewMemberUsername = string.Empty;
+            }
+        }
+        else
+        {
+            AddMemberError = "Username cannot be empty.";
+        }
+    }
+
+    private async Task RemoveMember(string memberId)
+    {
+        var response = await Http.DeleteAsync($"api/boardpermissions/{Board.BoardId}/team/{memberId}");
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadTeamMembers();
+            StateHasChanged();
+        }
+    }
+
+    private async Task RemoveBoard()
+    {
+        await Http.DeleteAsync($"api/boards/{Board.BoardId}");
+        await OnRemove.InvokeAsync();
+        Close();
+    }
+}
+
+<style>
+    .modal.show {
+        display: block;
+    }
+
+    .modal.d-none {
+        display: none;
+    }
+
+    .modal-header .btn-close {
+        background-color: transparent;
+        border: none;
+    }
+
+    .table th, .table td {
+        vertical-align: middle;
+    }
+
+</style>

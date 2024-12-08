@@ -63,6 +63,7 @@ builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<ITaskListService, TaskListService>();
 builder.Services.AddScoped<ITodoTaskService, TodoTaskService>();
 builder.Services.AddScoped<IApplicationUserService, ApplicationUserService>();
+builder.Services.AddScoped<IBoardPermissionService, BoardPermissionService>();
 builder.Services.AddHttpClient();
 ClientRegistry.RegisterServices(builder.Services);
 WebApplication app = builder.Build();

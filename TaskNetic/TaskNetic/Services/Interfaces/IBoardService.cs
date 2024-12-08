@@ -8,5 +8,6 @@ namespace TaskNetic.Services.Interfaces
         Task<IEnumerable<Board>> GetBoardsByProjectAndUserIdAsync(int projectId, string userId);
         Task AddBoardByProjectAndUserIdAsync(int projectId, string userId, string boardTitle);
         Task DeleteBoardAsync(Board board);
+        Task UpdateBoardAsync(int boardId, string boardName);
     }
 }
