@@ -50,9 +50,13 @@
                                 {
                                     <tr class="text-center align-middle">
                                         <td>@member.Name</td>
-                                        <td>
-                                            <input type="checkbox" @bind="@member.CanEdit"
-                                                   class="form-check-input" />
+                                        <td class="text-center">
+                                            <div class="form-switch">
+                                                <input type="checkbox"
+                                                       @bind="@member.CanEdit"
+                                                       class="form-check-input"
+                                                       role="switch" />
+                                            </div>
                                         </td>
                                         <td>
                                             <button class="btn btn-danger btn-sm"
@@ -106,14 +110,22 @@
 
 @code {
     [Parameter] public bool IsVisible { get; set; }
-    [Parameter] public BoardModel Board { get; set; }
     [Parameter] public EventCallback OnRemove { get; set; }
     [Parameter] public int projectId { get; set; }
+    [Parameter] public BoardModel Board { get; set; }
 
     private string activeTab { get; set; } = "general";
     private List<BoardMember> BoardMembers { get; set; } = new();
     private string NewMemberUsername { get; set; } = string.Empty;
     private string AddMemberError = string.Empty;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Board != null)
+        {
+            await LoadTeamMembers();
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -173,7 +185,7 @@
 
     private async Task RemoveMember(string memberId)
     {
-        var response = await Http.DeleteAsync($"api/boardpermissions/{Board.BoardId}/team/{memberId}");
+        var response = await Http.DeleteAsync($"api/boardpermissions/{Board.BoardId}/user/{memberId}");
         if (response.IsSuccessStatusCode)
         {
             await LoadTeamMembers();

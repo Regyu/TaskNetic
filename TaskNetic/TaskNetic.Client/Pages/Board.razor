@@ -37,7 +37,7 @@
                                             {
                                                 <img src="images/edit.svg" alt="Edit Board" @onclick:stopPropagation @onclick="ShowEditBoardModal" class="editBoard-button" />
                                             }
-                                        </a>  
+                                        </a>
                                     </li>
                                 }
 
@@ -70,9 +70,9 @@
                     </nav>
                 </div>
                 <EditBoardModal IsVisible="@isEditBoardModalVisible"
-                Board="@currentBoard"
-                OnRemove="@LoadBoards"
-                projectId="@projectId"/>
+                                OnRemove="@LoadBoards"
+                                projectId="@projectId"
+                                Board="@currentBoard" />
             </div>
         }
     </Authorized>
@@ -89,7 +89,7 @@
     private bool isUserAdmin = false;
     private ProjectInfo projectInfo;
     private IEnumerable<BoardModel>? boards;
-    private BoardModel? currentBoard;
+    public BoardModel? currentBoard;
     private bool isCreateBoardModalVisible = false;
     private bool isEditBoardModalVisible = false;
     private string newBoardName = string.Empty;
@@ -108,6 +108,7 @@
             Console.WriteLine($"Error: {ex.Message}");
             NavigationManager.NavigateTo("/error");
         }
+
     }
 
     private void SwitchBoard(BoardModel board)

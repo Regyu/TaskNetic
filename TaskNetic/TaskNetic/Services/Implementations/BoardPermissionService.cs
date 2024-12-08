@@ -35,8 +35,7 @@ namespace TaskNetic.Services.Implementations
         public async Task RemoveUserFromBoardAsync(int boardId, string userId)
         {
             var boardPermission = await _context.BoardPermissions
-                .Include(b => b)
-                .FirstOrDefaultAsync(b => b.Id == boardId && b.Role.ApplicationUser.Id == userId);
+                .FirstOrDefaultAsync(bp => bp.Board.BoardId == boardId && bp.Role.ApplicationUser.Id == userId);
 
             if (boardPermission != null)
             {
@@ -61,17 +60,14 @@ namespace TaskNetic.Services.Implementations
 
         public async Task AddUserToBoardAsync(int boardId, string userName, bool canEdit, int projectId)
         {
-            // Fetch the user by userId
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userName);
             if (user == null)
                 throw new InvalidOperationException("User not found.");
 
-            // Fetch the board by boardId
             var board = await _context.Boards.FirstOrDefaultAsync(b => b.BoardId == boardId);
             if (board == null)
                 throw new InvalidOperationException("Board not found.");
 
-            // Fetch the project role associated with the user and the project of the board
             var projectRole = await _context.ProjectRoles
                 .Include(pr => pr.Project)
                 .FirstOrDefaultAsync(pr => pr.ApplicationUser.Id == user.Id && pr.Project.Id == projectId);
@@ -79,14 +75,12 @@ namespace TaskNetic.Services.Implementations
             if (projectRole == null)
                 throw new InvalidOperationException("User does not have a project role for this board's project.");
 
-            // Check if a BoardPermission already exists for this user and board
             var existingPermission = await _context.BoardPermissions
                 .FirstOrDefaultAsync(bp => bp.Board.BoardId == boardId && bp.Role.Id == projectRole.Id);
 
             if (existingPermission != null)
                 throw new InvalidOperationException("This user already has permissions for this board.");
 
-            // Create a new BoardPermission entry
             var boardPermission = new BoardPermission
             {
                 Board = board,
@@ -94,7 +88,6 @@ namespace TaskNetic.Services.Implementations
                 CanEdit = canEdit
             };
 
-            // Save the new permission to the database
             await _context.BoardPermissions.AddAsync(boardPermission);
             await _context.SaveChangesAsync();
         }
