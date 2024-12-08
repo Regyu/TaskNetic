@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using TaskNetic.Client;
 using TaskNetic.Components;
 using TaskNetic.Components.Account;
@@ -46,6 +47,9 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.User.RequireUniqueEmail = true;
     options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
 });
+builder.Services.AddScoped<IDbContextFactory<ApplicationDbContext>, DbContextFactory<ApplicationDbContext>>();
+builder.Services.AddSingleton<IDbContextFactorySource<ApplicationDbContext>, DbContextFactorySource<ApplicationDbContext>>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IBoardService, BoardService>();
 builder.Services.AddScoped<IBoardPermissionService, BoardPermissionService>();
@@ -55,7 +59,6 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IFileAttachmentService, FileAttachmentService>();
 builder.Services.AddScoped<ILabelService, LabelService>();
 builder.Services.AddScoped<IListService, ListService>();
-builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<INotificationUserService, NotificationUserService>();
 builder.Services.AddScoped<IProjectRoleService, ProjectRoleService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();

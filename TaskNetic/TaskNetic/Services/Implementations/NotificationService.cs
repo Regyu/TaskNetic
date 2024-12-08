@@ -8,11 +8,14 @@ using TaskNetic.Services.Interfaces;
 
 namespace TaskNetic.Services.Implementations
 {
-    public class NotificationService : Repository<Notification>, INotificationService
+    public class NotificationService : INotificationService
     {
+        private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
         private readonly AuthenticationStateProvider _authenticationStateProvider;
-        public NotificationService(ApplicationDbContext context, AuthenticationStateProvider authenticationStateProvider) : base(context)
+
+        public NotificationService(IDbContextFactory<ApplicationDbContext> dbContextFactory, AuthenticationStateProvider authenticationStateProvider)
         {
+            _dbContextFactory = dbContextFactory;
             _authenticationStateProvider = authenticationStateProvider;
         }
 
@@ -32,14 +35,14 @@ namespace TaskNetic.Services.Implementations
                 throw new InvalidOperationException("User ID is not available.");
             }
 
-            return await _context.Notifications
+            using var context = _dbContextFactory.CreateDbContext();
+            return await context.Notifications
                 .Where(nt => nt.User.Id == userId)
                 .ToListAsync();
         }
 
         public async Task AddNotificationAsync(Notification notification, ApplicationUser applicationUser)
         {
-
             if (notification == null)
             {
                 throw new ArgumentNullException(nameof(notification), "Notification cannot be null.");
@@ -50,9 +53,9 @@ namespace TaskNetic.Services.Implementations
                 throw new ArgumentNullException(nameof(applicationUser), "User cannot be null.");
             }
 
-            _context.Notifications.Add(notification);
-
-            await _context.SaveChangesAsync();
+            using var context = _dbContextFactory.CreateDbContext();
+            context.Notifications.Add(notification);
+            await context.SaveChangesAsync();
         }
 
         public async Task DeleteNotificationAsync(Notification notification)
@@ -62,9 +65,9 @@ namespace TaskNetic.Services.Implementations
                 throw new ArgumentNullException(nameof(notification), "Notification cannot be null.");
             }
 
-            _context.Notifications.Remove(notification);
-
-            await _context.SaveChangesAsync();
+            using var context = _dbContextFactory.CreateDbContext();
+            context.Notifications.Remove(notification);
+            await context.SaveChangesAsync();
         }
     }
 }
