@@ -65,6 +65,9 @@
                         <tbody>
                             @if (teamMembers != null && teamMembers.Any())
                             {
+                                var adminCount = teamMembers.Count(m => m.IsAdmin);
+                                var isSingleAdmin = adminCount == 1;
+
                                 @foreach (var member in teamMembers)
                                 {
                                     <tr class="text-center align-middle">
@@ -77,17 +80,21 @@
                                         <td class="">@member.Email</td>
                                         <td class="text-center">
                                             <div class="form-switch">
-                                            <input type="checkbox"
-                                                   @bind="@member.IsAdmin"
-                                                   class="form-check-input" 
-                                                   role="switch"/>
+                                                <input type="checkbox"
+                                                       @bind="@member.IsAdmin"
+                                                       class="form-check-input"
+                                                       role="switch"
+                                                       disabled="@(isSingleAdmin && member.IsAdmin)" />
                                             </div>
                                         </td>
                                         <td class="text-center">
-                                            <button class="btn btn-danger btn-sm"
-                                                    @onclick="@(() => RemoveMember(member.Id))">
-                                                Delete
-                                            </button>
+                                            @if (!isSingleAdmin || !member.IsAdmin)
+                                            {
+                                                <button class="btn btn-danger btn-sm"
+                                                        @onclick="@(() => RemoveMember(member.Id))">
+                                                    Delete
+                                                </button>
+                                            }
                                         </td>
                                     </tr>
                                 }
@@ -99,6 +106,7 @@
                                 </tr>
                             }
                         </tbody>
+
                     </table>
 
                     <div class="mt-4">
@@ -209,7 +217,6 @@
     {
         if (Project != null)
         {
-            // Fetch team members using ProjectService
             var roles = await ProjectService.GetProjectRoles(Project);
             teamMembers = roles.Select(role => new TeamMember
                 {

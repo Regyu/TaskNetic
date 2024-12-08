@@ -46,10 +46,9 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.User.RequireUniqueEmail = true;
     options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
 });
-
-
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IBoardService, BoardService>();
+builder.Services.AddScoped<IBoardPermissionService, BoardPermissionService>();
 builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<IColorService, ColorService>();
 builder.Services.AddScoped<ICommentService, CommentService>();

@@ -1,5 +1,7 @@
 ﻿@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject INotificationService NotificationService
 @using Microsoft.AspNetCore.Identity
+@using TaskNetic.Services.Implementations
 @rendermode InteractiveServer
 
 <nav class="navbar navbar-expand-lg bg-body-tertiary py-1">
@@ -23,7 +25,9 @@
                         </a>
                         @if (showDropdown)
                         {
-                            <NotificationDropdown Show="showDropdown"/>
+                            <NotificationDropdown Show="showDropdown"
+                                                  Notifications="notifications"
+                                                  OnNotificationRemoved="RemoveNotification" />
                         }
                     </div>
 
@@ -50,32 +54,42 @@
 
 @code {
     private string? username;
+    private IEnumerable<Notification>? notifications;
+    private int UnreadCount = 0;
+    private bool showDropdown = false;
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
         username = authState.User.Identity.Name;
+
+
+        if (user.Identity is not null && user.Identity.IsAuthenticated)
+        {
+            username = user.Identity.Name;
+
+            //await LoadNotifications();
+        }
     }
 
-
-    private int UnreadCount => Notifications.Count;
-    private bool showDropdown = false;
-    private List<Notification> Notifications { get; set; } = new List<Notification> //purely for test
+    private async Task LoadNotifications()
     {
-        new Notification { User = "Rees Pearce", Message = "Just a comment...", Url = "card-with-everything" },
-        new Notification { User = "Alayah Vang", Message = "How are you?", Url = "card-with-notifications" },
-        new Notification { User = "Alayah Vang", Message = "Hey!", Url = "card-with-notifications" }
-    };
+        notifications = await NotificationService.GetCurrentUserNotificationsAsync();
+
+        UnreadCount = notifications?.Count() ?? 0;
+    }
+
+    private void RemoveNotification(Notification notification)
+    {
+        notifications = notifications?.Where(n => n != notification).ToList();
+        UnreadCount = notifications?.Count() ?? 0;
+        StateHasChanged();
+    }
 
     private void ShowDropdown()
     {
         showDropdown = !showDropdown;
-    }
-
-    private class Notification
-    {
-        public string User { get; set; }
-        public string Message { get; set; }
-        public string Url { get; set; }
+        StateHasChanged();
     }
 }

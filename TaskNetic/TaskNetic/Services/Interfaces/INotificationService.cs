@@ -5,6 +5,7 @@ namespace TaskNetic.Services.Interfaces
 {
     public interface INotificationService : IRepository<Notification>
     {
-        Task<IEnumerable<Notification>> GetNotificationsByUserIdAsync(string userId);
+        Task<IEnumerable<Notification>> GetCurrentUserNotificationsAsync();
+        Task DeleteNotificationAsync(Notification notification);
     }
 }

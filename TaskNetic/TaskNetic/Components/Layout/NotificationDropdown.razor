@@ -1,15 +1,20 @@
-﻿
+﻿@inject INotificationService NotificationService
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using TaskNetic.Services.Implementations
+@rendermode InteractiveServer
+
 <div class="dropdown-menu @(Show ? "show d-block" : "d-none"); position-absolute end-1 mt-2" style="width: 450px;">
     <div class="dropdown-header">
         Powiadomienia
     </div>
-    @if (Notifications.Count > 0)
+    @if (Notifications.Count() > 0)
     {
         @foreach (var notification in Notifications)
         {
             <div class="dropdown-item d-flex justify-content-between align-items-start">
                 <div>
-                    <strong>@notification.User</strong> zamieścił nowy komentarz
+                    <strong>@notification.User</strong>
                     <br />
                     <span>@notification.Message</span>
                 </div>
@@ -20,29 +25,24 @@
     }
     else
     {
-        <div class="dropdown-item text-muted">Brak nowych powiadomień</div>
+        <div class="dropdown-item text-muted">No new notifications</div>
     }
 </div>
 @code {
     [Parameter]
     public bool Show { get; set; }
 
-    private List<Notification> Notifications { get; set; } = new List<Notification>
-    {
-        new Notification { User = "Rees Pearce", Message = "Just a comment...", Url = "card-with-everything" },
-        new Notification { User = "Alayah Vang", Message = "How are you?", Url = "card-with-notifications" },
-        new Notification { User = "Alayah Vang", Message = "Hey!", Url = "card-with-notifications" }
-    };
+    [Parameter]
+    public IEnumerable<Notification> Notifications { get; set; } = Enumerable.Empty<Notification>();
 
-    private class Notification()
-    {
-        public string User { get; set; }
-        public string Message { get; set; }
-        public string Url { get; set; }
-    }
+    [Parameter]
+    public EventCallback<Notification> OnNotificationRemoved { get; set; }
 
     private void RemoveNotification(Notification notification)
     {
-        Notifications.Remove(notification);
+        Notifications = Notifications.Where(n => n != notification).ToList();
+        NotificationService.DeleteNotificationAsync(notification);
+        StateHasChanged();
+        OnNotificationRemoved.InvokeAsync(notification);
     }
 }
