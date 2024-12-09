@@ -6,7 +6,7 @@
 
 <div class="dropdown-menu @(Show ? "show d-block" : "d-none"); position-absolute end-1 mt-2" style="width: 450px;">
     <div class="dropdown-header">
-        Powiadomienia
+        Notifications
     </div>
     @if (Notifications.Count() > 0)
     {
@@ -14,7 +14,7 @@
         {
             <div class="dropdown-item d-flex justify-content-between align-items-start">
                 <div>
-                    <strong>@notification.User</strong>
+                    <strong>@notification.MentionedUserName</strong>
                     <br />
                     <span>@notification.Message</span>
                 </div>

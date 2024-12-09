@@ -41,23 +41,73 @@ namespace TaskNetic.Services.Implementations
                 .ToListAsync();
         }
 
-        public async Task AddNotificationAsync(Notification notification, ApplicationUser applicationUser)
+        public async Task AddNotificationAsync(string userId, string mentionedUserName, string message)
         {
-            if (notification == null)
+            if (string.IsNullOrWhiteSpace(userId))
             {
-                throw new ArgumentNullException(nameof(notification), "Notification cannot be null.");
+                throw new ArgumentException("UserId cannot be null or empty.", nameof(mentionedUserName));
             }
 
+            if (string.IsNullOrWhiteSpace(mentionedUserName))
+            {
+                throw new ArgumentException("Mentioned user name cannot be null or empty.", nameof(mentionedUserName));
+            }
+
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                throw new ArgumentException("Message cannot be null or empty.", nameof(message));
+            }
+
+            using var context = _dbContextFactory.CreateDbContext();
+
+            var applicationUser = await context.Users.FindAsync(userId);
+
+            if (applicationUser == null)
+            {
+                throw new ArgumentException("User not found.", nameof(userId));
+            }
+
+            var notification = new Notification
+            {
+                User = applicationUser,
+                MentionedUserName = mentionedUserName,
+                Message = message,
+                Time = DateTime.UtcNow
+            };
+
+            context.Notifications.Add(notification);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task AddNotificationAsync(ApplicationUser applicationUser, string mentionedUserName, string message)
+        {
             if (applicationUser == null)
             {
                 throw new ArgumentNullException(nameof(applicationUser), "User cannot be null.");
             }
 
+            if (string.IsNullOrWhiteSpace(mentionedUserName))
+            {
+                throw new ArgumentException("Mentioned user name cannot be null or empty.", nameof(mentionedUserName));
+            }
+
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                throw new ArgumentException("Message cannot be null or empty.", nameof(message));
+            }
+
+            var notification = new Notification
+            {
+                User = applicationUser,
+                MentionedUserName = mentionedUserName,
+                Message = message,
+                Time = DateTime.UtcNow
+            };
+
             using var context = _dbContextFactory.CreateDbContext();
             context.Notifications.Add(notification);
             await context.SaveChangesAsync();
         }
-
         public async Task DeleteNotificationAsync(Notification notification)
         {
             if (notification == null)

@@ -2,6 +2,7 @@
 @inject IProjectService ProjectService
 @inject IApplicationUserService ApplicationUserService
 @inject IProjectRoleService ProjectRoleService
+@inject INotificationService NotificationService
 
 <div class="modal @(Show ? "show d-block" : "d-none")" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
@@ -263,12 +264,14 @@
         }
 
         var user = await ApplicationUserService.GetByUserNameAsync(newMemberUsername);
+        var currentUser = await ApplicationUserService.GetCurrentUserAsync();
         var newProjectRole = new ProjectRole
             {
                 Project = Project,
                 ApplicationUser = user,
                 isAdmin = false
             };
+
         if (user == null)
         {
             addMemberError = "Nie znaleziono użytkownika o podanej nazwie.";
@@ -276,7 +279,16 @@
         }
         try
         {
+            foreach (TeamMember teamMember in teamMembers)
+            {
+                if(currentUser?.Id != teamMember.Id)
+                {
+                    await NotificationService.AddNotificationAsync(teamMember.Id, user.UserName, $"has been added to the project {Project?.ProjectName}.");
+                }
+            }
+
             await ProjectRoleService.AddAsync(newProjectRole);
+            await NotificationService.AddNotificationAsync(user.Id, currentUser.UserName, $"has added you to the project {Project?.ProjectName}.");
 
             newMemberUsername = string.Empty;
             addMemberError = string.Empty;
@@ -342,8 +354,19 @@
 
     private async Task RemoveMember(string memberId)
     {
+        var currentUser = await ApplicationUserService.GetCurrentUserAsync();
         await ProjectRoleService.RemoveUserFromProjectAsync(Project.Id, memberId);
+        var user = await ApplicationUserService.GetUserByIdAsync(memberId);
         await LoadTeamMembers();
+
+        foreach (TeamMember teamMember in teamMembers)
+        {
+            if (currentUser.Id != teamMember.Id)
+            {
+                await NotificationService.AddNotificationAsync(teamMember.Id, user.UserName, $"has been removed from the project {Project?.ProjectName}.");
+            }
+        }
+        await NotificationService.AddNotificationAsync(memberId, currentUser.UserName, $"has removed you from the project {Project?.ProjectName}.");
     }
 
     private async Task DeleteProject()

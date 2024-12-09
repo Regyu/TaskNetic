@@ -21,6 +21,29 @@ namespace TaskNetic.Services.Implementations
             return _context.Users.FirstOrDefault(u => u.UserName == userName);
         }
 
+        public async Task<ApplicationUser?> GetUserByIdAsync(string userId)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        }
+
+
+        public async Task<ApplicationUser?> GetCurrentUserAsync()
+        {
+            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userId != null)
+                {
+                    return await _context.Users.FindAsync(userId);
+                }
+            }
+
+            return null;
+        }
+
         public async Task<string?> GetCurrentUserIdAsync()
         {
             var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
