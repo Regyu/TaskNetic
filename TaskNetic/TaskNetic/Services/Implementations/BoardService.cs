@@ -79,7 +79,7 @@ namespace TaskNetic.Services.Implementations
 
             await _context.Boards.AddAsync(newBoard);
             await _context.BoardPermissions.AddAsync(boardPermission);
-
+            project.ProjectBoards.Add(newBoard);
             await _context.SaveChangesAsync();
         }
 
@@ -99,5 +99,14 @@ namespace TaskNetic.Services.Implementations
             await _context.SaveChangesAsync();
         }
 
+        public async Task UpdateBoardAsync(int boardId, string boardName)
+        {
+            var board = await _context.Boards.FindAsync(boardId);
+            if (board == null)
+                throw new InvalidOperationException("Board not found.");
+            board.Title = boardName;
+            await _context.SaveChangesAsync();
+        }
     }
+
 }

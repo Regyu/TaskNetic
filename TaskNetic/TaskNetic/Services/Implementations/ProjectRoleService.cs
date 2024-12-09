@@ -78,5 +78,13 @@ namespace TaskNetic.Services.Implementations
 
             return projectRole.isAdmin;
         }
+
+        public async Task<bool> IsUserAdminInProjectAsync(int projectId, string userId)
+        {
+            var projectRole = await _context.ProjectRoles
+                .FirstOrDefaultAsync(pr => pr.Project.Id == projectId && pr.ApplicationUser.Id == userId);
+
+            return projectRole.isAdmin;
+        }
     }
 }

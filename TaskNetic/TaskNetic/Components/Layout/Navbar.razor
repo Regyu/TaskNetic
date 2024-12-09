@@ -1,5 +1,6 @@
 ﻿@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject INotificationService NotificationService
+@inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Identity
 @using TaskNetic.Services.Implementations
 @rendermode InteractiveServer
@@ -36,7 +37,7 @@
                         <span class="navbar-text me-4">@username</span>
                     </a>
 
-                        <a class="nav-link text-dark" href="/Account/Logout">Sign out</a>
+                        <a class="nav-link text-dark" style="cursor:pointer;" @onclick="Logout">Sign out</a>
                         </div>
                         </Authorized>
                         <NotAuthorized>
@@ -90,6 +91,11 @@
     private void ShowDropdown()
     {
         showDropdown = !showDropdown;
-        StateHasChanged();
+    }
+
+    private async Task Logout()
+    {
+        NavigationManager.NavigateTo("/Account/Logout", true);
+
     }
 }

@@ -61,13 +61,30 @@ namespace TaskNetic.Api.Controllers
         {
             try
             {
-                // Assuming you fetch the board object by ID before deleting
-                var board = await _boardService.GetByIdAsync(boardId); // You may need a method to fetch by ID
+                var board = await _boardService.GetByIdAsync(boardId);
                 if (board == null)
                     return NotFound(new { message = "Board not found." });
 
                 await _boardService.DeleteBoardAsync(board);
                 return Ok(new { message = "Board deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("{boardId}")]
+        public async Task<IActionResult> UpdateBoard(int boardId, [FromBody] string boardName)
+        {
+            try
+            {
+                await _boardService.UpdateBoardAsync(boardId, boardName);
+                return Ok(new { message = "Board updated successfully." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
             }
             catch (Exception ex)
             {

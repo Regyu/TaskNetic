@@ -4,6 +4,7 @@ using TaskNetic.Models;
 using TaskNetic.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using TaskNetic.Client.DTO;
 
 namespace TaskNetic.Services.Implementations
 {
@@ -17,8 +18,9 @@ namespace TaskNetic.Services.Implementations
 
         public async Task UpdateBoardRoleWithParametersAsync(int boardId, string userId, bool canEdit)
         {
+            
             var boardPermission = await _context.BoardPermissions
-                .FirstOrDefaultAsync(b => b.Id == boardId && b.Role.ApplicationUser.Id == userId);
+                .FirstOrDefaultAsync(bp => bp.Board.BoardId == boardId && bp.Role.ApplicationUser.Id == userId);
 
             if (boardPermission == null)
             {
@@ -33,8 +35,7 @@ namespace TaskNetic.Services.Implementations
         public async Task RemoveUserFromBoardAsync(int boardId, string userId)
         {
             var boardPermission = await _context.BoardPermissions
-                .Include(b => b)
-                .FirstOrDefaultAsync(b => b.Id == boardId && b.Role.ApplicationUser.Id == userId);
+                .FirstOrDefaultAsync(bp => bp.Board.BoardId == boardId && bp.Role.ApplicationUser.Id == userId);
 
             if (boardPermission != null)
             {
@@ -42,6 +43,53 @@ namespace TaskNetic.Services.Implementations
 
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<IEnumerable<BoardMember>> GetBoardMembersAsync(int boardId)
+        {
+            return await _context.BoardPermissions
+                .Where(bp => bp.Board.BoardId == boardId)
+                .Select(bp => new BoardMember
+                {
+                    Id = bp.Role.ApplicationUser.Id,
+                    Name = bp.Role.ApplicationUser.UserName,
+                    CanEdit = bp.CanEdit
+                })
+                .ToListAsync();
+        }
+
+        public async Task AddUserToBoardAsync(int boardId, string userName, bool canEdit, int projectId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userName);
+            if (user == null)
+                throw new InvalidOperationException("User not found.");
+
+            var board = await _context.Boards.FirstOrDefaultAsync(b => b.BoardId == boardId);
+            if (board == null)
+                throw new InvalidOperationException("Board not found.");
+
+            var projectRole = await _context.ProjectRoles
+                .Include(pr => pr.Project)
+                .FirstOrDefaultAsync(pr => pr.ApplicationUser.Id == user.Id && pr.Project.Id == projectId);
+
+            if (projectRole == null)
+                throw new InvalidOperationException("User does not have a project role for this board's project.");
+
+            var existingPermission = await _context.BoardPermissions
+                .FirstOrDefaultAsync(bp => bp.Board.BoardId == boardId && bp.Role.Id == projectRole.Id);
+
+            if (existingPermission != null)
+                throw new InvalidOperationException("This user already has permissions for this board.");
+
+            var boardPermission = new BoardPermission
+            {
+                Board = board,
+                Role = projectRole,
+                CanEdit = canEdit
+            };
+
+            await _context.BoardPermissions.AddAsync(boardPermission);
+            await _context.SaveChangesAsync();
         }
     }
 }

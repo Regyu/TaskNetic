@@ -5,12 +5,21 @@
 @inject IUserService UserService
 @inject IProjectService ProjectService
 @using static TaskNetic.Client.Models.BoardModel
-@rendermode InteractiveWebAssembly
+@using TaskNetic.Client.Components
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
 
 
 <AuthorizeView>
     <Authorized>
-        @if (!isAuthorized)
+        @if (isLoading)
+        {
+            <div class="spinner-container">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }
+        else if (!isAuthorized)
         {
             <p>You do not have permission to view this board.</p>
         }
@@ -28,18 +37,25 @@
                             <ul class="nav nav-tabs">
                                 @foreach (var board in boards)
                                 {
-                                    <li class="nav-item">
-                                        <a class="nav-link @(currentBoard?.BoardId == board.BoardId ? "active" : "")"
-                                           @onclick="@(() => SwitchBoard(board))">
+                                    <li class="nav-item" @onclick:stopPropagation>
+                                        <div class="nav-link @(currentBoard?.BoardId == board.BoardId ? "active" : "")"
+                                           @onclick="@(() => SwitchBoard(board))" @onclick:preventDefault>
                                             @board.Title
-                                        </a>
+                                            @if (currentBoard?.BoardId == board.BoardId && isUserAdmin)
+                                            {
+                                                <img src="images/edit.svg" alt="Edit Board" @onclick:preventDefault @onclick="ShowEditBoardModal" class="editBoard-button" />
+                                            }
+
+                                        </div>
                                     </li>
                                 }
 
-                                <!-- Add New Board Tab -->
-                                <li class="nav-item">
-                                    <a class="nav-link text-white" @onclick="ShowCreateBoardModal">+</a>
-                                </li>
+                                @if (isUserAdmin)
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link text-white" @onclick="ShowCreateBoardModal">+</a>
+                                    </li>
+                                }
                             </ul>
                         </div>
                         <!-- Modal -->
@@ -62,6 +78,15 @@
                         }
                     </nav>
                 </div>
+
+                @if(currentBoard != null)
+                {
+                    <EditBoardModal IsVisible="@isEditBoardModalVisible"
+                                    OnRemove="@LoadBoards"
+                                    projectId="@projectId"
+                                    Board="@currentBoard" />
+                }
+                
             </div>
         }
     </Authorized>
@@ -74,20 +99,24 @@
 @code {
     [Parameter] public int projectId { get; set; }
     private bool isAuthorized = false;
+    private bool isLoading = true;
     private string? userId;
+    private bool isUserAdmin = false;
     private ProjectInfo projectInfo;
     private IEnumerable<BoardModel>? boards;
-    private BoardModel? currentBoard;
+    public BoardModel? currentBoard;
     private bool isCreateBoardModalVisible = false;
+    private bool isEditBoardModalVisible = false;
     private string newBoardName = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
+        isLoading = true;
         try
         {
             projectInfo = await ProjectService.GetProjectInfoAsync(projectId);
             userId = await UserService.GetCurrentUserIdAsync();
-            var BaseAdress = NavigationManager.BaseUri;
+            isUserAdmin = await UserService.IsUserAdminInProjectAsync(projectId, userId);
             await LoadBoards();
         }
         catch (Exception ex)
@@ -95,6 +124,11 @@
             Console.WriteLine($"Error: {ex.Message}");
             NavigationManager.NavigateTo("/error");
         }
+        finally
+        {
+            isLoading = false;
+        }
+
     }
 
     private void SwitchBoard(BoardModel board)
@@ -118,7 +152,7 @@
         {
             isCreateBoardModalVisible = false;
             var response = await Http.PostAsJsonAsync($"api/boards/{projectId}/{userId}", newBoardName);
-            if(response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
                 await LoadBoards();
                 StateHasChanged();
@@ -145,6 +179,16 @@
             isAuthorized = false;
         }
     }
+
+    private void ShowEditBoardModal()
+    {
+        isEditBoardModalVisible = true;
+    }
+
+    private void CloseEditBoardModal()
+    {
+        isEditBoardModalVisible = false;
+    }
 }
 
 <style>
@@ -153,23 +197,23 @@
         backdrop-filter: blur(5px);
     }
 
-    .transparent-navbar .nav-link {
-       color: #fff;
-       white-space: nowrap;
-       overflow: hidden;
-       text-overflow: ellipsis;
-       cursor: context-menu;
-    }
+        .transparent-navbar .nav-link {
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: context-menu;
+        }
 
-    .transparent-navbar .nav-link.active {
-        background-color: rgba(255, 255, 255, 0.4);
-        color: #000;
-    }
+            .transparent-navbar .nav-link.active {
+                background-color: rgba(255, 255, 255, 0.4);
+                color: #000;
+            }
 
-    .transparent-navbar .nav-link:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-        color: #000;
-     }
+            .transparent-navbar .nav-link:hover {
+                background-color: rgba(255, 255, 255, 0.2);
+                color: #000;
+            }
 
     .modal-overlay {
         position: fixed;
@@ -205,5 +249,26 @@
     .modal-footer {
         display: flex;
         justify-content: flex-end;
+    }
+
+    .editBoard-button {
+        position: relative;
+        margin-left: 10px;
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        z-index: 1;
+    }
+
+    .spinner-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* Full page height */
+    }
+
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
     }
 </style>
