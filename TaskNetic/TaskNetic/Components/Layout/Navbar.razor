@@ -1,4 +1,5 @@
 ﻿@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
 @using Microsoft.AspNetCore.Identity
 @rendermode InteractiveServer
 
@@ -32,7 +33,7 @@
                         <span class="navbar-text me-4">@username</span>
                     </a>
 
-                        <a class="nav-link text-dark" href="/Account/Logout">Sign out</a>
+                        <a class="nav-link text-dark" style="cursor:pointer;" @onclick="Logout">Sign out</a>
                         </div>
                         </Authorized>
                         <NotAuthorized>
@@ -60,7 +61,7 @@
 
     private int UnreadCount => Notifications.Count;
     private bool showDropdown = false;
-    private List<Notification> Notifications { get; set; } = new List<Notification> //purely for test
+    private List<Notification> Notifications { get; set; } = new List<Notification>
     {
         new Notification { User = "Rees Pearce", Message = "Just a comment...", Url = "card-with-everything" },
         new Notification { User = "Alayah Vang", Message = "How are you?", Url = "card-with-notifications" },
@@ -70,6 +71,11 @@
     private void ShowDropdown()
     {
         showDropdown = !showDropdown;
+    }
+
+    private async Task Logout()
+    {
+        NavigationManager.NavigateTo("/Account/Logout", true);
     }
 
     private class Notification
