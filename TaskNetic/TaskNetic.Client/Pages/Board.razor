@@ -6,12 +6,20 @@
 @inject IProjectService ProjectService
 @using static TaskNetic.Client.Models.BoardModel
 @using TaskNetic.Client.Components
-@rendermode InteractiveWebAssembly
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
 
 
 <AuthorizeView>
     <Authorized>
-        @if (!isAuthorized)
+        @if (isLoading)
+        {
+            <div class="spinner-container">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }
+        else if (!isAuthorized)
         {
             <p>You do not have permission to view this board.</p>
         }
@@ -91,6 +99,7 @@
 @code {
     [Parameter] public int projectId { get; set; }
     private bool isAuthorized = false;
+    private bool isLoading = true;
     private string? userId;
     private bool isUserAdmin = false;
     private ProjectInfo projectInfo;
@@ -102,6 +111,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        isLoading = true;
         try
         {
             projectInfo = await ProjectService.GetProjectInfoAsync(projectId);
@@ -113,6 +123,10 @@
         {
             Console.WriteLine($"Error: {ex.Message}");
             NavigationManager.NavigateTo("/error");
+        }
+        finally
+        {
+            isLoading = false;
         }
 
     }
@@ -244,5 +258,17 @@
         height: 18px;
         cursor: pointer;
         z-index: 1;
+    }
+
+    .spinner-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* Full page height */
+    }
+
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
     }
 </style>
