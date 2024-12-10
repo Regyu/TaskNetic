@@ -11,7 +11,6 @@ namespace TaskNetic.Services.Implementations
 {
     public class BoardService : Repository<Board>, IBoardService
     {
-        private readonly AuthenticationStateProvider _authenticationStateProvider;
         private readonly ApplicationUserService _applicationUserService;
 
         public BoardService(ApplicationDbContext context, AuthenticationStateProvider authenticationStateProvider) : base(context)

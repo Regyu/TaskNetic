@@ -119,5 +119,6 @@ namespace TaskNetic.Services.Implementations
             context.Notifications.Remove(notification);
             await context.SaveChangesAsync();
         }
+
     }
 }
