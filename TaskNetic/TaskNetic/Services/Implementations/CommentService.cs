@@ -11,9 +11,10 @@ namespace TaskNetic.Services.Implementations
     public class CommentService : Repository<Comment>, ICommentService
     {
         private readonly AuthenticationStateProvider _authenticationStateProvider;
+        private readonly ApplicationUserService _applicationUserService;
         public CommentService(ApplicationDbContext context, AuthenticationStateProvider authenticationStateProvider) : base(context)
         {
-            _authenticationStateProvider = authenticationStateProvider;
+            _applicationUserService = new ApplicationUserService(context, authenticationStateProvider);
         }
 
         public async Task<IEnumerable<Comment>> GetCommentsByCardAsync(Card card)
@@ -40,21 +41,13 @@ namespace TaskNetic.Services.Implementations
             {
                 throw new ArgumentNullException(nameof(comment), "List cannot be null.");
             }
-            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
+            var user = await _applicationUserService.GetCurrentUserAsync();
 
-            if (user.Identity?.IsAuthenticated != true)
+            if (user == null)
             {
                 throw new UnauthorizedAccessException("User is not authenticated.");
             }
-
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-            {
-                throw new InvalidOperationException("User ID is not available.");
-            }
-
-            comment.AuthorUserId = int.Parse(userId);
+            comment.User = user;
 
             card.Comments.Add(comment);
 

@@ -11,9 +11,11 @@ namespace TaskNetic.Services.Implementations
     public class ProjectRoleService : Repository<ProjectRole>, IProjectRoleService
     {
         private readonly AuthenticationStateProvider _authenticationStateProvider;
+        private readonly ApplicationUserService _applicationUserService;
         public ProjectRoleService(ApplicationDbContext context, AuthenticationStateProvider authenticationStateProvider) : base(context)
         {
             _authenticationStateProvider = authenticationStateProvider;
+            _applicationUserService = new ApplicationUserService(context, authenticationStateProvider);
         }
 
         public Task<IEnumerable<ProjectRole>> GetProjectRoleByUserId(string userId)
@@ -58,23 +60,15 @@ namespace TaskNetic.Services.Implementations
 
         public async Task<bool> IsCurrentUserAdmin(int projectId)
         {
-            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
+            var user = await _applicationUserService.GetCurrentUserAsync();
 
-            if (user.Identity?.IsAuthenticated != true)
+            if (user == null)
             {
                 throw new UnauthorizedAccessException("User is not authenticated.");
             }
 
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-            {
-                throw new InvalidOperationException("User ID is not available.");
-            }
-
             var projectRole = await _context.ProjectRoles
-                .FirstOrDefaultAsync(pr => pr.Project.Id == projectId && pr.ApplicationUser.Id == userId);
-
+                .FirstOrDefaultAsync(pr => pr.Project.Id == projectId && pr.ApplicationUser.Id == user.Id);
 
             return projectRole.isAdmin;
         }

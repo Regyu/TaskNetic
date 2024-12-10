@@ -9,11 +9,7 @@ namespace TaskNetic.Services.Implementations
 {
     public class FileAttachmentService : Repository<FileAttachment>, IFileAttachmentService
     {
-        private readonly AuthenticationStateProvider _authenticationStateProvider;
-        public FileAttachmentService(ApplicationDbContext context, AuthenticationStateProvider authenticationStateProvider) : base(context)
-        {
-            _authenticationStateProvider = authenticationStateProvider;
-        }
+        public FileAttachmentService(ApplicationDbContext context) : base(context)  {}
 
         public async Task<IEnumerable<FileAttachment>> GetAttachmentsByCardAsync(Card card)
         {
@@ -39,21 +35,6 @@ namespace TaskNetic.Services.Implementations
             {
                 throw new ArgumentNullException(nameof(fileAttachment), "FileAttachment cannot be null.");
             }
-            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-
-            if (user.Identity?.IsAuthenticated != true)
-            {
-                throw new UnauthorizedAccessException("User is not authenticated.");
-            }
-
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-            {
-                throw new InvalidOperationException("User ID is not available.");
-            }
-
-            fileAttachment.UploadedUserId = int.Parse(userId);
 
             card.Attachments.Add(fileAttachment);
 

@@ -12,53 +12,43 @@ namespace TaskNetic.Services.Implementations
     public class ProjectService : Repository<Project>, IProjectService
     {
         private readonly AuthenticationStateProvider _authenticationStateProvider;
+        private readonly ApplicationUserService _applicationUserService;
 
         public ProjectService(ApplicationDbContext context, AuthenticationStateProvider authenticationStateProvider)
             : base(context)
         {
             _authenticationStateProvider = authenticationStateProvider;
+            _applicationUserService = new ApplicationUserService(context, authenticationStateProvider);
         }
 
         public async Task<IEnumerable<Project>> GetCurrentUserProjectsAsync()
         {
-            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
+            var user = await _applicationUserService.GetCurrentUserAsync();
 
-            if (user.Identity?.IsAuthenticated != true)
+            if (user == null)
             {
                 throw new UnauthorizedAccessException("User is not authenticated.");
             }
 
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-            {
-                throw new InvalidOperationException("User ID is not available.");
-            }
-
             return await _context.ProjectRoles
-                .Where(pr => pr.ApplicationUser.Id == userId)
+                .Where(pr => pr.ApplicationUser.Id == user.Id)
                 .Select(pr => pr.Project)
                 .ToListAsync();
         }
 
         public async Task AddProjectWithCurrentUserAsync(Project project)
         {
-            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
+            //var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
+            //var user = authState.User;
+            var user = await _applicationUserService.GetCurrentUserAsync();
 
-            if (user.Identity?.IsAuthenticated != true)
+            if (user == null)
             {
                 throw new UnauthorizedAccessException("User is not authenticated.");
             }
 
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null)
-            {
-                throw new InvalidOperationException("User ID is not available.");
-            }
-
             var currentUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.Id == userId);
+                .FirstOrDefaultAsync(u => u.Id == user.Id);
 
             if (currentUser == null)
             {
