@@ -13,8 +13,8 @@ namespace TaskNetic.Client.Services.Implementations
         public SignalRService(NavigationManager navigationManager)
         {
             _hubConnection = new HubConnectionBuilder()
-                .WithUrl("https://tasknetic.service.signalr.net/applicationhub")
-                .Build();
+                .WithUrl(navigationManager.ToAbsoluteUri("/applicationhub")) 
+            .Build();
         }
 
         public async Task RegisterUser(string userId)
