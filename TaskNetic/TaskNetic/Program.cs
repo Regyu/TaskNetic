@@ -8,11 +8,19 @@ using TaskNetic.Components.Account;
 using TaskNetic.Data;
 using TaskNetic.Data.Repository;
 using TaskNetic.Models;
+using TaskNetic.Hubs;
 using TaskNetic.Services.Implementations;
 using TaskNetic.Services.Interfaces;
 
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSignalR()
+    .AddAzureSignalR(options =>
+    {
+        options.ConnectionString = builder.Configuration.GetConnectionString("AzureSignalR");
+    });
+
+
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
@@ -97,5 +105,5 @@ app.MapRazorComponents<App>()
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
-
+app.MapHub<ApplicationHub>("/applicationhub");
 app.Run();

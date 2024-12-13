@@ -1,4 +1,8 @@
 ﻿@inject HttpClient Http
+@using Microsoft.AspNetCore.SignalR.Client;
+@using TaskNetic.Client.Services.Implementations;
+@inject ISignalRService SignalRService
+@inject IApplicationUserService ApplicationUserService
 @using TaskNetic.Client.DTO
 
 <div class="modal @(IsVisible ? "show d-block" : "d-none")" tabindex="-1" role="dialog">
@@ -13,15 +17,15 @@
                 <ul class="nav nav-tabs" id="editBoardTabs">
                     <li class="nav-item">
                         <a class="nav-link @(activeTab == "general" ? "active" : "")"
-                           @onclick="@(() => SetActiveTab("general"))">General</a>
+                        @onclick="@(() => SetActiveTab("general"))">General</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link @(activeTab == "team" ? "active" : "")"
-                           @onclick="@(() => SetActiveTab("team"))">Team</a>
+                        @onclick="@(() => SetActiveTab("team"))">Team</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link @(activeTab == "danger zone" ? "active" : "")"
-                           @onclick="@(() => SetActiveTab("danger zone"))">Danger Zone</a>
+                        @onclick="@(() => SetActiveTab("danger zone"))">Danger Zone</a>
                     </li>
                 </ul>
 
@@ -30,7 +34,7 @@
                     <div class="my-3 text-center d-flex flex-column justify-content-center align-items-center">
                         <label for="boardName" class="fw-semibold fs-5">Board Name:</label>
                         <InputText id="boardName" @bind-Value="@Board.Title"
-                                   class="form-control my-3 text-center" style="width:50%;" />
+                        class="form-control my-3 text-center" style="width:50%;" />
                     </div>
                 }
                 else if (activeTab == "team")
@@ -53,14 +57,14 @@
                                         <td class="text-center">
                                             <div class="form-switch">
                                                 <input type="checkbox"
-                                                       @bind="@member.CanEdit"
-                                                       class="form-check-input"
-                                                       role="switch" />
+                                                @bind="@member.CanEdit"
+                                                class="form-check-input"
+                                                role="switch" />
                                             </div>
                                         </td>
                                         <td>
                                             <button class="btn btn-danger btn-sm"
-                                                    @onclick="@(() => RemoveMember(member.Id))">Remove</button>
+                                            @onclick="@(() => RemoveMember(member.Name,member.Id))">Remove</button>
                                         </td>
                                     </tr>
                                 }
@@ -78,8 +82,8 @@
                         <h6>Add a new team member:</h6>
                         <div class="input-group mb-3" style="width:60%;">
                             <input type="text" placeholder="Enter username"
-                                   @bind-value="@NewMemberUsername"
-                                   class="form-control" />
+                            @bind-value="@NewMemberUsername"
+                            class="form-control" />
                             <button class="btn btn-primary" @onclick="AddMember">Add Member</button>
                         </div>
 
@@ -94,7 +98,7 @@
                     <div class="mt-3 text-center">
                         <h5 class="text-danger mb-3">Deleting a board is irreversible!</h5>
                         <button type="button" class="btn btn-danger"
-                                @onclick="@RemoveBoard">Delete Board</button>
+                        @onclick="@RemoveBoard">Delete Board</button>
                     </div>
                 }
             </div>
@@ -102,7 +106,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" @onclick="@Close">Close</button>
                 <button type="submit" formnovalidate class="btn btn-primary"
-                        @onclick="@SaveChanges">Save Changes</button>
+                @onclick="@SaveChanges">Save Changes</button>
             </div>
         </div>
     </div>
@@ -118,6 +122,7 @@
     private List<BoardMember> BoardMembers { get; set; } = new();
     private string NewMemberUsername { get; set; } = string.Empty;
     private string AddMemberError = string.Empty;
+    public string? userId;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -146,6 +151,9 @@
                 $"api/boardpermissions/{Board.BoardId}/user/{member.Id}",
                 member.CanEdit
             );
+            var response2 = await Http.GetFromJsonAsync<ApplicationUserInfo>($"api/applicationusers/get-user-id/{member.Name}");
+            userId = response2.Id;
+            SignalRService.NotifyUserAboutBoardUpdate(userId);
         }
         Close();
     }
@@ -163,8 +171,11 @@
         if (!string.IsNullOrWhiteSpace(NewMemberUsername))
         {
             var response = await Http.PostAsJsonAsync($"api/boardpermissions", new NewBoardMember(Board.BoardId, NewMemberUsername, false, projectId));
+            var response2 = await Http.GetFromJsonAsync<ApplicationUserInfo>($"api/applicationusers/get-user-id/{NewMemberUsername}");
+            userId = response2.Id;
             if (response.IsSuccessStatusCode)
             {
+                await SignalRService.NotifyUserAboutBoardUpdate(userId);
                 await LoadTeamMembers();
                 NewMemberUsername = string.Empty;
             }
@@ -175,11 +186,14 @@
         }
     }
 
-    private async Task RemoveMember(string memberId)
+    private async Task RemoveMember(string memberName, string memberId)
     {
         var response = await Http.DeleteAsync($"api/boardpermissions/{Board.BoardId}/user/{memberId}");
+        var response2 = await Http.GetFromJsonAsync<ApplicationUserInfo>($"api/applicationusers/get-user-id/{memberName}");
+        userId = response2.Id;
         if (response.IsSuccessStatusCode)
         {
+            await SignalRService.NotifyUserAboutBoardUpdate(userId);
             await LoadTeamMembers();
             StateHasChanged();
         }
@@ -188,6 +202,12 @@
     private async Task RemoveBoard()
     {
         await Http.DeleteAsync($"api/boards/{Board.BoardId}");
+        foreach (var member in BoardMembers)
+        {
+            var response2 = await Http.GetFromJsonAsync<ApplicationUserInfo>($"api/applicationusers/get-user-id/{member.Name}");
+            userId = response2.Id;
+            await SignalRService.NotifyUserAboutBoardUpdate(userId);
+        }
         await OnRemove.InvokeAsync();
         Close();
     }

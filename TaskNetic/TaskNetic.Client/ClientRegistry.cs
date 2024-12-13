@@ -15,7 +15,8 @@ namespace TaskNetic.Client
                 return new HttpClient { BaseAddress = new Uri(navigation.BaseUri) };
             });
             services.AddScoped<IUserService, UserService>();
-
+            services.AddScoped<ISignalRService, SignalRService>();
+            services.AddScoped<IApplicationUserService, ApplicationUserService>();
         }
     }
 }

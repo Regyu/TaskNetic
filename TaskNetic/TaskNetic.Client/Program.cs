@@ -17,4 +17,6 @@ builder.Services.AddScoped(sp =>
     return new HttpClient { BaseAddress = new Uri(navigation.BaseUri) };
 });
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ISignalRService, SignalRService>();
+builder.Services.AddScoped<IApplicationUserService, ApplicationUserService>();
 await builder.Build().RunAsync();

@@ -4,6 +4,8 @@
 @inject HttpClient Http
 @inject IUserService UserService
 @inject IProjectService ProjectService
+@inject ISignalRService SignalRService
+@using Microsoft.AspNetCore.SignalR.Client
 @using static TaskNetic.Client.Models.BoardModel
 @using TaskNetic.Client.Components
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
@@ -112,8 +114,14 @@
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
+        
+        
+        
+        
         try
         {
+            await SignalRService.StartAsync();
+            SignalRService.OnNotificationReceived(ReceiveBoardNotification); 
             projectInfo = await ProjectService.GetProjectInfoAsync(projectId);
             userId = await UserService.GetCurrentUserIdAsync();
             isUserAdmin = await UserService.IsUserAdminInProjectAsync(projectId, userId);
@@ -130,6 +138,14 @@
         }
 
     }
+
+    private async Task ReceiveBoardNotification()
+    {
+        await LoadBoards();
+        StateHasChanged();
+        await Task.CompletedTask;
+    }
+
 
     private void SwitchBoard(BoardModel board)
     {
@@ -188,6 +204,11 @@
     private void CloseEditBoardModal()
     {
         isEditBoardModalVisible = false;
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        await SignalRService.StopConnectionAsync();
     }
 }
 
