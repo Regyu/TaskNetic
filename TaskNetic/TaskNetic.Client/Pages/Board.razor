@@ -244,6 +244,7 @@
         if (response.IsSuccessStatusCode)
         {
             Lists = await response.Content.ReadFromJsonAsync<IEnumerable<List>>();
+            StateHasChanged();
         }
     }
 
@@ -251,11 +252,10 @@
     {
         if (!string.IsNullOrWhiteSpace(newListName))
         {
-            var request = Http.PostAsJsonAsync($"api/lists/board/{currentBoard?.BoardId}", newListName);
-            if (request.IsCompletedSuccessfully)
+            var request = await Http.PostAsJsonAsync($"api/lists/board/{currentBoard?.BoardId}", newListName);
+            if (request.IsSuccessStatusCode)
             {
                 await LoadLists();
-                StateHasChanged();
             }
             newListName = string.Empty;
             IsListAddInputVisible = false;
