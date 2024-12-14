@@ -4,11 +4,11 @@
     <div class="list-header d-flex justify-content-between">
         @if (isEditingListTitle)
         {
-            <input type="text" @bind="Title" class="form-control form-control-sm me-2 mb-2 h-75" @onblur="SaveTitle" @ref="listTitleInput"/>
+            <input type="text" @bind="Title" class="form-control form-control-sm me-2 mb-2 h-75" @onblur="SaveTitle" @ref="listTitleInput" />
         }
         else
         {
-            <h6 class="" @onclick="ShowListTitleEdit">@Title</h6>
+            <h6 class="fw-semibold" @onclick="ShowListTitleEdit">@Title</h6>
         }
         <div class="dropdown">
             <img src="images/three-dots.svg" height="18" width="18" alt="options" @onclick="() => isListMenuVisible = true" class="dropdown-toggle" style="cursor: pointer;" />
@@ -27,49 +27,78 @@
         </div>
     </div>
     <div class="cards-container">
-        @foreach (var card in Cards)
+        @if (Cards != null)
         {
-            <div class="card-item">
-                @card
-            </div>
+            @foreach (var card in Cards)
+            {
+                <div class="card-item">
+                    @card.CardTitle
+                </div>
+            }
         }
-    </div>
-    <button class="btn btn-light btn-sm w-100 text-start" @onclick="ShowAddCardInput">+ Add new card</button>
 
-    @if (isAddingCard)
+    </div>
+
+    @if (isAddingCardVisible)
     {
         <div class="add-card-input">
-            <input type="text" @bind="newCardName" placeholder="Enter card name" class="form-control" />
-            <button class="btn btn-primary mt-2" @onclick="AddCard">Add</button>
+            <input type="text" @bind="newCardName" placeholder="Enter card name" class="form-control form-control-sm" />
+            <div class="d-flex align-items-center justify-content-center mt-2">
+                <button class="btn btn-primary btn-sm " @onclick="AddCard">Add new card</button>
+                <button class="btn-close ms-3" @onclick="() => isAddingCardVisible = false" style="width: 10px; height: 10px;"></button>
+            </div>
         </div>
+    }
+    else
+    {
+        <button class="btn btn-light btn-sm w-100 text-start" @onclick="ShowAddCardInput">+ Add new card</button>
     }
 </div>
 
 @code {
     [Parameter] public int Id { get; set; }
     [Parameter] public string Title { get; set; } = "List Title";
-    [Parameter] public IEnumerable<Card>? Cards { get; set; }
     [Parameter] public EventCallback<int> OnListRemove { get; set; }
 
-    private bool isAddingCard = false;
+    private IEnumerable<Card>? Cards;
+    private bool isAddingCardVisible = false;
     private string newCardName = string.Empty;
     private bool isEditingListTitle = false;
     private ElementReference listTitleInput;
     private bool isListMenuVisible = false;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCards();
+    }
+
     private void ShowAddCardInput()
     {
-        isAddingCard = true;
+        isAddingCardVisible = true;
         isListMenuVisible = false;
     }
 
-    private void AddCard()
+    private async Task AddCard()
     {
         if (!string.IsNullOrWhiteSpace(newCardName))
         {
-            // Cards.Add(newCardName);
+            var postRequest = await Http.PostAsJsonAsync($"api/cards/list/{Id}", newCardName);
             newCardName = string.Empty;
-            isAddingCard = false;
+            isAddingCardVisible = false;
+            if (postRequest.IsSuccessStatusCode)
+            {
+                await LoadCards();
+            }
+        }
+    }
+
+    private async Task LoadCards()
+    {
+        var getRequest = await Http.GetAsync($"api/cards/list/{Id}");
+        if (getRequest.IsSuccessStatusCode)
+        {
+            Cards = await getRequest.Content.ReadFromJsonAsync<IEnumerable<Card>>();
+            StateHasChanged();
         }
     }
 
@@ -98,7 +127,7 @@
 <style>
     .card-list {
         width: 250px;
-        background-color: #f8f9fa;
+        background-color: #f0f2f4;
         border-radius: 5px;
         padding: 10px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

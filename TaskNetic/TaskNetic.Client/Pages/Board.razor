@@ -95,7 +95,7 @@
                     {
                         @foreach (var list in Lists)
                         {
-                            <CardList Id="@list.Id" Title="@list.Title" Cards="@list.Cards" OnListRemove="OnListRemove"/>
+                            <CardList Id="@list.Id" Title="@list.Title" OnListRemove="OnListRemove"/>
                         }
 
                     }
@@ -359,6 +359,7 @@
         display: flex;
         gap: 15px;
         padding: 15px;
+        align-items: flex-start;
     }
 
     .add-list-button {
