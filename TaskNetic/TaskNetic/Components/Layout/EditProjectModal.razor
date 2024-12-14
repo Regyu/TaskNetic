@@ -192,19 +192,14 @@
 
 @code {
     private string activeTab = "general";
-
     [Parameter]
     public bool Show { get; set; }
-
     [Parameter]
     public EventCallback<bool> ShowChanged { get; set; }
-
     [Parameter]
     public Project? Project { get; set; }
-
     [Parameter]
     public EventCallback OnSave { get; set; }
-
     [Parameter]
     public EventCallback OnDelete { get; set; }
 

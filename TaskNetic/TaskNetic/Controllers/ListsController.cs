@@ -8,7 +8,6 @@ namespace TaskNetic.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class ListsController : ControllerBase
     {
         private readonly IListService _listService;
@@ -45,7 +44,7 @@ namespace TaskNetic.Api.Controllers
 
         // POST: api/lists/board/{boardId}
         [HttpPost("board/{boardId}")]
-        public async Task<IActionResult> AddListToBoard(int boardId, [FromBody] List list)
+        public async Task<IActionResult> AddListToBoard(int boardId, [FromBody] string listName)
         {
             try
             {
@@ -53,7 +52,7 @@ namespace TaskNetic.Api.Controllers
                 if (board == null)
                     return NotFound(new { message = $"Board with ID {boardId} not found." });
 
-                await _listService.AddListToBoardsAsync(board, list);
+                await _listService.AddListToBoardsAsync(board, new List { Title = listName });
                 return Ok(new { message = "List added to board successfully." });
             }
             catch (ArgumentNullException ex)
@@ -78,6 +77,30 @@ namespace TaskNetic.Api.Controllers
 
                 await _listService.DeleteListAsync(list);
                 return Ok(new { message = "List deleted successfully." });
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // PUT: api/lists/{listId}
+        [HttpPut("{listId}/name")]
+        public async Task<IActionResult> UpdateListName(int listId, [FromBody] string listName)
+        {
+            try
+            {
+                var list = await _listService.GetByIdAsync(listId); // Ensure GetByIdAsync exists in Repository
+                if (list == null)
+                    return NotFound(new { message = "List not found." });
+
+                list.Title = listName;
+                await _listService.UpdateAsync(list);
+                return Ok(new { message = "List updated successfully." });
             }
             catch (ArgumentNullException ex)
             {

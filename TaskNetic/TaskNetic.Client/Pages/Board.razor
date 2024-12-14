@@ -4,6 +4,7 @@
 @inject HttpClient Http
 @inject IUserService UserService
 @inject IProjectService ProjectService
+@inject IJSRuntime JSRuntime
 @using static TaskNetic.Client.Models.BoardModel
 @using TaskNetic.Client.Components
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
@@ -11,6 +12,7 @@
 
 <AuthorizeView>
     <Authorized>
+
         @if (isLoading)
         {
             <div class="spinner-container">
@@ -30,20 +32,19 @@
                 <div class="navbar-container">
                     <nav class="navbar navbar-expand-lg navbar-light transparent-navbar">
                         <div class="container-fluid justify-content-start">
-                            <!-- Project Title -->
+
                             <a class="navbar-brand text-white mx-5" href="#">@projectInfo.Name</a>
 
-                            <!-- Boards Tabs -->
                             <ul class="nav nav-tabs">
                                 @foreach (var board in boards)
                                 {
                                     <li class="nav-item" @onclick:stopPropagation>
                                         <div class="nav-link @(currentBoard?.BoardId == board.BoardId ? "active" : "")"
-                                           @onclick="@(() => SwitchBoard(board))" @onclick:preventDefault>
+                                             @onclick="@(() => SwitchBoard(board))">
                                             @board.Title
                                             @if (currentBoard?.BoardId == board.BoardId && isUserAdmin)
                                             {
-                                                <img src="images/edit.svg" alt="Edit Board" @onclick:preventDefault @onclick="ShowEditBoardModal" class="editBoard-button" />
+                                                <img src="images/edit.svg" alt="Edit Board" @onclick="ShowEditBoardModal" class="editBoard-button" />
                                             }
 
                                         </div>
@@ -79,14 +80,43 @@
                     </nav>
                 </div>
 
-                @if(currentBoard != null)
+                @if (currentBoard != null && isEditBoardModalVisible)
                 {
                     <EditBoardModal IsVisible="@isEditBoardModalVisible"
-                                    OnRemove="@LoadBoards"
+                                    IsVisibleChanged="@((value) => isEditBoardModalVisible = value)"
+                                    OnRemove="@OnBoardRemove"
                                     projectId="@projectId"
                                     Board="@currentBoard" />
                 }
-                
+
+
+                <div class="list-container d-flex column-gap-3">
+                    @if (Lists != null)
+                    {
+                        @foreach (var list in Lists)
+                        {
+                            <CardList Id="@list.Id" Title="@list.Title" Cards="@list.Cards" OnListRemove="OnListRemove"/>
+                        }
+
+                    }
+                    <div class="add-list">
+
+                        @if (IsListAddInputVisible)
+                        {
+                            <div class="add-list-input">
+                                <input type="text" @bind="newListName" placeholder="Enter list name" class="form-control" />
+                                <div class="d-flex w-100 justify-content-between align-items-center mt-2 px-2">
+                                    <button class="btn btn-primary btn-sm w-50" @onclick="AddList">Add List</button>
+                                    <button type="button" class="btn-close" aria-label="Close" @onclick="HideAddListInput"></button>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="add-list-button" style="text-decoration:none; cursor:pointer;" @onclick="ShowAddListInput"><img src="images/plus2.svg" alt="plus" /> Add new list</div>
+                        }
+                    </div>
+                </div>
             </div>
         }
     </Authorized>
@@ -105,9 +135,12 @@
     private ProjectInfo projectInfo;
     private IEnumerable<BoardModel>? boards;
     public BoardModel? currentBoard;
+    private IEnumerable<List>? Lists;
     private bool isCreateBoardModalVisible = false;
     private bool isEditBoardModalVisible = false;
     private string newBoardName = string.Empty;
+    private bool IsListAddInputVisible = false;
+    private string newListName = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -118,6 +151,7 @@
             userId = await UserService.GetCurrentUserIdAsync();
             isUserAdmin = await UserService.IsUserAdminInProjectAsync(projectId, userId);
             await LoadBoards();
+            await LoadLists();
         }
         catch (Exception ex)
         {
@@ -131,9 +165,20 @@
 
     }
 
-    private void SwitchBoard(BoardModel board)
+    private async Task SwitchBoard(BoardModel board)
     {
         currentBoard = board;
+        await LoadLists();
+    }
+
+    private void ShowAddListInput()
+    {
+        IsListAddInputVisible = true;
+    }
+
+    private void HideAddListInput()
+    {
+        IsListAddInputVisible = false;
     }
 
     private void ShowCreateBoardModal()
@@ -144,6 +189,19 @@
     private void CloseCreateBoardModal()
     {
         isCreateBoardModalVisible = false;
+    }
+
+    private async Task OnBoardRemove()
+    {
+        await LoadBoards();
+        await LoadLists();
+        StateHasChanged();
+    }
+
+    private async Task OnListRemove(int listId)
+    {
+        await LoadLists();
+        StateHasChanged();
     }
 
     private async void CreateBoard()
@@ -180,20 +238,47 @@
         }
     }
 
+    private async Task LoadLists()
+    {
+        var response = await Http.GetAsync($"api/lists/board/{currentBoard?.BoardId}");
+        if (response.IsSuccessStatusCode)
+        {
+            Lists = await response.Content.ReadFromJsonAsync<IEnumerable<List>>();
+        }
+    }
+
+    private async Task AddList()
+    {
+        if (!string.IsNullOrWhiteSpace(newListName))
+        {
+            var request = Http.PostAsJsonAsync($"api/lists/board/{currentBoard?.BoardId}", newListName);
+            if (request.IsCompletedSuccessfully)
+            {
+                await LoadLists();
+                StateHasChanged();
+            }
+            newListName = string.Empty;
+            IsListAddInputVisible = false;
+        }
+    }
+
     private void ShowEditBoardModal()
     {
         isEditBoardModalVisible = true;
+        Console.WriteLine("Edit board turned on");
     }
 
     private void CloseEditBoardModal()
     {
         isEditBoardModalVisible = false;
     }
+
 }
+
 
 <style>
     .transparent-navbar {
-        background-color: rgba(255, 255, 255, 0.2); /* Transparent */
+        background-color: rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(5px);
     }
 
@@ -252,23 +337,51 @@
     }
 
     .editBoard-button {
-        position: relative;
         margin-left: 10px;
         width: 18px;
         height: 18px;
         cursor: pointer;
-        z-index: 1;
     }
 
     .spinner-container {
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh; /* Full page height */
+        height: 100vh;
     }
 
     .spinner-border {
         width: 3rem;
         height: 3rem;
+    }
+
+    .list-container {
+        display: flex;
+        gap: 15px;
+        padding: 15px;
+    }
+
+    .add-list-button {
+        width: 15vw;
+        background: rgba(0,0,0, 0.45);
+        color: white;
+        padding: 7px;
+        padding-left: 15px;
+    }
+
+        .add-list-button img {
+            width: 10px;
+            height: 10px;
+        }
+
+    .add-list-input {
+        background: #f1f2f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        padding: 8px;
+        border-radius: 5%;
+        margin: 0;
     }
 </style>
