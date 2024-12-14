@@ -56,13 +56,11 @@ namespace TaskNetic.Services.Implementations
         _context.Entry(card).Collection(c => c.Attachments).Load();
         _context.Entry(card).Collection(c => c.CardLabels).Load();
         _context.Entry(card).Collection(c => c.CardMembers).Load();
-        _context.Entry(card).Collection(c => c.NotificationUsers).Load();
 
         card.Comments.Clear();
         card.Attachments.Clear();
         card.CardLabels.Clear();
         card.CardMembers.Clear();
-        card.NotificationUsers.Clear();
 
         _context.Cards.Remove(card);
 

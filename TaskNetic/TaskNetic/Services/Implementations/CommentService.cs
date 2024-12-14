@@ -10,7 +10,6 @@ namespace TaskNetic.Services.Implementations
 {
     public class CommentService : Repository<Comment>, ICommentService
     {
-        private readonly AuthenticationStateProvider _authenticationStateProvider;
         private readonly ApplicationUserService _applicationUserService;
         public CommentService(ApplicationDbContext context, AuthenticationStateProvider authenticationStateProvider) : base(context)
         {

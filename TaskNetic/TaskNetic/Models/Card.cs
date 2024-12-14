@@ -14,6 +14,5 @@ namespace TaskNetic.Models
         public TaskList? TaskList { get; set; }
         public ICollection<Label> CardLabels { get; set; } = new List<Label>();
         public ICollection<ApplicationUser> CardMembers { get; set; } = new List<ApplicationUser>();
-        public ICollection<NotificationUser> NotificationUsers { get; set; } = new List<NotificationUser>();
     }
 }
