@@ -1,4 +1,5 @@
 ﻿@inject HttpClient Http
+@using TaskNetic.Client.DTO
 
 <div class="card-list">
     <div class="list-header d-flex justify-content-between">
@@ -59,6 +60,7 @@
     [Parameter] public int Id { get; set; }
     [Parameter] public string Title { get; set; } = "List Title";
     [Parameter] public EventCallback<int> OnListRemove { get; set; }
+    [Parameter] public EventCallback<(int, int)> OnCardUpdate { get; set; }
 
     private IEnumerable<Card>? Cards;
     private bool isAddingCardVisible = false;
@@ -144,7 +146,13 @@
         border-radius: 5px;
         padding: 5px 10px;
         margin-bottom: 5px;
+        transition: border-color 0.3s ease;
+        cursor: pointer;
     }
+
+        .card-item:hover {
+            border-color: #007bff;
+        }
 
     .add-card-button,
     .add-list-button {
