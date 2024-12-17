@@ -61,7 +61,7 @@ namespace TaskNetic.Api.Controllers
         {
             try
             {
-                await _boardPermissionService.AddUserToBoardAsync(request.boardId, request.userName, request.canEdit, request.projectId);
+                await _boardPermissionService.AddUserToBoardAsync(request.boardId, request.userName, request.canEdit, request.projectId, request.currentUserId);
                 return Ok();
             }
             catch (InvalidOperationException ex)
@@ -75,12 +75,13 @@ namespace TaskNetic.Api.Controllers
         }
 
         // DELETE: api/boardpermissions/{boardId}/user/{userId}
-        [HttpDelete("{boardId}/user/{userId}")]
-        public async Task<IActionResult> RemoveUserFromBoard(int boardId, string userId)
+        //[HttpDelete("{boardId}/user/{userId}")]
+        [HttpDelete]
+        public async Task<IActionResult> RemoveUserFromBoard([FromBody] RemoveBoardMember request)//int boardId, string userId, string currentUserId)
         {
             try
             {
-                await _boardPermissionService.RemoveUserFromBoardAsync(boardId, userId);
+                await _boardPermissionService.RemoveUserFromBoardAsync(request.boardId, request.userId, request.currentUserId);
                 return Ok(new { message = "User removed from board successfully." });
             }
             catch (Exception ex)

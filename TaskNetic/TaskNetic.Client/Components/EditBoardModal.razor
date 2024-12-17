@@ -1,4 +1,5 @@
 ﻿@inject HttpClient Http
+@inject IUserService UserService
 @using TaskNetic.Client.DTO
 
 <div class="modal @(IsVisible ? "show d-block" : "d-none")" tabindex="-1" role="dialog">
@@ -160,9 +161,11 @@
 
     private async Task AddMember()
     {
-        if (!string.IsNullOrWhiteSpace(NewMemberUsername))
+        if (!string.IsNullOrWhiteSpace(NewMemberUsername)) //zrobić tak aby usera nie dało się dodać dwa razy!
         {
-            var response = await Http.PostAsJsonAsync($"api/boardpermissions", new NewBoardMember(Board.BoardId, NewMemberUsername, false, projectId));
+            var currentUserId = await UserService.GetCurrentUserIdAsync();
+
+            var response = await Http.PostAsJsonAsync($"api/boardpermissions", new NewBoardMember(Board.BoardId, NewMemberUsername, false, projectId, currentUserId));
             if (response.IsSuccessStatusCode)
             {
                 await LoadTeamMembers();
@@ -177,7 +180,14 @@
 
     private async Task RemoveMember(string memberId)
     {
-        var response = await Http.DeleteAsync($"api/boardpermissions/{Board.BoardId}/user/{memberId}");
+        var currentUserId = await UserService.GetCurrentUserIdAsync();
+
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"api/boardpermissions")
+            {
+                Content = JsonContent.Create(new RemoveBoardMember(Board.BoardId, memberId, currentUserId))
+            };
+
+        var response = await Http.SendAsync(request);
         if (response.IsSuccessStatusCode)
         {
             await LoadTeamMembers();

@@ -6,12 +6,14 @@
         public string userName { get; set; }
         public bool canEdit { get; set; }
         public int projectId { get; set; }
-        public NewBoardMember(int boardId, string userName, bool canEdit, int projectId)
+        public string currentUserId { get; set; }
+        public NewBoardMember(int boardId, string userName, bool canEdit, int projectId, string currentUserId)
         {
             this.boardId = boardId;
             this.userName = userName;
             this.canEdit = canEdit;
             this.projectId = projectId;
+            this.currentUserId = currentUserId;
         }
     }
 }
