@@ -45,7 +45,7 @@ namespace TaskNetic.Api.Controllers
 
         // POST: api/cards/list/{listId}
         [HttpPost("list/{listId}")]
-        public async Task<IActionResult> AddCardToList(int listId, [FromBody] Card card)
+        public async Task<IActionResult> AddCardToList(int listId, [FromBody] string cardTitle)
         {
             try
             {
@@ -53,7 +53,7 @@ namespace TaskNetic.Api.Controllers
                 if (list == null)
                     return NotFound(new { message = $"List with ID {listId} not found." });
 
-                await _cardService.AddCardToListAsync(list, card);
+                await _cardService.AddCardToListAsync(list, new Card { CardTitle = cardTitle});
                 return Ok(new { message = "Card added successfully." });
             }
             catch (ArgumentNullException ex)

@@ -111,6 +111,7 @@
 
 @code {
     [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
     [Parameter] public EventCallback OnRemove { get; set; }
     [Parameter] public int projectId { get; set; }
     [Parameter] public BoardModel Board { get; set; }
@@ -120,22 +121,16 @@
     private string NewMemberUsername { get; set; } = string.Empty;
     private string AddMemberError = string.Empty;
 
-    protected override async Task OnParametersSetAsync()
-    {
-        if (Board != null)
-        {
-            await LoadTeamMembers();
-        }
-    }
-
     private void Close()
     {
-        IsVisible = false;
+        IsVisibleChanged.InvokeAsync(false);
     }
 
-    private void SetActiveTab(string tabName)
+    private async Task SetActiveTab(string tabName)
     {
         activeTab = tabName;
+        if(tabName == "team")
+            await LoadTeamMembers();
     }
 
     private async Task SaveChanges()
@@ -164,6 +159,12 @@
         if (!string.IsNullOrWhiteSpace(NewMemberUsername)) //zrobić tak aby usera nie dało się dodać dwa razy!
         {
             var currentUserId = await UserService.GetCurrentUserIdAsync();
+
+            if(BoardMembers.Any(m => m.Name == NewMemberUsername))
+            {
+                AddMemberError = "User is already a member of the team.";
+                return;
+            }
 
             var response = await Http.PostAsJsonAsync($"api/boardpermissions", new NewBoardMember(Board.BoardId, NewMemberUsername, false, projectId, currentUserId));
             if (response.IsSuccessStatusCode)
