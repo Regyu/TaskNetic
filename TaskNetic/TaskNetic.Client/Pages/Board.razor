@@ -1,10 +1,10 @@
 ﻿@page "/board/{projectId:int}"
+@using Blazorise
 @using TaskNetic.Client.DTO
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 @inject IUserService UserService
 @inject IProjectService ProjectService
-@inject IJSRuntime JSRuntime
 @using static TaskNetic.Client.Models.BoardModel
 @using TaskNetic.Client.Components
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
@@ -91,12 +91,24 @@
 
 
                 <div class="list-container d-flex column-gap-3">
-                    @if (Lists != null)
+                    @if (Lists != null && Cards!=null)
                     {
-                        @foreach (var list in Lists)
-                        {
-                            <CardList Id="@list.Id" Title="@list.Title" OnListRemove="OnListRemove"/>
-                        }
+                        <DropContainer TItem="CardModel" Items="Cards" ItemDropped="OnCardDropped" ItemsFilter="@FilterItems" Class="list-container">
+                            <ChildContent>
+                                @foreach (var list in Lists)
+                                {
+                                    <DropZone TItem="CardModel" Name="@list.Id.ToString()" AllowReorder="true" Reordered="OnReordered" Class="card-list">
+                                        <Heading Size="HeadingSize.Is5" Margin="Margin.Is3.FromBottom">@list.Title</Heading>
+                                    </DropZone>
+                                }
+                            </ChildContent>
+                            <ItemTemplate Context="cardContext">
+                                <div class="card-item">
+                                    @cardContext.CardTitle
+                                </div>
+                            </ItemTemplate>
+                        </DropContainer>
+
 
                     }
                     <div class="add-list">
@@ -136,6 +148,8 @@
     private IEnumerable<BoardModel>? boards;
     public BoardModel? currentBoard;
     private IEnumerable<List>? Lists;
+    private List<CardModel> Cards { get; set; } = new();
+    private Dictionary<int, int> CardToListMapping { get; set; } = new();
     private bool isCreateBoardModalVisible = false;
     private bool isEditBoardModalVisible = false;
     private string newBoardName = string.Empty;
@@ -244,8 +258,53 @@
         if (response.IsSuccessStatusCode)
         {
             Lists = await response.Content.ReadFromJsonAsync<IEnumerable<List>>();
+            if (Lists != null)
+            {
+                Cards = Lists.SelectMany(l => l.Cards).ToList();
+                CardToListMapping = Cards.ToDictionary(card => card.CardId, card => Lists.First(list => list.Cards.Contains(card)).Id);
+            }
+
             StateHasChanged();
         }
+    }
+
+    private bool FilterItems(CardModel card, string dropZone)
+    {
+        return CardToListMapping.TryGetValue(card.CardId, out var listId) && listId.ToString() == dropZone;
+    }
+
+    private async Task OnCardDropped(DraggableDroppedEventArgs<CardModel> args)
+    {
+        // Update card's list ID based on the drop zone
+        var card = args.Item;
+        var newListId = int.Parse(args.DropZoneName);
+
+        if (CardToListMapping.TryGetValue(card.CardId, out var oldListId) && oldListId != newListId)
+        {
+            CardToListMapping[card.CardId] = newListId;
+            StateHasChanged();
+
+            // Update the database
+            // await Http.PutAsJsonAsync($"api/cards/move/{card.Id}", new { ListId = newListId });
+
+            // // Reload lists to reflect changes
+            // await LoadListsAndCards();
+        }
+    }
+
+    private Task OnReordered(DropZoneOrder<CardModel> order)
+    {
+        Cards = order.OrderedItems.Select(o => o.Item).ToList();
+
+        // Update CardToListMapping with the new order
+        foreach (var (card, index) in Cards.Select((card, index) => (card, index)))
+        {
+            if (CardToListMapping.ContainsKey(card.CardId))
+            {
+                CardToListMapping[card.CardId] = index + 1; // Update order (1-based index)
+            }
+        }
+        return Task.CompletedTask;
     }
 
     private async Task AddList()
@@ -360,6 +419,24 @@
         gap: 15px;
         padding: 15px;
         align-items: flex-start;
+    }
+
+    .card-list {
+        width: 250px;
+        background-color: #f0f2f4;
+        border-radius: 5px;
+        padding: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-item {
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin-bottom: 5px;
+        transition: border-color 0.3s ease;
+        cursor: pointer;
     }
 
     .add-list-button {

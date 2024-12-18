@@ -2,11 +2,12 @@
 
 namespace TaskNetic.Client.Models
 {
-    public class Card
+    public class CardModel
     {
         public int CardId { get; set; }
         public required string CardTitle { get; set; }
         public string? CardDescription { get; set; }
+        public int? CardPosition { get; set; }
         public DateTime CreatedAt { get; set; }
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public DateTime? DueDate { get; set; }

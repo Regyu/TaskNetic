@@ -1,4 +1,5 @@
-﻿@inject HttpClient Http
+﻿@using Blazorise
+@inject HttpClient Http
 @using TaskNetic.Client.DTO
 
 <div class="card-list">
@@ -27,18 +28,13 @@
             }
         </div>
     </div>
-    <div class="cards-container">
         @if (Cards != null)
         {
-            @foreach (var card in Cards)
-            {
-                <div class="card-item">
-                    @card.CardTitle
-                </div>
-            }
+             @* <DropZone TItem="CardModel" Name="@Id.ToString()" AllowReorder="true" Reordered="OnReordered">
+
+             </DropZone> *@
         }
 
-    </div>
 
     @if (isAddingCardVisible)
     {
@@ -62,7 +58,7 @@
     [Parameter] public EventCallback<int> OnListRemove { get; set; }
     [Parameter] public EventCallback<(int, int)> OnCardUpdate { get; set; }
 
-    private IEnumerable<Card>? Cards;
+    private IEnumerable<CardModel>? Cards;
     private bool isAddingCardVisible = false;
     private string newCardName = string.Empty;
     private bool isEditingListTitle = false;
@@ -99,7 +95,7 @@
         var getRequest = await Http.GetAsync($"api/cards/list/{Id}");
         if (getRequest.IsSuccessStatusCode)
         {
-            Cards = await getRequest.Content.ReadFromJsonAsync<IEnumerable<Card>>();
+            Cards = await getRequest.Content.ReadFromJsonAsync<IEnumerable<CardModel>>();
             StateHasChanged();
         }
     }
@@ -124,6 +120,8 @@
         await Http.DeleteAsync($"api/lists/{Id}");
         await OnListRemove.InvokeAsync(Id);
     }
+
+    
 }
 
 <style>

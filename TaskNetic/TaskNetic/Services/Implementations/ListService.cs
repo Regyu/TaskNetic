@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using TaskNetic.Client.Pages;
 using TaskNetic.Data;
 using TaskNetic.Data.Repository;
 using TaskNetic.Models;
 using TaskNetic.Services.Interfaces;
+using Board = TaskNetic.Models.Board;
 
 namespace TaskNetic.Services.Implementations
 {
@@ -15,12 +17,15 @@ namespace TaskNetic.Services.Implementations
 
         public async Task<IEnumerable<List>> GetListsForBoardAsync(Board board)
         {
+            var baseBoard = await _context.Boards
+            .Include(b => b.Lists)
+                .ThenInclude(l => l.Cards)
+            .FirstOrDefaultAsync(b => b.BoardId == board.BoardId);
+
             if (board == null)
             {
-                throw new ArgumentNullException(nameof(board), "Board cannot be null.");
+                throw new ArgumentException($"Board with ID {board.BoardId} not found.", nameof(board.BoardId));
             }
-
-            await _context.Entry(board).Collection(b => b.Lists).LoadAsync();
 
             return board.Lists.AsEnumerable();
         }
