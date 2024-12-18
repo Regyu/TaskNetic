@@ -1,5 +1,6 @@
 ﻿@using Blazorise
 @inject HttpClient Http
+@inject IUserService UserService
 @using TaskNetic.Client.DTO
 
 <Modal @bind-Visible="IsVisible" Centered>
@@ -148,12 +149,15 @@
     {
         if (!string.IsNullOrWhiteSpace(NewMemberUsername))
         {
-            if (BoardMembers.Any(m => m.Name == NewMemberUsername))
+            var currentUserId = await UserService.GetCurrentUserIdAsync();
+
+            if(BoardMembers.Any(m => m.Name == NewMemberUsername))
             {
                 AddMemberError = "User is already a member of the team.";
                 return;
             }
-            var response = await Http.PostAsJsonAsync($"api/boardpermissions", new NewBoardMember(Board.BoardId, NewMemberUsername, false, projectId));
+
+            var response = await Http.PostAsJsonAsync($"api/boardpermissions", new NewBoardMember(Board.BoardId, NewMemberUsername, false, projectId, currentUserId));
             if (response.IsSuccessStatusCode)
             {
                 await LoadTeamMembers();
@@ -168,7 +172,14 @@
 
     private async Task RemoveMember(string memberId)
     {
-        var response = await Http.DeleteAsync($"api/boardpermissions/{Board.BoardId}/user/{memberId}");
+        var currentUserId = await UserService.GetCurrentUserIdAsync();
+
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"api/boardpermissions")
+            {
+                Content = JsonContent.Create(new RemoveBoardMember(Board.BoardId, memberId, currentUserId))
+            };
+
+        var response = await Http.SendAsync(request);
         if (response.IsSuccessStatusCode)
         {
             await LoadTeamMembers();

@@ -5,6 +5,7 @@ namespace TaskNetic.Models
     public class Card
     {
         public int CardId { get; set; }
+        public int CardPosition { get; set; }
         public required string CardTitle { get; set; }
         public string? CardDescription { get; set; }
         public DateTime CreatedAt { get; set; }
