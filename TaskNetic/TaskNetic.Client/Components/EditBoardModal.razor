@@ -156,7 +156,7 @@
 
     private async Task AddMember()
     {
-        if (!string.IsNullOrWhiteSpace(NewMemberUsername)) //zrobić tak aby usera nie dało się dodać dwa razy!
+        if (!string.IsNullOrWhiteSpace(NewMemberUsername))
         {
             var currentUserId = await UserService.GetCurrentUserIdAsync();
 
