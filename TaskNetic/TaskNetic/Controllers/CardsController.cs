@@ -53,7 +53,19 @@ namespace TaskNetic.Api.Controllers
                 if (list == null)
                     return NotFound(new { message = $"List with ID {listId} not found." });
 
-                await _cardService.AddCardToListAsync(list, new Card { CardTitle = cardTitle});
+                var existingCards = await _cardService.GetCardsForListAsync(list);
+
+                var maxPosition = existingCards.Any() ? existingCards.Max(c => c.CardPosition) : 0;
+                int newPosition = maxPosition + 1;
+
+                var newCard = new Card
+                {
+                    CardTitle = cardTitle,
+                    CardPosition = newPosition,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _cardService.AddCardToListAsync(list, newCard);
                 return Ok(new { message = "Card added successfully." });
             }
             catch (ArgumentNullException ex)
