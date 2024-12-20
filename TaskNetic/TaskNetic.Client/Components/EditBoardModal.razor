@@ -47,6 +47,9 @@
                         <tbody>
                             @if (BoardMembers != null && BoardMembers.Any())
                             {
+                                var editCount = BoardMembers.Count(m => m.CanEdit);
+                                var isSingleEditor = editCount == 1;
+
                                 @foreach (var member in BoardMembers)
                                 {
                                     <tr class="text-center align-middle">
@@ -56,12 +59,16 @@
                                                 <input type="checkbox"
                                                        @bind="@member.CanEdit"
                                                        class="form-check-input"
-                                                       role="switch" />
+                                                       role="switch"
+                                                       disabled="@(isSingleEditor && member.CanEdit)" />
                                             </div>
                                         </td>
                                         <td>
-                                            <button class="btn btn-danger btn-sm"
-                                                    @onclick="@(() => RemoveMember(member.Id))">Remove</button>
+                                            @if (!isSingleEditor || !member.CanEdit)
+                                            {
+                                                <button class="btn btn-danger btn-sm"
+                                                @onclick="@(() => RemoveMember(member.Id))">Remove</button>
+                                            }
                                         </td>
                                     </tr>
                                 }
