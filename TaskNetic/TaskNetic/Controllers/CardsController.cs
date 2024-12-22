@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TaskNetic.Client.DTO;
 using TaskNetic.Data.Repository;
 using TaskNetic.Models;
+using TaskNetic.Services.Implementations;
 using TaskNetic.Services.Interfaces;
 
 namespace TaskNetic.Api.Controllers
@@ -12,11 +15,13 @@ namespace TaskNetic.Api.Controllers
     public class CardsController : ControllerBase
     {
         private readonly ICardService _cardService;
+        private readonly IListService _listService;
         private readonly IRepository<List> _listRepository; // Add a repository for List if needed
 
-        public CardsController(ICardService cardService, IRepository<List> listRepository)
+        public CardsController(ICardService cardService, IListService listService,IRepository<List> listRepository)
         {
             _cardService = cardService;
+            _listService = listService;
             _listRepository = listRepository;
         }
 
@@ -84,7 +89,7 @@ namespace TaskNetic.Api.Controllers
         {
             try
             {
-                var card = await _cardService.GetByIdAsync(cardId); // Ensure GetByIdAsync exists in Repository
+                var card = await _cardService.GetByIdAsync(cardId);
                 if (card == null)
                     return NotFound(new { message = "Card not found." });
 
@@ -94,6 +99,34 @@ namespace TaskNetic.Api.Controllers
             catch (ArgumentNullException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("move/{cardId}")]
+        public async Task<IActionResult> MoveCard(int cardId, [FromBody] MoveCardRequest request)
+        {
+            try
+            {
+                await _listService.MoveCardAsync(cardId, request.SourceListId, request.TargetListId, request.NewPosition);
+                return Ok();
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("update-positions")]
+        public async Task<IActionResult> UpdateCardPositions([FromBody] IEnumerable<CardPositionUpdate> updates)
+        {
+            try
+            {
+                await _cardService.UpdateCardPositionsAsync(updates);
+                return Ok();
             }
             catch (Exception ex)
             {

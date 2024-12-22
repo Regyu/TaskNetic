@@ -91,15 +91,21 @@
 
 
                 <div class="list-container d-flex column-gap-3">
-                    @if (Lists != null && Cards!=null)
+                    @if (Lists != null && Cards != null)
                     {
-                        <DropContainer TItem="CardModel" Items="Cards" ItemDropped="OnCardDropped" ItemsFilter="@FilterItems" Class="list-container">
+                        <DropContainer TItem="CardModel" Items="Cards" ItemDropped="OnCardDropped" ItemsFilter="@FilterItems" Class="blazorise-container">
                             <ChildContent>
                                 @foreach (var list in Lists)
                                 {
-                                    <DropZone TItem="CardModel" Name="@list.Id.ToString()" AllowReorder="true" Reordered="OnReordered" Class="card-list">
-                                        <Heading Size="HeadingSize.Is5" Margin="Margin.Is3.FromBottom">@list.Title</Heading>
-                                    </DropZone>
+                                    <Div Class="d-flex flex-column">
+                                        <DropZone TItem="CardModel" Name="@list.Id.ToString()" AllowReorder="true" Reordered="OnReordered" Class="card-list rounded-bottom-0">
+                                            <Heading Size="HeadingSize.Is5" Margin="Margin.Is3.FromBottom" Style="display:flex; justify-content:space-between">
+                                                <ListTitle Title="@list.Title" ListId="@list.Id" />
+                                                <img src="images/three-dots.svg" height="18" width="18" alt="options" class="dropdown-toggle" style="cursor: pointer;" />
+                                            </Heading>
+                                        </DropZone>
+                                        <AddCard ListId="@list.Id" OnCardAdded="async () => await LoadLists()" />
+                                    </Div>
                                 }
                             </ChildContent>
                             <ItemTemplate Context="cardContext">
@@ -109,13 +115,12 @@
                             </ItemTemplate>
                         </DropContainer>
 
-
                     }
                     <div class="add-list">
 
                         @if (IsListAddInputVisible)
                         {
-                            <div class="add-list-input">
+                            <div class="add-list-input rounded-2 px-2 py-3">
                                 <input type="text" @bind="newListName" placeholder="Enter list name" class="form-control" />
                                 <div class="d-flex w-100 justify-content-between align-items-center mt-2 px-2">
                                     <button class="btn btn-primary btn-sm w-50" @onclick="AddList">Add List</button>
@@ -125,7 +130,7 @@
                         }
                         else
                         {
-                            <div class="add-list-button" style="text-decoration:none; cursor:pointer;" @onclick="ShowAddListInput"><img src="images/plus2.svg" alt="plus" /> Add new list</div>
+                            <div class="add-list-button rounded-2" style="text-decoration:none; cursor:pointer;" @onclick="ShowAddListInput"><img src="images/plus2.svg" alt="plus" /> Add new list</div>
                         }
                     </div>
                 </div>
@@ -254,13 +259,15 @@
 
     private async Task LoadLists()
     {
+        Lists = null;
+        Cards = new();
         var response = await Http.GetAsync($"api/lists/board/{currentBoard?.BoardId}");
         if (response.IsSuccessStatusCode)
         {
             Lists = await response.Content.ReadFromJsonAsync<IEnumerable<List>>();
             if (Lists != null)
             {
-                Cards = Lists.SelectMany(l => l.Cards).ToList();
+                Cards = Lists.SelectMany(l => l.Cards).OrderBy(card => card.CardPosition).ToList();
                 CardToListMapping = Cards.ToDictionary(card => card.CardId, card => Lists.First(list => list.Cards.Contains(card)).Id);
             }
 
@@ -275,36 +282,49 @@
 
     private async Task OnCardDropped(DraggableDroppedEventArgs<CardModel> args)
     {
-        // Update card's list ID based on the drop zone
         var card = args.Item;
         var newListId = int.Parse(args.DropZoneName);
+        var sourceListId = int.Parse(args.SourceDropZoneName);
 
         if (CardToListMapping.TryGetValue(card.CardId, out var oldListId) && oldListId != newListId)
         {
             CardToListMapping[card.CardId] = newListId;
+
+            var oldList = Lists.FirstOrDefault(list => list.Id == oldListId);
+            oldList?.Cards.Remove(card);
+
+            var newList = Lists.FirstOrDefault(list => list.Id == newListId);
+            if (newList != null)
+            {
+                card.CardPosition = newList.Cards.Count + 1;
+                newList.Cards.Add(card);
+            }
+
             StateHasChanged();
 
-            // Update the database
-            // await Http.PutAsJsonAsync($"api/cards/move/{card.Id}", new { ListId = newListId });
+            await Http.PutAsJsonAsync($"api/cards/move/{card.CardId}", new MoveCardRequest { SourceListId = sourceListId, TargetListId = newListId, NewPosition = args.IndexInZone });
 
-            // // Reload lists to reflect changes
-            // await LoadListsAndCards();
         }
     }
 
-    private Task OnReordered(DropZoneOrder<CardModel> order)
+    private async Task OnReordered(DropZoneOrder<CardModel> order)
     {
-        Cards = order.OrderedItems.Select(o => o.Item).ToList();
+        var reorderedCards = order.OrderedItems.Select((item) => new { item.Item, NewPosition = item.Order + 1 }).ToList();
 
-        // Update CardToListMapping with the new order
-        foreach (var (card, index) in Cards.Select((card, index) => (card, index)))
+        foreach (var reordered in reorderedCards)
         {
-            if (CardToListMapping.ContainsKey(card.CardId))
-            {
-                CardToListMapping[card.CardId] = index + 1; // Update order (1-based index)
-            }
+            reordered.Item.CardPosition = reordered.NewPosition;
         }
-        return Task.CompletedTask;
+
+        var updates = reorderedCards.Select(rc => new CardPositionUpdate
+            {
+                CardId = rc.Item.CardId,
+                CardPosition = rc.NewPosition
+            });
+
+        StateHasChanged();
+
+        var response = await Http.PutAsJsonAsync("api/cards/update-positions", updates);
     }
 
     private async Task AddList()
@@ -417,7 +437,13 @@
     .list-container {
         display: flex;
         gap: 15px;
-        padding: 15px;
+        padding: 25px;
+        align-items: flex-start;
+    }
+
+    .blazorise-container {
+        display: flex;
+        gap: 15px;
         align-items: flex-start;
     }
 
@@ -426,6 +452,7 @@
         background-color: #f0f2f4;
         border-radius: 5px;
         padding: 10px;
+        padding-bottom: 0px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
@@ -458,8 +485,6 @@
         justify-content: center;
         align-items: center;
         flex-direction: column;
-        padding: 8px;
-        border-radius: 5%;
         margin: 0;
     }
 </style>

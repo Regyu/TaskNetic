@@ -4,6 +4,7 @@ using TaskNetic.Data;
 using TaskNetic.Models;
 using TaskNetic.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
+using TaskNetic.Client.DTO;
 
 namespace TaskNetic.Services.Implementations
 {
@@ -63,6 +64,20 @@ namespace TaskNetic.Services.Implementations
             card.CardMembers.Clear();
 
             _context.Cards.Remove(card);
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateCardPositionsAsync(IEnumerable<CardPositionUpdate> updates)
+        {
+            foreach (var update in updates)
+            {
+                var card = await _context.Cards.FindAsync(update.CardId);
+                if (card != null)
+                {
+                    card.CardPosition = update.CardPosition;
+                }
+            }
 
             await _context.SaveChangesAsync();
         }

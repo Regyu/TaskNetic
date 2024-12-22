@@ -1,0 +1,33 @@
+﻿@using Blazorise
+@inject HttpClient Http
+
+@if (isEditingListTitle)
+{
+    <input type="text" @bind="Title" class="form-control form-control-sm me-2 mb-2 h-75" @onblur="SaveTitle" @ref="listTitleInput" />
+}
+else
+{
+    <p @onclick="ShowListTitleEdit" class="mb-0 w-50">@Title</p>
+}
+
+@code {
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public int ListId { get; set; }
+
+    private bool isEditingListTitle = false;
+    private ElementReference listTitleInput;
+
+    private async Task ShowListTitleEdit()
+    {
+        isEditingListTitle = true;
+        StateHasChanged();
+        await Task.Delay(1);
+        await listTitleInput.FocusAsync();
+    }
+
+    private async Task SaveTitle()
+    {
+        isEditingListTitle = false;
+        await Http.PutAsJsonAsync($"api/lists/{ListId}/name", Title);
+    }
+}

@@ -8,5 +8,7 @@ namespace TaskNetic.Services.Interfaces
         Task<IEnumerable<List>> GetListsForBoardAsync(Board board);
         Task AddListToBoardsAsync(Board board, List list);
         Task DeleteListAsync(List list);
+        
+        Task MoveCardAsync(int cardId, int sourceListId, int targetListId, int newPosition);
     }
 }
