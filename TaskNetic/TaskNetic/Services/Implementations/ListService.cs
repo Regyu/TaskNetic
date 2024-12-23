@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using TaskNetic.Client.Pages;
+using TaskNetic.Client.DTO;
 using TaskNetic.Data;
 using TaskNetic.Data.Repository;
 using TaskNetic.Models;
@@ -67,29 +67,24 @@ namespace TaskNetic.Services.Implementations
 
         public async Task MoveCardAsync(int cardId, int sourceListId, int targetListId, int newPosition)
         {
-            // Find the source and target lists
             var sourceList = await _context.Lists.Include(l => l.Cards).FirstOrDefaultAsync(l => l.Id == sourceListId);
             var targetList = await _context.Lists.Include(l => l.Cards).FirstOrDefaultAsync(l => l.Id == targetListId);
 
             if (sourceList == null || targetList == null)
                 throw new ArgumentException("Source or target list not found.");
 
-            // Find the card in the source list
             var card = sourceList.Cards.FirstOrDefault(c => c.CardId == cardId);
             if (card == null)
                 throw new ArgumentException($"Card with ID {cardId} not found in source list.");
 
-            // Remove card from source list
             sourceList.Cards.Remove(card);
 
-            // Adjust positions in the source list
             int position = 1;
             foreach (var c in sourceList.Cards.OrderBy(c => c.CardPosition))
             {
                 c.CardPosition = position++;
             }
 
-            // Add card to target list at the specified position
             foreach (var c in targetList.Cards.Where(c => c.CardPosition >= newPosition))
             {
                 c.CardPosition++;
@@ -97,7 +92,20 @@ namespace TaskNetic.Services.Implementations
             card.CardPosition = newPosition;
             targetList.Cards.Add(card);
 
-            // Save changes to the database
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task MoveListsAsync(IEnumerable<MoveListsRequest> listUpdates)
+        {
+            foreach (var update in listUpdates)
+            {
+                var list = await _context.Lists.FindAsync(update.ListId);
+                if (list != null)
+                {
+                    list.Position = update.Position;
+                }
+            }
+
             await _context.SaveChangesAsync();
         }
 

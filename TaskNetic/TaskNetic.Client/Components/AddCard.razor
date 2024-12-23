@@ -25,7 +25,7 @@
     private string NewCardName { get; set; } = string.Empty;
     private ElementReference cardNameInput;
 
-    private async Task ShowAddCardInput()
+    public async Task ShowAddCardInput()
     {
         isAddingCardVisible = true;
         await Task.Delay(1);

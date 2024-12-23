@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TaskNetic.Data.Repository;
 using TaskNetic.Models;
 using TaskNetic.Services.Interfaces;
+using TaskNetic.Client.DTO;
 
 namespace TaskNetic.Api.Controllers
 {
@@ -71,7 +72,7 @@ namespace TaskNetic.Api.Controllers
         {
             try
             {
-                var list = await _listService.GetByIdAsync(listId); // Ensure GetByIdAsync exists in Repository
+                var list = await _listService.GetByIdAsync(listId);
                 if (list == null)
                     return NotFound(new { message = "List not found." });
 
@@ -94,7 +95,7 @@ namespace TaskNetic.Api.Controllers
         {
             try
             {
-                var list = await _listService.GetByIdAsync(listId); // Ensure GetByIdAsync exists in Repository
+                var list = await _listService.GetByIdAsync(listId);
                 if (list == null)
                     return NotFound(new { message = "List not found." });
 
@@ -105,6 +106,20 @@ namespace TaskNetic.Api.Controllers
             catch (ArgumentNullException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("move")]
+        public async Task<IActionResult> UpdateLists([FromBody] IEnumerable<MoveListsRequest> listUpdates)
+        {
+            try
+            {
+                await _listService.MoveListsAsync(listUpdates);
+                return Ok();
             }
             catch (Exception ex)
             {
