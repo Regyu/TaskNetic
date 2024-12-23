@@ -91,7 +91,7 @@ namespace TaskNetic.Services.Implementations
 
             await _context.Entry(board).Collection(b => b.BoardPermissions).LoadAsync();
 
-            board.BoardPermissions.Clear();
+            _context.BoardPermissions.RemoveRange(board.BoardPermissions);
 
             _context.Boards.Remove(board);
 

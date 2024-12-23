@@ -58,8 +58,9 @@ namespace TaskNetic.Services.Implementations
             _context.Entry(card).Collection(c => c.CardLabels).Load();
             _context.Entry(card).Collection(c => c.CardMembers).Load();
 
-            card.Comments.Clear();
-            card.Attachments.Clear();
+            _context.Comments.RemoveRange(card.Comments);
+            _context.Attachments.RemoveRange(card.Attachments);
+
             card.CardLabels.Clear();
             card.CardMembers.Clear();
 

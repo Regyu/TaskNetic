@@ -58,7 +58,7 @@ namespace TaskNetic.Services.Implementations
 
             _context.Entry(list).Collection(l => l.Cards).Load();
 
-            list.Cards.Clear();
+            _context.Cards.RemoveRange(list.Cards);
 
             _context.Lists.Remove(list);
 
