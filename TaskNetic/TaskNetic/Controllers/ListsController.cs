@@ -53,7 +53,18 @@ namespace TaskNetic.Api.Controllers
                 if (board == null)
                     return NotFound(new { message = $"Board with ID {boardId} not found." });
 
-                await _listService.AddListToBoardsAsync(board, new List { Title = listName });
+                var existingLists = await _listService.GetListsForBoardAsync(board);
+
+                var maxPosition = existingLists.Any() ? existingLists.Max(l => l.Position) : 0;
+                int newPosition = maxPosition + 1;
+
+                var newList = new List
+                {
+                    Title = listName,
+                    Position = newPosition
+                };
+
+                await _listService.AddListToBoardsAsync(board, newList);
                 return Ok(new { message = "List added to board successfully." });
             }
             catch (ArgumentNullException ex)
