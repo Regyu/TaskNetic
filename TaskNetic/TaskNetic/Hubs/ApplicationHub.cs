@@ -65,16 +65,13 @@ namespace TaskNetic.Hubs
             await Clients.Group(groupName).SendAsync("AddNewCard");
         }
        
-
         public override Task OnConnectedAsync()
         {
-            var userId = Context.UserIdentifier;
             return base.OnConnectedAsync();
         }
 
         public override Task OnDisconnectedAsync(Exception? exception)
         {
-            var userId = Context.UserIdentifier;
             return base.OnDisconnectedAsync(exception);
         }
 

@@ -161,9 +161,7 @@
             }
 
             var response = await Http.PostAsJsonAsync($"api/boardpermissions", new NewBoardMember(Board.BoardId, NewMemberUsername, false, projectId, currentUserId));
-            var response2 = await Http.GetFromJsonAsync<ApplicationUserInfo>($"api/applicationusers/get-user-id/{NewMemberUsername}");
-            var userId = response2.Id;
-            Console.WriteLine(userId);
+            var userId = await ApplicationUserService.GetIdByUserNameAsync(NewMemberUsername);
             if (response.IsSuccessStatusCode)
             {                
                 await LoadTeamMembers();
@@ -180,8 +178,7 @@
     private async Task RemoveMember(string memberId, string memberName)
     {
         var currentUserId = await UserService.GetCurrentUserIdAsync();
-        var response2 = await Http.GetFromJsonAsync<ApplicationUserInfo>($"api/applicationusers/get-user-id/{memberName}");
-        var userId = response2.Id;
+        var userId = await ApplicationUserService.GetIdByUserNameAsync(memberName);
 
 
 

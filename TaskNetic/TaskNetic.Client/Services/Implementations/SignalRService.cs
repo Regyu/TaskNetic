@@ -40,7 +40,6 @@ namespace TaskNetic.Client.Services.Implementations
         public async Task LeaveGroupByUserId(string userId,int boardId)
         {
             string groupName = boardId.ToString();
-            Console.WriteLine($"{userId} : usunięto z boarda {groupName}");
             await _hubConnection.SendAsync("LeaveGroup",userId, groupName);
         }
     
@@ -60,26 +59,22 @@ namespace TaskNetic.Client.Services.Implementations
         }
         public async Task NotifyBoardGroupAboutUpdate(int boardId)
         {
-            string groupName = boardId.ToString();
-            Console.WriteLine($"Wysłano powiadomienie");
+            string groupName = boardId.ToString();            
             await _hubConnection.SendAsync("NotifyBoardGroupAboutUpdate", groupName);
         }
 
         public void OnNotificationReceived(Func<Task> handler)
-        {
-            Console.WriteLine("Notification Received");
+        {            
             _hubConnection.On("ReceiveBoardNotification", handler);
         }
 
         public void OnListUpdate(Func<Task> handler)
         {
-            Console.WriteLine("Added new List !");
             _hubConnection.On("AddNewList", handler);
         }
 
         public void OnCardUpdate(Func<Task> handler)
         {
-            Console.WriteLine("Added new Card !");
             _hubConnection.On("AddNewCard", handler);
         }
         public async Task StopConnectionAsync()
