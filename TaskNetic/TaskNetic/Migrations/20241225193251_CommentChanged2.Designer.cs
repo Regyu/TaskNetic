@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TaskNetic.Data;
@@ -11,9 +12,11 @@ using TaskNetic.Data;
 namespace TaskNetic.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241225193251_CommentChanged2")]
+    partial class CommentChanged2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -360,6 +363,9 @@ namespace TaskNetic.Migrations
 
                     b.Property<string>("UserId")
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("timestamp")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
