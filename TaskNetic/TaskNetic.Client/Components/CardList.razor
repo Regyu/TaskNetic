@@ -1,5 +1,6 @@
 ﻿@using Blazorise
 @inject HttpClient Http
+@inject ISignalRService SignalRService
 @using TaskNetic.Client.DTO
 
 <div class="card-list">
@@ -53,6 +54,7 @@
 </div>
 
 @code {
+    [Parameter] public BoardModel? Board { get; set; }
     [Parameter] public int Id { get; set; }
     [Parameter] public string Title { get; set; } = "List Title";
     [Parameter] public EventCallback<int> OnListRemove { get; set; }

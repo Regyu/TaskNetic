@@ -1,6 +1,8 @@
 ﻿@using Blazorise
 @inject HttpClient Http
+@inject IApplicationUserService ApplicationUserService
 @inject IUserService UserService
+@inject ISignalRService SignalRService
 @using TaskNetic.Client.DTO
 
 <Modal @bind-Visible="IsVisible" Centered>
@@ -23,7 +25,7 @@
                         <div class="my-3 text-center d-flex flex-column justify-content-center align-items-center">
                             <label for="boardName" class="fw-semibold fs-5">Board Name:</label>
                             <TextEdit id="boardName" @bind-Text="@Board.Title"
-                                      Class="form-control my-3 text-center" Style="width:50%;" />
+                            Class="form-control my-3 text-center" Style="width:50%;" />
                         </div>
                     </TabPanel>
 
@@ -50,7 +52,7 @@
                                             </td>
                                             <td>
                                                 <Button Color="Color.Danger" Size="Size.Small"
-                                                        Clicked="@(() => RemoveMember(member.Id))">
+                                                Clicked="@(() => RemoveMember(member.Id,member.Name))">
                                                     Remove
                                                 </Button>
                                             </td>
@@ -70,8 +72,8 @@
                             <h6>Add a new team member:</h6>
                             <div class="input-group mb-3" style="width:60%;">
                                 <TextEdit Placeholder="Enter username"
-                                          @bind-Text="@NewMemberUsername"
-                                          Class="form-control" />
+                                @bind-Text="@NewMemberUsername"
+                                Class="form-control" />
                                 <Button Color="Color.Primary" Clicked="@AddMember">Add Member</Button>
                             </div>
 
@@ -135,6 +137,7 @@
             );
         }
         Close();
+        await SignalRService.NotifyBoardGroupAboutUpdate(Board.BoardId);
     }
 
     private async Task LoadTeamMembers()
@@ -158,10 +161,14 @@
             }
 
             var response = await Http.PostAsJsonAsync($"api/boardpermissions", new NewBoardMember(Board.BoardId, NewMemberUsername, false, projectId, currentUserId));
+            var response2 = await Http.GetFromJsonAsync<ApplicationUserInfo>($"api/applicationusers/get-user-id/{NewMemberUsername}");
+            var userId = response2.Id;
+            Console.WriteLine(userId);
             if (response.IsSuccessStatusCode)
-            {
+            {                
                 await LoadTeamMembers();
                 NewMemberUsername = string.Empty;
+                await SignalRService.NotifyUserAboutBoardUpdate(userId);
             }
         }
         else
@@ -170,21 +177,27 @@
         }
     }
 
-    private async Task RemoveMember(string memberId)
+    private async Task RemoveMember(string memberId, string memberName)
     {
         var currentUserId = await UserService.GetCurrentUserIdAsync();
+        var response2 = await Http.GetFromJsonAsync<ApplicationUserInfo>($"api/applicationusers/get-user-id/{memberName}");
+        var userId = response2.Id;
+
+
 
         var request = new HttpRequestMessage(HttpMethod.Delete, $"api/boardpermissions")
             {
                 Content = JsonContent.Create(new RemoveBoardMember(Board.BoardId, memberId, currentUserId))
             };
-
+        
         var response = await Http.SendAsync(request);
         if (response.IsSuccessStatusCode)
         {
+            await SignalRService.NotifyUserAboutBoardUpdate(userId);
             await LoadTeamMembers();
-            StateHasChanged();
+            StateHasChanged();            
         }
+
     }
 
     private async Task RemoveBoard()
@@ -192,5 +205,6 @@
         await Http.DeleteAsync($"api/boards/{Board.BoardId}");
         await OnRemove.InvokeAsync();
         Close();
+        await SignalRService.NotifyBoardGroupAboutUpdate(Board.BoardId);
     }
 }

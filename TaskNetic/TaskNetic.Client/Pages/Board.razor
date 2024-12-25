@@ -3,6 +3,7 @@
 @using TaskNetic.Client.DTO
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
+@inject ISignalRService SignalRService
 @inject IUserService UserService
 @inject IProjectService ProjectService
 @using static TaskNetic.Client.Models.BoardModel
@@ -40,7 +41,7 @@
                                 {
                                     <li class="nav-item" @onclick:stopPropagation>
                                         <div class="nav-link @(currentBoard?.BoardId == board.BoardId ? "active" : "")"
-                                             @onclick="@(() => SwitchBoard(board))">
+                                        @onclick="@(() => SwitchBoard(board))">
                                             @board.Title
                                             @if (currentBoard?.BoardId == board.BoardId && isUserAdmin)
                                             {
@@ -83,10 +84,10 @@
                 @if (currentBoard != null && isEditBoardModalVisible)
                 {
                     <EditBoardModal IsVisible="@isEditBoardModalVisible"
-                                    IsVisibleChanged="@((value) => isEditBoardModalVisible = value)"
-                                    OnRemove="@OnBoardRemove"
-                                    projectId="@projectId"
-                                    Board="@currentBoard" />
+                    IsVisibleChanged="@((value) => isEditBoardModalVisible = value)"
+                    OnRemove="@OnBoardRemove"
+                    projectId="@projectId"
+                    Board="@currentBoard" />
                 }
 
 
@@ -100,7 +101,7 @@
                                     <Div Class="d-flex flex-column">
                                         <DropZone TItem="CardModel" Name="@list.Id.ToString()" AllowReorder="true" Reordered="OnReordered" Class="card-list rounded-bottom-0">
                                             <Heading Size="HeadingSize.Is5" Margin="Margin.Is3.FromBottom" Style="display:flex; justify-content:space-between">
-                                                <ListTitle Title="@list.Title" ListId="@list.Id" @ref="listTitleRefs[list.Id]"/>
+                                                <ListTitle Title="@list.Title" BoardId="@currentBoard.BoardId" ListId="@list.Id" @ref="listTitleRefs[list.Id]"/>
                                                 <Dropdown>
                                                     <DropdownToggle ToggleIconVisible="false">
                                                         <img src="images/three-dots.svg" height="18" width="18" alt="options" style="cursor: pointer;" />
@@ -122,7 +123,7 @@
 
                                             </Heading>
                                         </DropZone>
-                                        <AddCard ListId="@list.Id" OnCardAdded="async () => await LoadLists()" @ref="listAddRefs[list.Id]"/>
+                                        <AddCard ListId="@list.Id" BoardId="@currentBoard.BoardId" OnCardAdded="async () => await LoadLists()" @ref="listAddRefs[list.Id]"/>
                                     </Div>
                                 }
                             </ChildContent>
@@ -187,11 +188,21 @@
         isLoading = true;
         try
         {
+            await SignalRService.StartAsync();            
+            SignalRService.OnListUpdate(RefreshLists);
+            SignalRService.OnNotificationReceived(ReceiveBoardNotification);
             projectInfo = await ProjectService.GetProjectInfoAsync(projectId);
             userId = await UserService.GetCurrentUserIdAsync();
             isUserAdmin = await UserService.IsUserAdminInProjectAsync(projectId, userId);
             await LoadBoards();
             await LoadLists();
+            if (boards != null)
+            {
+                foreach (BoardModel board in boards)
+                {
+                    await SignalRService.JoinBoardGroup(userId, board.BoardId);
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -204,15 +215,51 @@
         }
 
     }
+    private async Task ReceiveBoardNotification()
+    {
+        if (currentBoard != null)
+            await RefreshBoards();
+        else
+            await LoadBoards();                     
+        await LoadLists();
+        StateHasChanged();
+        await Task.CompletedTask;
+    }
+
+    private async Task RefreshBoards()
+    {
+        var response = await Http.GetAsync($"api/boards/{projectId}/{userId}");
+        if (response.IsSuccessStatusCode)
+        {
+            isAuthorized = true;
+            boards = await response.Content.ReadFromJsonAsync<IEnumerable<BoardModel>>();
+            currentBoard = boards.Where(l => l.BoardId == currentBoard.BoardId).FirstOrDefault();
+        }
+        else
+        {
+            isAuthorized = false;
+        }
+    }
+
+    private async Task RefreshLists()
+    {
+        await LoadLists();
+        StateHasChanged();
+        dropContainer.Refresh();
+        await Task.CompletedTask;
+    }
+
 
     private async Task SwitchBoard(BoardModel board)
     {
         currentBoard = board;
+        await SignalRService.JoinBoardGroup(userId, board.BoardId);
         await LoadLists();
     }
 
     private async Task OnBoardRemove()
     {
+        await SignalRService.NotifyGroupAboutListUpdate(currentBoard.BoardId);
         await LoadBoards();
         await LoadLists();
         StateHasChanged();
@@ -220,6 +267,7 @@
 
     private async Task OnListRemove(int listId)
     {
+        await SignalRService.NotifyBoardGroupAboutUpdate(currentBoard.BoardId);
         await LoadLists();
         StateHasChanged();
     }
@@ -327,6 +375,7 @@
         StateHasChanged();
 
         var response = await Http.PutAsJsonAsync("api/cards/update-positions", updates);
+        await SignalRService.NotifyGroupAboutListUpdate(currentBoard.BoardId);
     }
 
     private async Task MoveListLeft(int listId)
@@ -352,7 +401,8 @@
             await UpdateListsPosition(updates);
 
             await LoadLists();
-            dropContainer.Refresh();
+            await SignalRService.NotifyGroupAboutListUpdate(currentBoard.BoardId);
+            dropContainer.Refresh();            
         }
     }
 
@@ -377,15 +427,18 @@
                 }).ToList();
 
             await UpdateListsPosition(updates);
-
+            
             await LoadLists();
+            await SignalRService.NotifyGroupAboutListUpdate(currentBoard.BoardId);
             dropContainer.Refresh();
+            
         }
     }
 
     private async Task UpdateListsPosition(IEnumerable<MoveListsRequest> updates)
     {
         var response = await Http.PutAsJsonAsync("api/lists/move", updates);
+        
         if (!response.IsSuccessStatusCode)
         {
             Console.WriteLine("Failed to update lists.");
@@ -400,6 +453,7 @@
             var request = await Http.PostAsJsonAsync($"api/lists/board/{currentBoard?.BoardId}", newListName);
             if (request.IsSuccessStatusCode)
             {
+                await SignalRService.NotifyGroupAboutListUpdate(currentBoard.BoardId);
                 await LoadLists();
             }
             newListName = string.Empty;
@@ -436,6 +490,7 @@
     public async Task DeleteList(int listId)
     {
         await Http.DeleteAsync($"api/lists/{listId}");
+        await SignalRService.NotifyGroupAboutListUpdate(currentBoard.BoardId);
         await LoadLists();
     }
 }

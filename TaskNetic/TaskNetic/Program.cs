@@ -16,6 +16,8 @@ using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+
 builder.Services.AddSignalR()
     .AddAzureSignalR(options =>
     {

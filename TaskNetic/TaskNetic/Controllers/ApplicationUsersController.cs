@@ -28,7 +28,7 @@ namespace TaskNetic.Api.Controllers
         {
             try
             {
-                var user = await _applicationUserService.GetByUserNameAsync(userName);
+                ApplicationUser user = await _applicationUserService.GetByUserNameAsync(userName);
                 return Ok(user);
             }
             catch (InvalidOperationException ex)

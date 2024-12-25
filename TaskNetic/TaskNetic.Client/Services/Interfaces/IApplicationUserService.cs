@@ -3,6 +3,6 @@ namespace TaskNetic.Client.Services.Interfaces
 {
     public interface IApplicationUserService
     {
-        Task<ApplicationUserInfo> GetByUserNameAsync(string userName);
+        Task<string?> GetIdByUserNameAsync(string userName);
     }
 }

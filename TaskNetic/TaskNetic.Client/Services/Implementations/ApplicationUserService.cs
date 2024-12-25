@@ -15,10 +15,10 @@ namespace TaskNetic.Client.Services.Implementations
             _httpClient = httpClient;
         }
 
-        public async Task<ApplicationUserInfo> GetByUserNameAsync(string userName)
+        public async Task<string?> GetIdByUserNameAsync(string userName)
         {
             var request = await _httpClient.GetFromJsonAsync<ApplicationUserInfo>($"api/applicationusers/{userName}/id");
-            return request;
+            return request.Id;
         }
     }
 }
