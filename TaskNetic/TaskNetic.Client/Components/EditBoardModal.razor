@@ -1,119 +1,108 @@
-﻿@inject HttpClient Http
-@using Microsoft.AspNetCore.SignalR.Client;
-@using TaskNetic.Client.Services.Implementations;
-@inject ISignalRService SignalRService
-@inject IApplicationUserService ApplicationUserService
+﻿@using Blazorise
+@inject HttpClient Http
+@inject IUserService UserService
 @using TaskNetic.Client.DTO
 
-<div class="modal @(IsVisible ? "show d-block" : "d-none")" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-        <div class="modal-content w-75">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Board</h5>
-                <button type="button" class="btn-close" @onclick="@Close"></button>
-            </div>
+<Modal @bind-Visible="IsVisible" Centered>
+    <ModalContent Size="ModalSize.Large" Class="w-100">
+        <ModalHeader>
+            <ModalTitle>Edit Board</ModalTitle>
+            <CloseButton @onclick="Close" />
+        </ModalHeader>
 
-            <div class="modal-body">
-                <ul class="nav nav-tabs" id="editBoardTabs">
-                    <li class="nav-item">
-                        <a class="nav-link @(activeTab == "general" ? "active" : "")"
-                        @onclick="@(() => SetActiveTab("general"))">General</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @(activeTab == "team" ? "active" : "")"
-                        @onclick="@(() => SetActiveTab("team"))">Team</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @(activeTab == "danger zone" ? "active" : "")"
-                        @onclick="@(() => SetActiveTab("danger zone"))">Danger Zone</a>
-                    </li>
-                </ul>
+        <ModalBody>
+            <Tabs SelectedTab="@activeTab" SelectedTabChanged="@SetActiveTab">
+                <Items>
+                    <Tab Name="general">General</Tab>
+                    <Tab Name="team">Team</Tab>
+                    <Tab Name="danger">Danger Zone</Tab>
+                </Items>
 
-                @if (activeTab == "general")
-                {
-                    <div class="my-3 text-center d-flex flex-column justify-content-center align-items-center">
-                        <label for="boardName" class="fw-semibold fs-5">Board Name:</label>
-                        <InputText id="boardName" @bind-Value="@Board.Title"
-                        class="form-control my-3 text-center" style="width:50%;" />
-                    </div>
-                }
-                else if (activeTab == "team")
-                {
-                    <table class="table table-hover my-3">
-                        <thead>
-                            <tr class="text-center">
-                                <th scope="col">User</th>
-                                <th scope="col">Edit Permissions</th>
-                                <th scope="col">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (BoardMembers != null && BoardMembers.Any())
-                            {
-                                @foreach (var member in BoardMembers)
+                <Content>
+                    <TabPanel Name="general">
+                        <div class="my-3 text-center d-flex flex-column justify-content-center align-items-center">
+                            <label for="boardName" class="fw-semibold fs-5">Board Name:</label>
+                            <TextEdit id="boardName" @bind-Text="@Board.Title"
+                                      Class="form-control my-3 text-center" Style="width:50%;" />
+                        </div>
+                    </TabPanel>
+
+                    <TabPanel Name="team">
+                        <table class="table table-hover my-3">
+                            <thead>
+                                <tr class="text-center">
+                                    <th scope="col">User</th>
+                                    <th scope="col">Edit Permissions</th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (BoardMembers != null && BoardMembers.Any())
                                 {
-                                    <tr class="text-center align-middle">
-                                        <td>@member.Name</td>
-                                        <td class="text-center">
-                                            <div class="form-switch">
-                                                <input type="checkbox"
-                                                @bind="@member.CanEdit"
-                                                class="form-check-input"
-                                                role="switch" />
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-danger btn-sm"
-                                            @onclick="@(() => RemoveMember(member.Name,member.Id))">Remove</button>
-                                        </td>
+                                    @foreach (var member in BoardMembers)
+                                    {
+                                        <tr class="text-center align-middle">
+                                            <td>@member.Name</td>
+                                            <td class="align-middle">
+                                                <Div Class="d-flex justify-content-center">
+                                                    <Switch @bind-Checked="@member.CanEdit" Class="mx-auto" />
+                                                </Div>
+                                            </td>
+                                            <td>
+                                                <Button Color="Color.Danger" Size="Size.Small"
+                                                        Clicked="@(() => RemoveMember(member.Id))">
+                                                    Remove
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center">No team members found.</td>
                                     </tr>
                                 }
-                            }
-                            else
+                            </tbody>
+                        </table>
+
+                        <div class="mt-4">
+                            <h6>Add a new team member:</h6>
+                            <div class="input-group mb-3" style="width:60%;">
+                                <TextEdit Placeholder="Enter username"
+                                          @bind-Text="@NewMemberUsername"
+                                          Class="form-control" />
+                                <Button Color="Color.Primary" Clicked="@AddMember">Add Member</Button>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(AddMemberError))
                             {
-                                <tr>
-                                    <td colspan="4" class="text-center">No team members found.</td>
-                                </tr>
+                                <p class="text-danger">@AddMemberError</p>
                             }
-                        </tbody>
-                    </table>
-
-                    <div class="mt-4">
-                        <h6>Add a new team member:</h6>
-                        <div class="input-group mb-3" style="width:60%;">
-                            <input type="text" placeholder="Enter username"
-                            @bind-value="@NewMemberUsername"
-                            class="form-control" />
-                            <button class="btn btn-primary" @onclick="AddMember">Add Member</button>
                         </div>
+                    </TabPanel>
 
-                        @if (!string.IsNullOrEmpty(AddMemberError))
-                        {
-                            <p class="text-danger">@AddMemberError</p>
-                        }
-                    </div>
-                }
-                else if (activeTab == "danger zone")
-                {
-                    <div class="mt-3 text-center">
-                        <h5 class="text-danger mb-3">Deleting a board is irreversible!</h5>
-                        <button type="button" class="btn btn-danger"
-                        @onclick="@RemoveBoard">Delete Board</button>
-                    </div>
-                }
-            </div>
+                    <TabPanel Name="danger">
+                        <div class="mt-3 text-center">
+                            <h5 class="text-danger mb-3">Deleting a board is irreversible!</h5>
+                            <Button Color="Color.Danger" Clicked="@RemoveBoard">Delete Board</Button>
+                        </div>
+                    </TabPanel>
+                </Content>
+            </Tabs>
+        </ModalBody>
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @onclick="@Close">Close</button>
-                <button type="submit" formnovalidate class="btn btn-primary"
-                @onclick="@SaveChanges">Save Changes</button>
-            </div>
-        </div>
-    </div>
-</div>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@Close">Close</Button>
+            <Button Color="Color.Primary" Clicked="@SaveChanges">Save Changes</Button>
+        </ModalFooter>
+
+    </ModalContent>
+</Modal>
 
 @code {
     [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
     [Parameter] public EventCallback OnRemove { get; set; }
     [Parameter] public int projectId { get; set; }
     [Parameter] public BoardModel Board { get; set; }
@@ -122,24 +111,17 @@
     private List<BoardMember> BoardMembers { get; set; } = new();
     private string NewMemberUsername { get; set; } = string.Empty;
     private string AddMemberError = string.Empty;
-    public string? userId;
-
-    protected override async Task OnParametersSetAsync()
-    {
-        if (Board != null)
-        {
-            await LoadTeamMembers();
-        }
-    }
 
     private void Close()
     {
-        IsVisible = false;
+        IsVisibleChanged.InvokeAsync(false);
     }
 
-    private void SetActiveTab(string tabName)
+    private async Task SetActiveTab(string tabName)
     {
         activeTab = tabName;
+        if (tabName == "team")
+            await LoadTeamMembers();
     }
 
     private async Task SaveChanges()
@@ -151,16 +133,13 @@
                 $"api/boardpermissions/{Board.BoardId}/user/{member.Id}",
                 member.CanEdit
             );
-            var response2 = await Http.GetFromJsonAsync<ApplicationUserInfo>($"api/applicationusers/get-user-id/{member.Name}");
-            userId = response2.Id;
-            SignalRService.NotifyUserAboutBoardUpdate(userId);
         }
         Close();
     }
 
     private async Task LoadTeamMembers()
     {
-        if(Board != null)
+        if (Board != null)
         {
             BoardMembers = await Http.GetFromJsonAsync<List<BoardMember>>($"api/boardpermissions/{Board.BoardId}/team");
         }
@@ -170,12 +149,17 @@
     {
         if (!string.IsNullOrWhiteSpace(NewMemberUsername))
         {
-            var response = await Http.PostAsJsonAsync($"api/boardpermissions", new NewBoardMember(Board.BoardId, NewMemberUsername, false, projectId));
-            var response2 = await Http.GetFromJsonAsync<ApplicationUserInfo>($"api/applicationusers/get-user-id/{NewMemberUsername}");
-            userId = response2.Id;
+            var currentUserId = await UserService.GetCurrentUserIdAsync();
+
+            if(BoardMembers.Any(m => m.Name == NewMemberUsername))
+            {
+                AddMemberError = "User is already a member of the team.";
+                return;
+            }
+
+            var response = await Http.PostAsJsonAsync($"api/boardpermissions", new NewBoardMember(Board.BoardId, NewMemberUsername, false, projectId, currentUserId));
             if (response.IsSuccessStatusCode)
             {
-                await SignalRService.NotifyUserAboutBoardUpdate(userId);
                 await LoadTeamMembers();
                 NewMemberUsername = string.Empty;
             }
@@ -186,14 +170,18 @@
         }
     }
 
-    private async Task RemoveMember(string memberName, string memberId)
+    private async Task RemoveMember(string memberId)
     {
-        var response = await Http.DeleteAsync($"api/boardpermissions/{Board.BoardId}/user/{memberId}");
-        var response2 = await Http.GetFromJsonAsync<ApplicationUserInfo>($"api/applicationusers/get-user-id/{memberName}");
-        userId = response2.Id;
+        var currentUserId = await UserService.GetCurrentUserIdAsync();
+
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"api/boardpermissions")
+            {
+                Content = JsonContent.Create(new RemoveBoardMember(Board.BoardId, memberId, currentUserId))
+            };
+
+        var response = await Http.SendAsync(request);
         if (response.IsSuccessStatusCode)
         {
-            await SignalRService.NotifyUserAboutBoardUpdate(userId);
             await LoadTeamMembers();
             StateHasChanged();
         }
@@ -202,33 +190,7 @@
     private async Task RemoveBoard()
     {
         await Http.DeleteAsync($"api/boards/{Board.BoardId}");
-        foreach (var member in BoardMembers)
-        {
-            var response2 = await Http.GetFromJsonAsync<ApplicationUserInfo>($"api/applicationusers/get-user-id/{member.Name}");
-            userId = response2.Id;
-            await SignalRService.NotifyUserAboutBoardUpdate(userId);
-        }
         await OnRemove.InvokeAsync();
         Close();
     }
 }
-
-<style>
-    .modal.show {
-        display: block;
-    }
-
-    .modal.d-none {
-        display: none;
-    }
-
-    .modal-header .btn-close {
-        background-color: transparent;
-        border: none;
-    }
-
-    .table th, .table td {
-        vertical-align: middle;
-    }
-
-</style>

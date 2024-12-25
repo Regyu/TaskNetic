@@ -1,11 +1,10 @@
 ﻿@page "/board/{projectId:int}"
+@using Blazorise
 @using TaskNetic.Client.DTO
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 @inject IUserService UserService
 @inject IProjectService ProjectService
-@inject ISignalRService SignalRService
-@using Microsoft.AspNetCore.SignalR.Client
 @using static TaskNetic.Client.Models.BoardModel
 @using TaskNetic.Client.Components
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
@@ -13,6 +12,7 @@
 
 <AuthorizeView>
     <Authorized>
+
         @if (isLoading)
         {
             <div class="spinner-container">
@@ -32,20 +32,19 @@
                 <div class="navbar-container">
                     <nav class="navbar navbar-expand-lg navbar-light transparent-navbar">
                         <div class="container-fluid justify-content-start">
-                            <!-- Project Title -->
+
                             <a class="navbar-brand text-white mx-5" href="#">@projectInfo.Name</a>
 
-                            <!-- Boards Tabs -->
                             <ul class="nav nav-tabs">
                                 @foreach (var board in boards)
                                 {
                                     <li class="nav-item" @onclick:stopPropagation>
                                         <div class="nav-link @(currentBoard?.BoardId == board.BoardId ? "active" : "")"
-                                           @onclick="@(() => SwitchBoard(board))" @onclick:preventDefault>
+                                             @onclick="@(() => SwitchBoard(board))">
                                             @board.Title
                                             @if (currentBoard?.BoardId == board.BoardId && isUserAdmin)
                                             {
-                                                <img src="images/edit.svg" alt="Edit Board" @onclick:preventDefault @onclick="ShowEditBoardModal" class="editBoard-button" />
+                                                <img src="images/edit.svg" alt="Edit Board" @onclick="ShowEditBoardModal" class="editBoard-button" />
                                             }
 
                                         </div>
@@ -55,7 +54,7 @@
                                 @if (isUserAdmin)
                                 {
                                     <li class="nav-item">
-                                        <a class="nav-link text-white" @onclick="ShowCreateBoardModal">+</a>
+                                        <a class="nav-link text-white" @onclick="() => isCreateBoardModalVisible = true">+</a>
                                     </li>
                                 }
                             </ul>
@@ -67,7 +66,7 @@
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <h5>Create new board</h5>
-                                        <button class="close-button mb-2" @onclick="CloseCreateBoardModal">×</button>
+                                        <button class="close-button mb-2" @onclick="() => isCreateBoardModalVisible = false">×</button>
                                     </div>
                                     <div class="modal-body mb-3">
                                         <input type="text" placeholder="Board name" @bind="newBoardName" class="form-control" />
@@ -81,14 +80,78 @@
                     </nav>
                 </div>
 
-                @if(currentBoard != null)
+                @if (currentBoard != null && isEditBoardModalVisible)
                 {
                     <EditBoardModal IsVisible="@isEditBoardModalVisible"
-                                    OnRemove="@LoadBoards"
+                                    IsVisibleChanged="@((value) => isEditBoardModalVisible = value)"
+                                    OnRemove="@OnBoardRemove"
                                     projectId="@projectId"
                                     Board="@currentBoard" />
                 }
-                
+
+
+                <div class="list-container d-flex column-gap-3">
+                    @if (Lists != null && Cards != null)
+                    {
+                        <DropContainer TItem="CardModel" Items="Cards" ItemDropped="OnCardDropped" ItemsFilter="@FilterItems" Class="blazorise-container" @ref="dropContainer">
+                            <ChildContent>
+                                @foreach (var list in Lists)
+                                {
+                                    <Div Class="d-flex flex-column">
+                                        <DropZone TItem="CardModel" Name="@list.Id.ToString()" AllowReorder="true" Reordered="OnReordered" Class="card-list rounded-bottom-0">
+                                            <Heading Size="HeadingSize.Is5" Margin="Margin.Is3.FromBottom" Style="display:flex; justify-content:space-between">
+                                                <ListTitle Title="@list.Title" ListId="@list.Id" @ref="listTitleRefs[list.Id]"/>
+                                                <Dropdown>
+                                                    <DropdownToggle ToggleIconVisible="false">
+                                                        <img src="images/three-dots.svg" height="18" width="18" alt="options" style="cursor: pointer;" />
+                                                    </DropdownToggle>
+                                                    <DropdownMenu>
+                                                        <DropdownItem Header>
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <h6 class="flex-fill text-center fw-semibold mb-0">List Menu</h6>
+                                                                <button class="btn-close" style="width: 10px; height: 10px;"></button>
+                                                            </div>
+                                                        </DropdownItem>
+                                                        <DropdownItem @onclick="() => EditListTitle(list.Id)">Change Title</DropdownItem>
+                                                        <DropdownItem @onclick="() => ShowAddCard(list.Id)">Add Card</DropdownItem>
+                                                        <DropdownItem @onclick="() => MoveListLeft(list.Id)">Move Left</DropdownItem>
+                                                        <DropdownItem @onclick="() => MoveListRight(list.Id)">Move Right</DropdownItem>
+                                                        <DropdownItem @onclick="() => DeleteList(list.Id)" Class="text-danger">Delete List</DropdownItem>
+                                                    </DropdownMenu>
+                                                </Dropdown>
+
+                                            </Heading>
+                                        </DropZone>
+                                        <AddCard ListId="@list.Id" OnCardAdded="async () => await LoadLists()" @ref="listAddRefs[list.Id]"/>
+                                    </Div>
+                                }
+                            </ChildContent>
+                            <ItemTemplate Context="cardContext">
+                                <div class="card-item">
+                                    @cardContext.CardTitle
+                                </div>
+                            </ItemTemplate>
+                        </DropContainer>
+
+                    }
+                    <div class="add-list">
+
+                        @if (IsListAddInputVisible)
+                        {
+                            <div class="add-list-input rounded-2 px-2 py-3">
+                                <input type="text" @bind="newListName" placeholder="Enter list name" class="form-control" />
+                                <div class="d-flex w-100 justify-content-between align-items-center mt-2 px-2">
+                                    <button class="btn btn-primary btn-sm w-50" @onclick="AddList">Add List</button>
+                                    <button type="button" class="btn-close" aria-label="Close" @onclick="() => IsListAddInputVisible = false"></button>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="add-list-button rounded-2" style="text-decoration:none; cursor:pointer;" @onclick="() => IsListAddInputVisible = true"><img src="images/plus2.svg" alt="plus" /> Add new list</div>
+                        }
+                    </div>
+                </div>
             </div>
         }
     </Authorized>
@@ -107,25 +170,28 @@
     private ProjectInfo projectInfo;
     private IEnumerable<BoardModel>? boards;
     public BoardModel? currentBoard;
+    private IEnumerable<List>? Lists;
+    private List<CardModel> Cards { get; set; } = new();
+    private Dictionary<int, int> CardToListMapping { get; set; } = new();
     private bool isCreateBoardModalVisible = false;
     private bool isEditBoardModalVisible = false;
     private string newBoardName = string.Empty;
+    private bool IsListAddInputVisible = false;
+    private string newListName = string.Empty;
+    private Dictionary<int, ListTitle> listTitleRefs = new();
+    private Dictionary<int, AddCard> listAddRefs = new();
+    private DropContainer<CardModel> dropContainer;
 
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
-        
-        
-        
-        
         try
         {
-            await SignalRService.StartAsync();
-            SignalRService.OnNotificationReceived(ReceiveBoardNotification); 
             projectInfo = await ProjectService.GetProjectInfoAsync(projectId);
             userId = await UserService.GetCurrentUserIdAsync();
             isUserAdmin = await UserService.IsUserAdminInProjectAsync(projectId, userId);
             await LoadBoards();
+            await LoadLists();
         }
         catch (Exception ex)
         {
@@ -139,27 +205,23 @@
 
     }
 
-    private async Task ReceiveBoardNotification()
-    {
-        await LoadBoards();
-        StateHasChanged();
-        await Task.CompletedTask;
-    }
-
-
-    private void SwitchBoard(BoardModel board)
+    private async Task SwitchBoard(BoardModel board)
     {
         currentBoard = board;
+        await LoadLists();
     }
 
-    private void ShowCreateBoardModal()
+    private async Task OnBoardRemove()
     {
-        isCreateBoardModalVisible = true;
+        await LoadBoards();
+        await LoadLists();
+        StateHasChanged();
     }
 
-    private void CloseCreateBoardModal()
+    private async Task OnListRemove(int listId)
     {
-        isCreateBoardModalVisible = false;
+        await LoadLists();
+        StateHasChanged();
     }
 
     private async void CreateBoard()
@@ -196,6 +258,155 @@
         }
     }
 
+    private async Task LoadLists()
+    {
+        Lists = null;
+        Cards = new();
+        CardToListMapping = new();
+        var response = await Http.GetAsync($"api/lists/board/{currentBoard?.BoardId}");
+        if (response.IsSuccessStatusCode)
+        {
+            Lists = (await response.Content.ReadFromJsonAsync<IEnumerable<List>>())?.OrderBy(list => list.Position);
+            if (Lists != null)
+            {
+                Cards = Lists.SelectMany(l => l.Cards).OrderBy(card => card.CardPosition).ToList();
+                CardToListMapping = Cards.ToDictionary(card => card.CardId, card => Lists.First(list => list.Cards.Contains(card)).Id);
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    private bool FilterItems(CardModel card, string dropZone)
+    {
+        return CardToListMapping.TryGetValue(card.CardId, out var listId) && listId.ToString() == dropZone;
+    }
+
+    private async Task OnCardDropped(DraggableDroppedEventArgs<CardModel> args)
+    {
+        var card = args.Item;
+        var newListId = int.Parse(args.DropZoneName);
+        var sourceListId = int.Parse(args.SourceDropZoneName);
+
+        if (CardToListMapping.TryGetValue(card.CardId, out var oldListId) && oldListId != newListId)
+        {
+            CardToListMapping[card.CardId] = newListId;
+
+            var oldList = Lists.FirstOrDefault(list => list.Id == oldListId);
+            oldList?.Cards.Remove(card);
+
+            var newList = Lists.FirstOrDefault(list => list.Id == newListId);
+            if (newList != null)
+            {
+                card.CardPosition = newList.Cards.Count + 1;
+                newList.Cards.Add(card);
+            }
+
+            StateHasChanged();
+
+            await Http.PutAsJsonAsync($"api/cards/move/{card.CardId}", new MoveCardRequest { SourceListId = sourceListId, TargetListId = newListId, NewPosition = args.IndexInZone });
+
+        }
+    }
+
+    private async Task OnReordered(DropZoneOrder<CardModel> order)
+    {
+        var reorderedCards = order.OrderedItems.Select((item) => new { item.Item, NewPosition = item.Order + 1 }).ToList();
+
+        foreach (var reordered in reorderedCards)
+        {
+            reordered.Item.CardPosition = reordered.NewPosition;
+        }
+
+        var updates = reorderedCards.Select(rc => new CardPositionUpdate
+            {
+                CardId = rc.Item.CardId,
+                CardPosition = rc.NewPosition
+            });
+
+        StateHasChanged();
+
+        var response = await Http.PutAsJsonAsync("api/cards/update-positions", updates);
+    }
+
+    private async Task MoveListLeft(int listId)
+    {
+        if (Lists == null) return;
+
+        var currentList = Lists.FirstOrDefault(l => l.Id == listId);
+        if (currentList == null) return;
+
+        var previousList = Lists.OrderBy(l => l.Position).LastOrDefault(l => l.Position < currentList.Position);
+        if (previousList != null)
+        {
+            int tempPosition = currentList.Position;
+            currentList.Position = previousList.Position;
+            previousList.Position = tempPosition;
+
+            var updates = Lists.Select(list => new MoveListsRequest
+                {
+                    ListId = list.Id,
+                    Position = list.Position
+                }).ToList();
+
+            await UpdateListsPosition(updates);
+
+            await LoadLists();
+            dropContainer.Refresh();
+        }
+    }
+
+    private async Task MoveListRight(int listId)
+    {
+        if (Lists == null) return;
+
+        var currentList = Lists.FirstOrDefault(l => l.Id == listId);
+        if (currentList == null) return;
+
+        var nextList = Lists.OrderBy(l => l.Position).FirstOrDefault(l => l.Position > currentList.Position);
+        if (nextList != null)
+        {
+            int tempPosition = currentList.Position;
+            currentList.Position = nextList.Position;
+            nextList.Position = tempPosition;
+
+            var updates = Lists.Select(list => new MoveListsRequest
+                {
+                    ListId = list.Id,
+                    Position = list.Position
+                }).ToList();
+
+            await UpdateListsPosition(updates);
+
+            await LoadLists();
+            dropContainer.Refresh();
+        }
+    }
+
+    private async Task UpdateListsPosition(IEnumerable<MoveListsRequest> updates)
+    {
+        var response = await Http.PutAsJsonAsync("api/lists/move", updates);
+        if (!response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Failed to update lists.");
+        }
+    }
+
+
+    private async Task AddList()
+    {
+        if (!string.IsNullOrWhiteSpace(newListName))
+        {
+            var request = await Http.PostAsJsonAsync($"api/lists/board/{currentBoard?.BoardId}", newListName);
+            if (request.IsSuccessStatusCode)
+            {
+                await LoadLists();
+            }
+            newListName = string.Empty;
+            IsListAddInputVisible = false;
+        }
+    }
+
     private void ShowEditBoardModal()
     {
         isEditBoardModalVisible = true;
@@ -205,16 +416,34 @@
     {
         isEditBoardModalVisible = false;
     }
-    
-    public async ValueTask DisposeAsync()
+
+    private async Task EditListTitle(int listId)
     {
-        await SignalRService.StopConnectionAsync();
+        if (listTitleRefs.TryGetValue(listId, out var listComponent))
+        {
+            await listComponent.ShowListTitleEdit();
+        }
+    }
+
+    private async Task ShowAddCard(int listId)
+    {
+        if(listAddRefs.TryGetValue(listId, out var listComponent))
+        {
+            await listComponent.ShowAddCardInput();
+        }
+    }
+
+    public async Task DeleteList(int listId)
+    {
+        await Http.DeleteAsync($"api/lists/{listId}");
+        await LoadLists();
     }
 }
 
+
 <style>
     .transparent-navbar {
-        background-color: rgba(255, 255, 255, 0.2); /* Transparent */
+        background-color: rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(5px);
     }
 
@@ -273,23 +502,75 @@
     }
 
     .editBoard-button {
-        position: relative;
         margin-left: 10px;
         width: 18px;
         height: 18px;
         cursor: pointer;
-        z-index: 1;
     }
 
     .spinner-container {
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh; /* Full page height */
+        height: 100vh;
     }
 
     .spinner-border {
         width: 3rem;
         height: 3rem;
+    }
+
+    .list-container {
+        display: flex;
+        gap: 15px;
+        padding: 25px;
+        align-items: flex-start;
+    }
+
+    .blazorise-container {
+        display: flex;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .card-list {
+        width: 250px;
+        background-color: #f0f2f4;
+        border-radius: 5px;
+        padding: 10px;
+        padding-bottom: 0px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-item {
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin-bottom: 5px;
+        transition: border-color 0.3s ease;
+        cursor: pointer;
+    }
+
+    .add-list-button {
+        width: 15vw;
+        background: rgba(0,0,0, 0.45);
+        color: white;
+        padding: 7px;
+        padding-left: 15px;
+    }
+
+        .add-list-button img {
+            width: 10px;
+            height: 10px;
+        }
+
+    .add-list-input {
+        background: #f1f2f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        margin: 0;
     }
 </style>

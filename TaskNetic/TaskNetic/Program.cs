@@ -11,7 +11,9 @@ using TaskNetic.Models;
 using TaskNetic.Hubs;
 using TaskNetic.Services.Implementations;
 using TaskNetic.Services.Interfaces;
-
+using Blazorise;
+using Blazorise.Bootstrap5;
+using Blazorise.Icons.FontAwesome;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSignalR()
@@ -57,7 +59,7 @@ builder.Services.Configure<IdentityOptions>(options =>
 });
 builder.Services.AddScoped<IDbContextFactory<ApplicationDbContext>, DbContextFactory<ApplicationDbContext>>();
 builder.Services.AddSingleton<IDbContextFactorySource<ApplicationDbContext>, DbContextFactorySource<ApplicationDbContext>>();
-builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<TaskNetic.Services.Interfaces.INotificationService, NotificationService>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IBoardService, BoardService>();
 builder.Services.AddScoped<IBoardPermissionService, BoardPermissionService>();
@@ -74,6 +76,13 @@ builder.Services.AddScoped<ITodoTaskService, TodoTaskService>();
 builder.Services.AddScoped<IApplicationUserService, ApplicationUserService>();
 builder.Services.AddScoped<IBoardPermissionService, BoardPermissionService>();
 builder.Services.AddHttpClient();
+builder.Services
+    .AddBlazorise(options =>
+    {
+        options.Immediate = true;
+    })
+    .AddBootstrap5Providers()
+    .AddFontAwesomeIcons();
 ClientRegistry.RegisterServices(builder.Services);
 WebApplication app = builder.Build();
 

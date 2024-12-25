@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using TaskNetic.Data.Repository;
 using TaskNetic.Models;
 using TaskNetic.Services.Interfaces;
+using TaskNetic.Client.DTO;
 
 namespace TaskNetic.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class ListsController : ControllerBase
     {
         private readonly IListService _listService;
@@ -45,7 +45,7 @@ namespace TaskNetic.Api.Controllers
 
         // POST: api/lists/board/{boardId}
         [HttpPost("board/{boardId}")]
-        public async Task<IActionResult> AddListToBoard(int boardId, [FromBody] List list)
+        public async Task<IActionResult> AddListToBoard(int boardId, [FromBody] string listName)
         {
             try
             {
@@ -53,7 +53,18 @@ namespace TaskNetic.Api.Controllers
                 if (board == null)
                     return NotFound(new { message = $"Board with ID {boardId} not found." });
 
-                await _listService.AddListToBoardsAsync(board, list);
+                var existingLists = await _listService.GetListsForBoardAsync(board);
+
+                var maxPosition = existingLists.Any() ? existingLists.Max(l => l.Position) : 0;
+                int newPosition = maxPosition + 1;
+
+                var newList = new List
+                {
+                    Title = listName,
+                    Position = newPosition
+                };
+
+                await _listService.AddListToBoardsAsync(board, newList);
                 return Ok(new { message = "List added to board successfully." });
             }
             catch (ArgumentNullException ex)
@@ -72,7 +83,7 @@ namespace TaskNetic.Api.Controllers
         {
             try
             {
-                var list = await _listService.GetByIdAsync(listId); // Ensure GetByIdAsync exists in Repository
+                var list = await _listService.GetByIdAsync(listId);
                 if (list == null)
                     return NotFound(new { message = "List not found." });
 
@@ -82,6 +93,44 @@ namespace TaskNetic.Api.Controllers
             catch (ArgumentNullException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // PUT: api/lists/{listId}
+        [HttpPut("{listId}/name")]
+        public async Task<IActionResult> UpdateListName(int listId, [FromBody] string listName)
+        {
+            try
+            {
+                var list = await _listService.GetByIdAsync(listId);
+                if (list == null)
+                    return NotFound(new { message = "List not found." });
+
+                list.Title = listName;
+                await _listService.UpdateAsync(list);
+                return Ok(new { message = "List updated successfully." });
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("move")]
+        public async Task<IActionResult> UpdateLists([FromBody] IEnumerable<MoveListsRequest> listUpdates)
+        {
+            try
+            {
+                await _listService.MoveListsAsync(listUpdates);
+                return Ok();
             }
             catch (Exception ex)
             {

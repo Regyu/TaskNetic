@@ -1,3 +1,6 @@
+using Blazorise;
+using Blazorise.Bootstrap5;
+using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -16,6 +19,14 @@ builder.Services.AddScoped(sp =>
     NavigationManager navigation = sp.GetRequiredService<NavigationManager>();
     return new HttpClient { BaseAddress = new Uri(navigation.BaseUri) };
 });
+builder.Services
+    .AddBlazorise(options =>
+    {
+        options.Immediate = true;
+    })
+    .AddBootstrap5Components()
+    .AddBootstrap5Providers()
+    .AddFontAwesomeIcons();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISignalRService, SignalRService>();
 builder.Services.AddScoped<IApplicationUserService, ApplicationUserService>();
