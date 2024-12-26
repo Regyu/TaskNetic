@@ -22,6 +22,21 @@ namespace TaskNetic.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("ApplicationUserCard", b =>
+                {
+                    b.Property<string>("CardMembersId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("CardsCardId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CardMembersId", "CardsCardId");
+
+                    b.HasIndex("CardsCardId");
+
+                    b.ToTable("ApplicationUserCard", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -162,9 +177,6 @@ namespace TaskNetic.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("CardId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
@@ -214,8 +226,6 @@ namespace TaskNetic.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CardId");
-
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -245,7 +255,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Boards");
+                    b.ToTable("Boards", (string)null);
                 });
 
             modelBuilder.Entity("TaskNetic.Models.BoardPermission", b =>
@@ -271,7 +281,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("BoardPermissions");
+                    b.ToTable("BoardPermissions", (string)null);
                 });
 
             modelBuilder.Entity("TaskNetic.Models.Card", b =>
@@ -310,7 +320,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("TaskListId");
 
-                    b.ToTable("Cards");
+                    b.ToTable("Cards", (string)null);
                 });
 
             modelBuilder.Entity("TaskNetic.Models.Color", b =>
@@ -327,7 +337,7 @@ namespace TaskNetic.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Colors");
+                    b.ToTable("Colors", (string)null);
                 });
 
             modelBuilder.Entity("TaskNetic.Models.Comment", b =>
@@ -351,13 +361,16 @@ namespace TaskNetic.Migrations
                     b.Property<string>("UserId")
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("timestamp")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CardId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
                 });
 
             modelBuilder.Entity("TaskNetic.Models.FileAttachment", b =>
@@ -389,7 +402,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("CardId");
 
-                    b.ToTable("Attachments");
+                    b.ToTable("Attachments", (string)null);
                 });
 
             modelBuilder.Entity("TaskNetic.Models.Label", b =>
@@ -424,7 +437,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("ColorId");
 
-                    b.ToTable("Labels");
+                    b.ToTable("Labels", (string)null);
                 });
 
             modelBuilder.Entity("TaskNetic.Models.List", b =>
@@ -449,7 +462,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("BoardId");
 
-                    b.ToTable("Lists");
+                    b.ToTable("Lists", (string)null);
                 });
 
             modelBuilder.Entity("TaskNetic.Models.Notification", b =>
@@ -478,7 +491,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("TaskNetic.Models.Project", b =>
@@ -498,7 +511,7 @@ namespace TaskNetic.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Projects");
+                    b.ToTable("Projects", (string)null);
                 });
 
             modelBuilder.Entity("TaskNetic.Models.ProjectRole", b =>
@@ -524,7 +537,7 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("ProjectRoles");
+                    b.ToTable("ProjectRoles", (string)null);
                 });
 
             modelBuilder.Entity("TaskNetic.Models.TaskList", b =>
@@ -537,7 +550,7 @@ namespace TaskNetic.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TaskLists");
+                    b.ToTable("TaskLists", (string)null);
                 });
 
             modelBuilder.Entity("TaskNetic.Models.TodoTask", b =>
@@ -562,7 +575,22 @@ namespace TaskNetic.Migrations
 
                     b.HasIndex("TaskListId");
 
-                    b.ToTable("TodoTasks");
+                    b.ToTable("TodoTasks", (string)null);
+                });
+
+            modelBuilder.Entity("ApplicationUserCard", b =>
+                {
+                    b.HasOne("TaskNetic.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("CardMembersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TaskNetic.Models.Card", null)
+                        .WithMany()
+                        .HasForeignKey("CardsCardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -614,13 +642,6 @@ namespace TaskNetic.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("TaskNetic.Models.ApplicationUser", b =>
-                {
-                    b.HasOne("TaskNetic.Models.Card", null)
-                        .WithMany("CardMembers")
-                        .HasForeignKey("CardId");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.Board", b =>
@@ -762,8 +783,6 @@ namespace TaskNetic.Migrations
                     b.Navigation("Attachments");
 
                     b.Navigation("CardLabels");
-
-                    b.Navigation("CardMembers");
 
                     b.Navigation("Comments");
                 });
