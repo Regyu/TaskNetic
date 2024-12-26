@@ -1,0 +1,175 @@
+﻿@using Blazorise
+@inject HttpClient Http
+
+<Modal @bind-Visible="IsVisible" Opened="OpenCardModal" Closed="CloseModal" Scrollable>
+    <ModalContent Class="w-100" Size="ModalSize.Large" Centered>
+        <ModalHeader>
+            <img src="images/card.svg" width="25" height="25" alt="card" class="me-2"/>
+            @if (isEditingTitle)
+            {
+                <input type="text" @bind="selectedCard.CardTitle" class="form-control form-control-sm me-2"
+                       @onblur="SaveTitle" @ref="titleInputRef" />
+            }
+            else if(selectedCard != null)
+            {
+                <ModalTitle Class="fs-4" @onclick="EnableTitleEdit">@selectedCard.CardTitle</ModalTitle>
+            }
+            <CloseButton @onclick="CloseModal" />
+        </ModalHeader>
+
+        <ModalBody Class="d-flex w-100 justify-content-between">
+            <div class="main-content">
+                <div class="d-flex mb-4">
+                    <div class="me-3">
+                        <h6 class="fw-semibold">Card members</h6>
+                        <div class="d-flex align-items-center">
+                            @if (selectedCard != null && selectedCard.CardMembers != null)
+                            {
+                                @foreach (var member in selectedCard.CardMembers)
+                                {
+                                    <UserAvatar userName="@member.UserName" />
+                                }
+                            }
+                            <button class="btn btn-light btn-sm" @onclick="() => isManageMemberModalVisible = true">+</button>
+                            @if (isManageMemberModalVisible)
+                            {
+                                <ManageCardMembers IsVisible="isManageMemberModalVisible" IsVisibleChanged="visible => isManageMemberModalVisible = visible"
+                                                   BoardId="@BoardId" CardId="@CardId" CardMembers="@selectedCard.CardMembers" OnMemberChanged="OpenCardModal" />
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="fw-semibold"><img src="images/document.svg" width="22" height="22" alt="Document" class="me-2"/>Description</h6>
+                    <textarea placeholder="Write detailed description" class="form-control w-100"></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="fw-semibold"><img src="images/checkbox.svg" width="22" height="22" alt="Document" class="me-2" />Tasks</h6>
+                    <button class="btn btn-light btn-sm w-100 text-start">Create task</button>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="fw-semibold"><img src="images/list.svg" width="22" height="22" alt="Document" class="me-2" />Comments</h6>
+                    <textarea placeholder="Write a comment..." class="form-control w-100"></textarea>
+                </div>
+            </div>
+            <div class="side-nav"> 
+                <div class="d-flex flex-column me-auto">
+                    <h6 class="fw-semibold">Add to card</h6>
+                    <button class="btn btn-light btn-sm mb-1"><img src="images/userMinus.svg" width="22" height="22"/>Leave Card</button>
+                    <button class="btn btn-light btn-sm mb-1"><img src="images/people.svg" width="22" height="22" />Members</button>
+                    <button class="btn btn-light btn-sm mb-1"><img src="images/bookmark.svg" width="22" height="22" />Labels</button>
+                    <button class="btn btn-light btn-sm mb-1"><img src="images/deadline.svg" width="22" height="22" />Due date</button>
+                    <button class="btn btn-light btn-sm mb-1"><img src="images/attachment.svg" width="20" height="20" />Attachment</button>
+                </div>
+
+                <div class="d-flex flex-column ms-auto">
+                    <h6 class="my-2 fw-semibold">Actions</h6>
+                    <button class="btn btn-light btn-sm mb-1"><img src="images/move.svg" width="22" height="22" />Move</button>
+                    <button class="btn btn-light btn-sm mb-1"><img src="images/copy.svg" width="22" height="22" />Copy</button>
+                    <button class="btn btn-light btn-sm"><img src="images/delete.svg" width="22" height="22" />Delete</button>
+                </div>
+            </div>
+        </ModalBody>
+    </ModalContent>
+</Modal>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public EventCallback OnExternalCardChanged { get; set; }
+    [Parameter] public int? CardId { get; set; }
+    [Parameter] public int BoardId { get; set; }
+
+    private CardModel? selectedCard;
+    private bool isEditingTitle = false;
+    private bool isManageMemberModalVisible = false;
+    private ElementReference titleInputRef;
+
+    private async Task EnableTitleEdit()
+    {
+        isEditingTitle = true;
+        await Task.Delay(1);
+        await titleInputRef.FocusAsync();
+    }
+
+    private async Task SaveTitle()
+    {
+        isEditingTitle = false;
+
+        var response = await Http.PutAsJsonAsync($"api/cards/{CardId}/title", selectedCard.CardTitle);
+        if (!response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Failed to update card title.");
+        }
+        else
+        {
+            await OnExternalCardChanged.InvokeAsync();
+        }
+    }
+
+    private void CloseModal()
+    {
+        IsVisible = false;
+        IsVisibleChanged.InvokeAsync(IsVisible);
+    }
+
+    private async Task OpenCardModal()
+    {
+        var response = await Http.GetAsync($"api/cards/{CardId}/info");
+        if (response.IsSuccessStatusCode)
+        {
+            selectedCard = await response.Content.ReadFromJsonAsync<CardModel>();
+            IsVisible = true;
+        }
+        else
+        {
+            Console.WriteLine("Failed to load card details.");
+        }
+    }
+}
+
+
+<style>
+    .side-nav{
+        width: 25%;
+    }
+
+    .main-content{
+        width: 75%;
+        padding-right: 5%;
+    }
+
+    .side-nav img{
+        margin: 0 10px;
+    }
+
+    .side-nav button{
+        display: flex;
+        justify-content: start;
+        text-align: start;
+    }
+
+    .modal-content {
+        width: 75vw;
+    }
+
+    .modal-body textarea {
+        resize: none;
+    }
+
+    .modal-footer h6 {
+        margin-bottom: 10px;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+    }
+
+    .modal-footer .btn-danger {
+        color: white;
+    }
+
+</style>

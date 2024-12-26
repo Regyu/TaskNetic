@@ -1,0 +1,14 @@
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Transformed by: SVG Repo Mixer Tools -->
+<svg width="800px" height="800px" viewBox="0 0 24 24" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" fill="#33383e">
+<g id="SVGRepo_bgCarrier" stroke-width="0"/>
+<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/>
+<g id="SVGRepo_iconCarrier">
+<defs>
+<style>.cls-1{fill:none;stroke:#33383e;stroke-miterlimit:10;stroke-width:1.08;}</style>
+</defs>
+<path class="cls-1" d="M8,23,2.62,17.62a2.12,2.12,0,0,1,3-3L7,16V6.11A2.08,2.08,0,0,1,8.82,4,2,2,0,0,1,11,6v6l5.28.75a2,2,0,0,1,1.72,2h0a18,18,0,0,1-1.91,8.09L16,23"/>
+<polyline class="cls-1" points="19 7 22 4 19 1"/>
+<line class="cls-1" x1="14" y1="4" x2="22" y2="4"/>
+</g>
+</svg>

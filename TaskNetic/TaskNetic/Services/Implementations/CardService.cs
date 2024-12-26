@@ -26,6 +26,16 @@ namespace TaskNetic.Services.Implementations
 
             return list.Cards.AsEnumerable();
         }
+        public async Task<Card?> GetFullCardInfoAsync(int cardId)
+        {
+            return await _context.Cards
+                .Include(c => c.Comments) // Include comments
+                .Include(c => c.Attachments) // Include attachments
+                .Include(c => c.TaskList) // Include task list
+                .Include(c => c.CardLabels) // Include labels
+                .Include(c => c.CardMembers) // Include members
+                .FirstOrDefaultAsync(c => c.CardId == cardId);
+        }
 
         public async Task AddCardToListAsync(List list, Card card)
         {

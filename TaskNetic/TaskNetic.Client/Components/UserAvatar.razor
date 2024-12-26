@@ -1,0 +1,37 @@
+﻿<div class="member-avatar me-1" style="background-color: @GenerateBackgroundColor(userName);">
+    @GetInitials(userName)
+</div>
+
+@code {
+    [Parameter] public string userName { get; set; } = "user";
+
+    private string GenerateBackgroundColor(string name)
+    {
+        int hash = name.GetHashCode();
+        int r = (hash & 0xFF0000) >> 16;
+        int g = (hash & 0x00FF00) >> 8;
+        int b = hash & 0x0000FF;
+        return $"rgb({r % 256}, {g % 256}, {b % 256})";
+    }
+
+    private string GetInitials(string name)
+    {
+        var parts = name.Split(' ');
+        return string.Join("", parts.Select(p => p[0])).ToUpper();
+    }
+}
+
+<style>
+
+    .member-avatar {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-weight: bold;
+        border-radius: 50%;
+        border: 2px solid #ddd;
+    }
+</style>
