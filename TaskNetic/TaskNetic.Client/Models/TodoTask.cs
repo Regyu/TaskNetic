@@ -5,6 +5,6 @@
         public int Id { get; set; }
         public required string TaskName { get; set; }
         public bool TaskFinished { get; set; }
-        public TaskList TaskList { get; set; } = null!;
+        public required CardModel Card { get; set; }
     }
 }
