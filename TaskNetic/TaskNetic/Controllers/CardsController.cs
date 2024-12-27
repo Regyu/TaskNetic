@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskNetic.Client.DTO;
@@ -11,18 +12,19 @@ namespace TaskNetic.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // Requires authentication to access these endpoints
     public class CardsController : ControllerBase
     {
         private readonly ICardService _cardService;
         private readonly IListService _listService;
-        private readonly IRepository<List> _listRepository; // Add a repository for List if needed
+        private readonly IRepository<List> _listRepository;
+        private readonly IApplicationUserService _aplicationUserService;
 
-        public CardsController(ICardService cardService, IListService listService,IRepository<List> listRepository)
+        public CardsController(ICardService cardService, IListService listService,IRepository<List> listRepository, IApplicationUserService aplicationUserService)
         {
             _cardService = cardService;
             _listService = listService;
             _listRepository = listRepository;
+            _aplicationUserService = aplicationUserService;
         }
 
         // GET: api/cards/list/{listId}
@@ -46,6 +48,18 @@ namespace TaskNetic.Api.Controllers
             {
                 return StatusCode(500, new { message = ex.Message });
             }
+        }
+
+        // GET: api/cards/{cardId}/info
+        [HttpGet("{cardId}/info")]
+        public async Task<IActionResult> GetFullCardInfo(int cardId)
+        {
+            var card = await _cardService.GetFullCardInfoAsync(cardId);
+
+            if (card == null)
+                return NotFound(new { message = "Card not found" });
+
+            return Ok(card);
         }
 
         // POST: api/cards/list/{listId}
@@ -132,6 +146,60 @@ namespace TaskNetic.Api.Controllers
             {
                 return StatusCode(500, new { message = ex.Message });
             }
+        }
+
+        [HttpPut("{cardId}/title")]
+        public async Task<IActionResult> UpdateCardTitle(int cardId, [FromBody] string title)
+        {
+            var card = await _cardService.GetByIdAsync(cardId);
+
+            if (card == null)
+                return NotFound(new { message = "Card not found" });
+
+            card.CardTitle = title;
+            await _cardService.UpdateAsync(card);
+
+            return Ok(new { message = "Card title updated successfully" });
+        }
+
+        [HttpPost("{cardId}/members")]
+        public async Task<IActionResult> AddMemberToCard(int cardId, [FromBody] string userId)
+        {
+            var card = await _cardService.GetFullCardInfoAsync(cardId);
+
+            if (card == null)
+                return NotFound(new { message = "Card not found" });
+
+            if (card.CardMembers.Any(member => member.Id == userId))
+                return BadRequest(new { message = "User is already a member of this card" });
+
+            var user = await _aplicationUserService.GetUserByIdAsync(userId);
+            if (user == null)
+                return NotFound(new { message = "User not found" });
+            card.CardMembers.Add(user);
+
+            await _cardService.UpdateAsync(card);
+
+            return Ok(new { message = "Member added successfully" });
+        }
+
+        [HttpDelete("{cardId}/members/{userId}")]
+        public async Task<IActionResult> RemoveMemberFromCard(int cardId, string userId)
+        {
+            var card = await _cardService.GetFullCardInfoAsync(cardId);
+
+            if (card == null)
+                return NotFound(new { message = "Card not found" });
+
+            var memberToRemove = card.CardMembers.FirstOrDefault(member => member.Id == userId);
+            if (memberToRemove == null)
+                return BadRequest(new { message = "User is not a member of this card" });
+
+            card.CardMembers.Remove(memberToRemove);
+
+            await _cardService.UpdateAsync(card);
+
+            return Ok(new { message = "Member removed successfully" });
         }
     }
 }

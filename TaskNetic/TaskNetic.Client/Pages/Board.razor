@@ -127,7 +127,7 @@
                                 }
                             </ChildContent>
                             <ItemTemplate Context="cardContext">
-                                <div class="card-item">
+                                <div class="card-item" @onclick="() => OpenCardModal(cardContext.CardId)">
                                     @cardContext.CardTitle
                                 </div>
                             </ItemTemplate>
@@ -151,6 +151,12 @@
                             <div class="add-list-button rounded-2" style="text-decoration:none; cursor:pointer;" @onclick="() => IsListAddInputVisible = true"><img src="images/plus2.svg" alt="plus" /> Add new list</div>
                         }
                     </div>
+                    @if (isCardModalVisible)
+                    {
+                        <CardModal IsVisible="isCardModalVisible" CardId="cardModalId" BoardId="currentBoard.BoardId" 
+                        IsVisibleChanged="@((visible) => isCardModalVisible = visible)" OnExternalCardChanged="async () => await LoadLists()"/>
+                    }
+                    
                 </div>
             </div>
         }
@@ -175,6 +181,8 @@
     private Dictionary<int, int> CardToListMapping { get; set; } = new();
     private bool isCreateBoardModalVisible = false;
     private bool isEditBoardModalVisible = false;
+    private bool isCardModalVisible = false;
+    private int cardModalId = -1;
     private string newBoardName = string.Empty;
     private bool IsListAddInputVisible = false;
     private string newListName = string.Empty;
@@ -222,6 +230,12 @@
     {
         await LoadLists();
         StateHasChanged();
+    }
+
+    private void OpenCardModal(int cardId)
+    {
+        cardModalId = cardId;
+        isCardModalVisible = true;
     }
 
     private async void CreateBoard()
