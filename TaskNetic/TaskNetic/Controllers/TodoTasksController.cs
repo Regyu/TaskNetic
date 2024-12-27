@@ -12,25 +12,25 @@ namespace TaskNetic.Api.Controllers
     public class TodoTasksController : ControllerBase
     {
         private readonly ITodoTaskService _todoTaskService;
-        private readonly IRepository<TaskList> _taskListRepository;
+        private readonly IRepository<Card> _cardRepository;
 
-        public TodoTasksController(ITodoTaskService todoTaskService, IRepository<TaskList> taskListRepository)
+        public TodoTasksController(ITodoTaskService todoTaskService, IRepository<Card> cardRepository)
         {
             _todoTaskService = todoTaskService;
-            _taskListRepository = taskListRepository;
+            _cardRepository = cardRepository;
         }
 
-        // GET: api/todotasks/tasklist/{taskListId}
-        [HttpGet("tasklist/{taskListId}")]
-        public async Task<IActionResult> GetTodoTasksByTaskList(int taskListId)
+        // GET: api/todotasks/card/{cardId}
+        [HttpGet("card/{cardId}")]
+        public async Task<IActionResult> GetTodoTasksByCard(int cardId)
         {
             try
             {
-                var taskList = await _taskListRepository.GetByIdAsync(taskListId);
-                if (taskList == null)
-                    return NotFound(new { message = $"TaskList with ID {taskListId} not found." });
+                var card = await _cardRepository.GetByIdAsync(cardId);
+                if (card == null)
+                    return NotFound(new { message = $"Card with ID {cardId} not found." });
 
-                var todoTasks = await _todoTaskService.GetTodoTasksByTaskListAsync(taskList);
+                var todoTasks = await _todoTaskService.GetTodoTasksByCardAsync(card);
                 return Ok(todoTasks);
             }
             catch (ArgumentNullException ex)
@@ -43,18 +43,18 @@ namespace TaskNetic.Api.Controllers
             }
         }
 
-        // POST: api/todotasks/tasklist/{taskListId}
-        [HttpPost("tasklist/{taskListId}")]
-        public async Task<IActionResult> AddTodoTaskToTaskList(int taskListId, [FromBody] TodoTask todoTask)
+        // POST: api/todotasks/card/{cardId}
+        [HttpPost("card/{cardId}")]
+        public async Task<IActionResult> AddTodoTaskToCard(int cardId, [FromBody] TodoTask todoTask)
         {
             try
             {
-                var taskList = await _taskListRepository.GetByIdAsync(taskListId);
-                if (taskList == null)
-                    return NotFound(new { message = $"TaskList with ID {taskListId} not found." });
+                var card = await _cardRepository.GetByIdAsync(cardId);
+                if (card == null)
+                    return NotFound(new { message = $"Card with ID {cardId} not found." });
 
-                await _todoTaskService.AddTodoTaskToTaskListAsync(taskList, todoTask);
-                return Ok(new { message = "TodoTask added to TaskList successfully." });
+                await _todoTaskService.AddTodoTaskToCardAsync(card, todoTask);
+                return Ok(new { message = "TodoTask added to Card successfully." });
             }
             catch (ArgumentNullException ex)
             {
@@ -72,7 +72,7 @@ namespace TaskNetic.Api.Controllers
         {
             try
             {
-                var todoTask = await _todoTaskService.GetByIdAsync(todoTaskId); // Ensure GetByIdAsync exists in Repository
+                var todoTask = await _todoTaskService.GetByIdAsync(todoTaskId);
                 if (todoTask == null)
                     return NotFound(new { message = "TodoTask not found." });
 

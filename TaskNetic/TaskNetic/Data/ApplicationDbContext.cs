@@ -24,7 +24,6 @@ namespace TaskNetic.Data
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Label> Labels { get; set; }
         public DbSet<FileAttachment> Attachments { get; set; }
-        public DbSet<TaskList> TaskLists { get; set; }
         public DbSet<TodoTask> TodoTasks { get; set; }
         public DbSet<Notification> Notifications { get; set; }
     }
