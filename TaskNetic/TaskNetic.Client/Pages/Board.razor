@@ -93,14 +93,16 @@
                 <div class="list-container d-flex column-gap-3">
                     @if (Lists != null && Cards != null)
                     {
-                        <DropContainer TItem="CardModel" Items="Cards" ItemDropped="OnCardDropped" ItemsFilter="@FilterItems" Class="blazorise-container" @ref="dropContainer">
+                        <DropContainer TItem="CardModel" Items="Cards" ItemDropped="OnCardDropped" ItemsFilter="@FilterItems" Class="blazorise-container" @ref="dropContainer" ItemDisabled="IsCardDisabled">
                             <ChildContent>
                                 @foreach (var list in Lists)
                                 {
                                     <Div Class="d-flex flex-column">
-                                        <DropZone TItem="CardModel" Name="@list.Id.ToString()" AllowReorder="true" Reordered="OnReordered" Class="card-list rounded-bottom-0">
+                                        <DropZone TItem="CardModel" Name="@list.Id.ToString()" AllowReorder="@canUserEdit" Reordered="OnReordered" Class="card-list rounded-bottom-0">
                                             <Heading Size="HeadingSize.Is5" Margin="Margin.Is3.FromBottom" Style="display:flex; justify-content:space-between">
                                                 <ListTitle Title="@list.Title" ListId="@list.Id" @ref="listTitleRefs[list.Id]"/>
+                                                @if(canUserEdit)
+                                                {
                                                 <Dropdown>
                                                     <DropdownToggle ToggleIconVisible="false">
                                                         <img src="images/three-dots.svg" height="18" width="18" alt="options" style="cursor: pointer;" />
@@ -119,10 +121,18 @@
                                                         <DropdownItem @onclick="() => DeleteList(list.Id)" Class="text-danger">Delete List</DropdownItem>
                                                     </DropdownMenu>
                                                 </Dropdown>
+                                                }
 
                                             </Heading>
                                         </DropZone>
-                                        <AddCard ListId="@list.Id" OnCardAdded="async () => await LoadLists()" @ref="listAddRefs[list.Id]"/>
+                                        @if(canUserEdit)
+                                        {
+                                            <AddCard ListId="@list.Id" OnCardAdded="async () => await LoadLists()" @ref="listAddRefs[list.Id]"/>
+                                        }
+                                        else
+                                        {
+                                            <div class="rounded-bottom-2 w-100 add-card-placeholder" style="height: 20px;"></div>
+                                        }
                                     </Div>
                                 }
                             </ChildContent>
@@ -135,20 +145,22 @@
 
                     }
                     <div class="add-list">
-
-                        @if (IsListAddInputVisible)
+                        @if (canUserEdit)
                         {
-                            <div class="add-list-input rounded-2 px-2 py-3">
-                                <input type="text" @bind="newListName" placeholder="Enter list name" class="form-control" />
-                                <div class="d-flex w-100 justify-content-between align-items-center mt-2 px-2">
-                                    <button class="btn btn-primary btn-sm w-50" @onclick="AddList">Add List</button>
-                                    <button type="button" class="btn-close" aria-label="Close" @onclick="() => IsListAddInputVisible = false"></button>
+                            @if (IsListAddInputVisible)
+                            {
+                                <div class="add-list-input rounded-2 px-2 py-3">
+                                    <input type="text" @bind="newListName" placeholder="Enter list name" class="form-control" />
+                                    <div class="d-flex w-100 justify-content-between align-items-center mt-2 px-2">
+                                        <button class="btn btn-primary btn-sm w-50" @onclick="AddList">Add List</button>
+                                        <button type="button" class="btn-close" aria-label="Close" @onclick="() => IsListAddInputVisible = false"></button>
+                                    </div>
                                 </div>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="add-list-button rounded-2" style="text-decoration:none; cursor:pointer;" @onclick="() => IsListAddInputVisible = true"><img src="images/plus2.svg" alt="plus" /> Add new list</div>
+                            }
+                            else
+                            {
+                                <div class="add-list-button rounded-2" style="text-decoration:none; cursor:pointer;" @onclick="() => IsListAddInputVisible = true"><img src="images/plus2.svg" alt="plus" /> Add new list</div>
+                            }
                         }
                     </div>
                     @if (isCardModalVisible)
@@ -173,6 +185,7 @@
     private bool isLoading = true;
     private string? userId;
     private bool isUserAdmin = false;
+    private bool canUserEdit = false;
     private ProjectInfo projectInfo;
     private IEnumerable<BoardModel>? boards;
     public BoardModel? currentBoard;
@@ -200,6 +213,7 @@
             isUserAdmin = await UserService.IsUserAdminInProjectAsync(projectId, userId);
             await LoadBoards();
             await LoadLists();
+            canUserEdit = await UserService.CanUserEditBoardAsync(currentBoard.BoardId, userId);
         }
         catch (Exception ex)
         {
@@ -213,9 +227,15 @@
 
     }
 
+    private bool IsCardDisabled(CardModel card)
+    {
+        return !canUserEdit;
+    }
+
     private async Task SwitchBoard(BoardModel board)
     {
         currentBoard = board;
+        canUserEdit = await UserService.CanUserEditBoardAsync(currentBoard.BoardId, userId);
         await LoadLists();
     }
 
@@ -566,6 +586,18 @@
         cursor: pointer;
     }
 
+    .add-card-placeholder {
+        position: relative;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 30px; /* Matches the button height */
+        background-color: #f0f2f4; /* Same background color */
+        border-bottom-left-radius: 0.25rem; /* Matches "rounded-bottom-2" */
+        border-bottom-right-radius: 0.25rem; /* Matches "rounded-bottom-2" */
+    }
+
+
     .add-list-button {
         width: 15vw;
         background: rgba(0,0,0, 0.45);
@@ -587,4 +619,5 @@
         flex-direction: column;
         margin: 0;
     }
+
 </style>
