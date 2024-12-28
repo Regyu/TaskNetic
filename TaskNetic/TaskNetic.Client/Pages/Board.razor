@@ -274,20 +274,23 @@
 
     private async Task LoadLists()
     {
-        Lists = null;
-        Cards = new();
-        CardToListMapping = new();
-        var response = await Http.GetAsync($"api/lists/board/{currentBoard?.BoardId}");
-        if (response.IsSuccessStatusCode)
+        if (currentBoard != null)
         {
-            Lists = (await response.Content.ReadFromJsonAsync<IEnumerable<List>>())?.OrderBy(list => list.Position);
-            if (Lists != null)
+            Lists = null;
+            Cards = new();
+            CardToListMapping = new();
+            var response = await Http.GetAsync($"api/lists/board/{currentBoard?.BoardId}");
+            if (response.IsSuccessStatusCode)
             {
-                Cards = Lists.SelectMany(l => l.Cards).OrderBy(card => card.CardPosition).ToList();
-                CardToListMapping = Cards.ToDictionary(card => card.CardId, card => Lists.First(list => list.Cards.Contains(card)).Id);
-            }
+                Lists = (await response.Content.ReadFromJsonAsync<IEnumerable<List>>())?.OrderBy(list => list.Position);
+                if (Lists != null)
+                {
+                    Cards = Lists.SelectMany(l => l.Cards).OrderBy(card => card.CardPosition).ToList();
+                    CardToListMapping = Cards.ToDictionary(card => card.CardId, card => Lists.First(list => list.Cards.Contains(card)).Id);
+                }
 
-            StateHasChanged();
+                StateHasChanged();
+            }
         }
     }
 
