@@ -65,10 +65,12 @@ namespace TaskNetic.Services.Implementations
 
             _context.Entry(card).Collection(c => c.Comments).Load();
             _context.Entry(card).Collection(c => c.Attachments).Load();
+            _context.Entry(card).Collection(c => c.TodoTasks).Load();
             _context.Entry(card).Collection(c => c.CardLabels).Load();
             _context.Entry(card).Collection(c => c.CardMembers).Load();
 
             _context.Comments.RemoveRange(card.Comments);
+            _context.TodoTasks.RemoveRange(card.TodoTasks);
             _context.Attachments.RemoveRange(card.Attachments);
 
             card.CardLabels.Clear();
