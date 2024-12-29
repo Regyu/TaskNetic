@@ -1,12 +1,11 @@
-﻿
-namespace TaskNetic.Client.Models
+﻿namespace TaskNetic.Client.Models
 {
     public class Label
     {
-     public int Id { get; set; }
-     public required string LabelName { get; set; }
-     public string? comment { get; set; }
-     public ColorModel? Color { get; set; }
-         
+        public int Id { get; set; }
+        public required string LabelName { get; set; }
+        public string? Comment { get; set; }
+        public required string ColorCode { get; set; }
+
     }
 }

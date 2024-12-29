@@ -56,7 +56,6 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IBoardService, BoardService>();
 builder.Services.AddScoped<IBoardPermissionService, BoardPermissionService>();
 builder.Services.AddScoped<ICardService, CardService>();
-builder.Services.AddScoped<IColorService, ColorService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IFileAttachmentService, FileAttachmentService>();
 builder.Services.AddScoped<ILabelService, LabelService>();

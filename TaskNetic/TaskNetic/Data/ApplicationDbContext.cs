@@ -18,7 +18,6 @@ namespace TaskNetic.Data
         public DbSet<ProjectRole> ProjectRoles { get; set; }
         public DbSet<BoardPermission> BoardPermissions { get; set; }
         public DbSet<Board> Boards { get; set; }
-        public DbSet<Color> Colors { get; set; }
         public DbSet<List> Lists { get; set; }
         public DbSet<Card> Cards { get; set; }
         public DbSet<Comment> Comments { get; set; }
