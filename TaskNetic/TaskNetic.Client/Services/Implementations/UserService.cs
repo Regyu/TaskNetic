@@ -23,9 +23,25 @@ namespace TaskNetic.Client.Services.Implementations
                 ? user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value : null;
         }
 
+        public string GetCurrentUserId()
+        {
+            var authState = _authenticationStateProvider.GetAuthenticationStateAsync().Result;
+            var user = authState.User;
+
+            return user.Identity?.IsAuthenticated == true
+                ? user.FindFirst(u => u.Type.Contains("nameidentifier"))?.Value : null;
+        }
+
         public async Task<bool> IsUserAdminInProjectAsync(int projectId, string userId)
         {
             var request = await _httpClient.GetAsync($"api/projectrole/is-admin/{projectId}/{userId}");
+            var response = await request.Content.ReadAsStringAsync();
+            return bool.Parse(response);
+        }
+
+        public async Task<bool> CanUserEditBoardAsync(int boardId, string userId)
+        {
+            var request = await _httpClient.GetAsync($"api/boardpermissions/can-edit/{boardId}/{userId}");
             var response = await request.Content.ReadAsStringAsync();
             return bool.Parse(response);
         }

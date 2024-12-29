@@ -1,0 +1,443 @@
+﻿@inject HttpClient Http
+@inject IUserService userService
+@inject ICardModalService cardModalService
+@using Blazorise
+
+
+<Modal @bind-Visible="IsVisible" Opened="OpenCardModal" Closed="CloseModal" Scrollable>
+    <ModalContent Class="w-100" Size="ModalSize.Large" Centered>
+        <ModalHeader>
+            <img src="images/card.svg" width="25" height="25" alt="card" class="me-2" />
+            @if (isEditingTitle)
+            {
+                <input type="text" @bind="selectedCard.CardTitle" class="form-control form-control-sm me-2"
+                       @onblur="SaveTitle" @ref="titleInputRef" />
+            }
+            else if (selectedCard != null)
+            {
+                <ModalTitle Class="fs-4" @onclick="EnableTitleEdit">@selectedCard.CardTitle</ModalTitle>
+            }
+            <CloseButton @onclick="CloseModal" />
+        </ModalHeader>
+
+        <ModalBody Class="d-flex w-100 justify-content-between">
+            <div class="main-content">
+                <div class="d-flex mb-4">
+                    <div class="me-3">
+                        <h6 class="fw-semibold">Card members</h6>
+                        <div class="d-flex align-items-center">
+                            @if (cardMembers != null)
+                            {
+                                @foreach (var member in cardMembers)
+                                {
+                                    <UserAvatar userName="@member.UserName" />
+                                }
+                            }
+                            <button class="btn btn-light btn-sm" @onclick="() => isManageMemberModalVisible = true">+</button>
+                            @if (isManageMemberModalVisible && cardMembers != null)
+                            {
+                                <ManageCardMembers IsVisible="isManageMemberModalVisible" IsVisibleChanged="visible => isManageMemberModalVisible = visible"
+                                                   BoardId="@BoardId" CardId="@CardId" CardMembers="@cardMembers" OnMemberChanged="LoadCardMembersAsync" />
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="fw-semibold"><img src="images/document.svg" width="22" height="22" alt="Document" class="me-2" />Description</h6>
+                    <textarea @bind="cardDescription" placeholder="Write detailed description" class="form-control w-100 fs-6 mh-75 text-wrap" @onblur="SaveDescription" />
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="fw-semibold"><img src="images/checkbox.svg" width="22" height="22" alt="Document" class="me-2" />Tasks</h6>
+                    <div class="ps-4">
+                        @if (tasks.Any())
+                        {
+                            <Progress Max="@tasks.Count" Value="@completedTasksCount" Class="mb-3" Color="Color.Success" ShowValue />
+                            @foreach (var task in tasks)
+                            {
+                                <div class="d-flex align-items-center mb-1 ps-2 task-item rounded-2">
+                                    <Check TValue="bool" Checked="@task.TaskFinished" CheckedChanged="(bool value) => UpdateTodoTask(task.Id, value)"></Check>
+                                    @if (isEditingTaskName.TryGetValue(task.Id, out var isEditing) && isEditing)
+                                    {
+                                        <input type="text" class="form-control form-control-sm me-4" @bind="task.TaskName" @onblur="() => SaveTaskTitle(task.Id)" @ref="taskTitleInputRef" />
+                                    }
+                                    else
+                                    {
+                                        <p class="ms-0 mb-0 w-50 fs-6 @(task.TaskFinished ? "text-decoration-line-through text-secondary": "")" @onclick="() => EnableTaskEditing(task.Id) ">@task.TaskName</p>
+                                    }
+                                    <CloseButton @onclick="() => RemoveTodoTaskAsync(task.Id)" Class="ms-auto me-2 task-remove" />
+                                </div>
+                            }
+                        }
+
+                        @if (isAddTaskInputVisible)
+                        {
+                            <div class="add-task-input mt-2">
+                                <input type="text" @bind="newTaskName" placeholder="Enter task name..." class="form-control form-control-sm mb-2" />
+                                <button class="btn btn-success btn-sm" @onclick="CreateTask">Create task</button>
+                                <button class="btn btn-light btn-sm ms-2" @onclick="() => isAddTaskInputVisible = false">Cancel</button>
+                            </div>
+                        }
+                        else
+                        {
+                            <button class="btn btn-light btn-sm w-100 text-start mt-2 add-task-button" @onclick="() => isAddTaskInputVisible = true">Create task</button>
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="fw-semibold"><img src="images/list.svg" width="22" height="22" alt="Document" class="me-2" />Comments</h6>
+                    @if (isNewCommentInputVisible)
+                    {
+                        <textarea @bind="newComment" placeholder="Write a comment..." class="form-control w-100"></textarea>
+                        <div class="d-flex justify-content-end mt-2">
+                            <button class="btn btn-success btn-sm me-3" @onclick="AddCommentAsync" disabled="@string.IsNullOrWhiteSpace(newComment)">Add comment</button>
+                            <button class="btn btn-secondary btn-sm" @onclick="() => isNewCommentInputVisible = false">Cancel</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <button class="btn btn-light btn-sm w-100 text-start mt-2 mb-3" @onclick="() => isNewCommentInputVisible = true">Add comment</button>
+                    }
+
+                    <div>
+                        @foreach (var comment in comments)
+                        {
+                            <div class="d-flex w-100 mb-2">
+                                <div class="w-20">
+                                    <UserAvatar userName="@comment.User?.UserName" />
+                                </div>
+                                <div class="d-flex flex-column ms-1 flex-fill">
+                                    <div class="">
+                                        <span class="fs-6 fw-semibold">@(comment.User?.UserName ?? "Unknown")</span>
+                                        <span class="comment-date ms-3 align-baseline">@comment.Time.ToLongDateString()</span>
+                                    </div>
+                                    <div class="comment-text fs-6 w-100">
+                                        @if(isEditingComment && comment.User?.Id == currentUserId)
+                                        {
+                                            <textarea type="text" @bind="comment.CommentText" @onblur="() => UpdateCommentAsync(comment.Id, comment.CommentText)" class="form-control form-control-sm w-100" />
+                                        }
+                                        else
+                                        {
+                                            @comment.CommentText
+                                        }
+                                    </div>
+                                    @if (currentUserId != null && comment.User?.Id == currentUserId)
+                                    {
+                                        <div class="d-flex">
+                                            <button class="btn btn-link btn-sm text-decoration-none text-secondary ps-0 py-0" @onclick="() => isEditingComment = !isEditingComment">Edit</button>
+                                            <button class="btn btn-link btn-sm text-decoration-none text-secondary py-0" @onclick="() => RemoveCommentAsync(comment.Id)">Delete</button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                </div>
+            </div>
+            <div class="side-nav">
+                <div class="d-flex flex-column me-auto">
+                    <h6 class="fw-semibold">Add to card</h6>
+                    @if (cardMembers != null && cardMembers.Any(member => member.Id == currentUserId))
+                    {
+                        <button class="btn btn-light btn-sm mb-1" @onclick="async () => await RemoveMemberFromCardAsync(currentUserId)">
+                            <img src="images/userMinus.svg" width="22" height="22" />Leave Card
+                        </button>
+                    }
+                    <button class="btn btn-light btn-sm mb-1" @onclick="() => isManageMemberModalVisible = true"><img src="images/people.svg" width="22" height="22" />Members</button>
+                    <button class="btn btn-light btn-sm mb-1"><img src="images/bookmark.svg" width="22" height="22" />Labels</button>
+                    <button class="btn btn-light btn-sm mb-1"><img src="images/deadline.svg" width="22" height="22" />Due date</button>
+                    <button class="btn btn-light btn-sm mb-1"><img src="images/attachment.svg" width="20" height="20" />Attachment</button>
+                </div>
+
+                <div class="d-flex flex-column ms-auto">
+                    <h6 class="my-2 fw-semibold">Actions</h6>
+                    <button class="btn btn-light btn-sm mb-1"><img src="images/move.svg" width="22" height="22" />Move</button>
+                    <button class="btn btn-light btn-sm mb-1"><img src="images/copy.svg" width="22" height="22" />Copy</button>
+                    <button class="btn btn-light btn-sm"><img src="images/delete.svg" width="22" height="22" />Delete</button>
+                </div>
+            </div>
+        </ModalBody>
+    </ModalContent>
+</Modal>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public EventCallback OnExternalCardChanged { get; set; }
+    [Parameter] public int CardId { get; set; }
+    [Parameter] public int BoardId { get; set; }
+
+    private CardModel selectedCard;
+    private List<ApplicationUser> cardMembers = new List<ApplicationUser>();
+    private string cardDescription = "";
+    private List<TodoTask> tasksList = new();
+    private bool isEditingTitle = false;
+    private bool isManageMemberModalVisible = false;
+    private ElementReference titleInputRef;
+    private string currentUserId;
+    private bool isAddTaskInputVisible;
+    private string newTaskName = "";
+    private List<TodoTask> tasks = new List<TodoTask>();
+    private Dictionary<int, bool> isEditingTaskName = new();
+    private ElementReference taskTitleInputRef;
+    private int completedTasksCount;
+    private List<Comment> comments = new();
+    private string newComment = "";
+    private bool isNewCommentInputVisible = false;
+    private bool isEditingComment = false;
+
+    private async Task EnableTitleEdit()
+    {
+        isEditingTitle = true;
+        await Task.Delay(1);
+        await titleInputRef.FocusAsync();
+    }
+
+    private async Task SaveTitle()
+    {
+        isEditingTitle = false;
+
+        var response = await Http.PutAsJsonAsync($"api/cards/{CardId}/title", selectedCard.CardTitle);
+        if (!response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Failed to update card title.");
+        }
+        else
+        {
+            await OnExternalCardChanged.InvokeAsync();
+        }
+    }
+
+    private void CloseModal()
+    {
+        IsVisible = false;
+        IsVisibleChanged.InvokeAsync(IsVisible);
+    }
+
+    private async Task OpenCardModal()
+    {
+        var response = await Http.GetAsync($"api/cards/{CardId}/info");
+        if (response.IsSuccessStatusCode)
+        {
+            selectedCard = await response.Content.ReadFromJsonAsync<CardModel>();
+            cardMembers.AddRange(selectedCard.CardMembers);
+            cardDescription = selectedCard.CardDescription;
+            tasks.AddRange(selectedCard.TodoTasks);
+            completedTasksCount = tasks.Count(t => t.TaskFinished);
+            comments.AddRange(selectedCard.Comments);
+            currentUserId = await userService.GetCurrentUserIdAsync() ?? "";
+            IsVisible = true;
+        }
+        else
+        {
+            Console.WriteLine("Failed to load card details.");
+        }
+    }
+
+    private async Task LoadCardMembersAsync()
+    {
+        var request = await Http.GetFromJsonAsync<List<ApplicationUser>>($"api/cards/{CardId}/members");
+        if (request != null)
+        {
+            cardMembers.Clear();
+            cardMembers.AddRange(request);
+            StateHasChanged();
+        }
+    }
+
+    private async Task RemoveMemberFromCardAsync(string userId)
+    {
+        await cardModalService.RemoveMemberFromCardAsync(CardId, userId);
+        await LoadCardMembersAsync();
+    }
+
+    private async Task SaveDescription()
+    {
+        if (!string.IsNullOrWhiteSpace(cardDescription))
+        {
+            var response = await Http.PutAsJsonAsync($"api/cards/{CardId}/description", cardDescription);
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Failed to update card description.");
+            }
+        }
+    }
+
+    private async Task LoadTasks()
+    {
+        tasks.Clear();
+        tasks.AddRange((await cardModalService.GetTodoTasksByCardAsync(CardId)).OrderBy(t => t.Id));
+        completedTasksCount = 0;
+        completedTasksCount = tasks.Count(t => t.TaskFinished);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task CreateTask()
+    {
+        if (!string.IsNullOrWhiteSpace(newTaskName))
+        {
+            var response = await cardModalService.CreateTodoTaskAsync(CardId, newTaskName);
+            if (response)
+            {
+                newTaskName = "";
+                await LoadTasks();
+            }
+            else
+            {
+                Console.WriteLine("Failed to create new task.");
+            }
+        }
+    }
+
+    private async Task UpdateTodoTask(int taskId, bool value)
+    {
+        var task = tasks.FirstOrDefault(t => t.Id == taskId);
+        task.TaskFinished = value;
+        await cardModalService.UpdateTodoTaskAsync(task);
+        await LoadTasks();
+    }
+
+    private async Task RemoveTodoTaskAsync(int taskId)
+    {
+        await cardModalService.DeleteTodoTaskAsync(taskId);
+        await LoadTasks();
+    }
+
+    private async Task EnableTaskEditing(int taskId)
+    {
+        isEditingTaskName[taskId] = true;
+        await Task.Delay(1);
+        await taskTitleInputRef.FocusAsync();
+    }
+
+    private async Task SaveTaskTitle(int taskId)
+    {
+        isEditingTaskName[taskId] = false;
+
+        var task = tasks.FirstOrDefault(t => t.Id == taskId);
+        if (task != null)
+        {
+            await cardModalService.UpdateTodoTaskAsync(task);
+        }
+    }
+
+    private async Task LoadCommentsAsync()
+    {
+        var newComments = await cardModalService.GetCommentsAsync(CardId);
+        if (newComments != null)
+        {
+            comments.Clear();
+            comments.AddRange(newComments);
+            StateHasChanged();
+        }
+    }
+
+    private async Task AddCommentAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(newComment))
+        {
+            isNewCommentInputVisible = false;
+            var response = await cardModalService.AddCommentToCardAsync(CardId, newComment);
+            if (response)
+            {
+                newComment = "";
+                await LoadCommentsAsync();
+            }
+            else
+            {
+                Console.WriteLine("Failed to add new comment.");
+            }
+        }
+    }
+
+    private async Task RemoveCommentAsync(int commentId)
+    {
+        var response = await cardModalService.DeleteCommentAsync(commentId);
+        if (response)
+        {
+            comments.RemoveAll(c => c.Id == commentId);
+            StateHasChanged();
+        }
+        else
+        {
+            Console.WriteLine("Failed to remove comment.");
+        }
+    }
+
+    private async Task UpdateCommentAsync(int commentId, string commentText)
+    {
+        isEditingComment = false;
+        var response = await cardModalService.UpdateCommentAsync(commentId, commentText);
+        if (!response)
+        {
+            Console.WriteLine("Failed to update comment.");
+        }
+    }
+}
+
+
+<style>
+    .task-item {
+        height: 32px;
+    }
+
+        .task-item:hover {
+            background-color: #d3d4d5;
+        }
+
+    .form-check {
+        margin-bottom: 0;
+    }
+
+    .task-remove {
+        width: 8px;
+        height: 8px;
+    }
+
+    .side-nav {
+        width: 25%;
+    }
+
+    .main-content {
+        width: 75%;
+        padding-right: 5%;
+    }
+
+    .side-nav img {
+        margin: 0 10px;
+    }
+
+    .side-nav button {
+        display: flex;
+        justify-content: start;
+        text-align: start;
+    }
+
+    .modal-content {
+        width: 75vw;
+    }
+
+    .modal-body textarea {
+        resize: none;
+    }
+
+    .modal-footer h6 {
+        margin-bottom: 10px;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+    }
+
+    .modal-footer .btn-danger {
+        color: white;
+    }
+
+    .comment-date {
+        font-size: 0.8em;
+        color: gray;
+    }
+</style>

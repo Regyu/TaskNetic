@@ -26,6 +26,16 @@ namespace TaskNetic.Services.Implementations
 
             return list.Cards.AsEnumerable();
         }
+        public async Task<Card?> GetFullCardInfoAsync(int cardId)
+        {
+            return await _context.Cards
+                .Include(c => c.Comments)
+                .Include(c => c.Attachments)
+                .Include(c => c.TodoTasks)
+                .Include(c => c.CardLabels)
+                .Include(c => c.CardMembers)
+                .FirstOrDefaultAsync(c => c.CardId == cardId);
+        }
 
         public async Task AddCardToListAsync(List list, Card card)
         {
@@ -53,12 +63,13 @@ namespace TaskNetic.Services.Implementations
                 throw new ArgumentNullException(nameof(card), "Card cannot be null.");
             }
 
-            _context.Entry(card).Collection(c => c.Comments).Load();
-            _context.Entry(card).Collection(c => c.Attachments).Load();
-            _context.Entry(card).Collection(c => c.CardLabels).Load();
-            _context.Entry(card).Collection(c => c.CardMembers).Load();
+            await _context.Entry(card).Collection(c => c.Comments).LoadAsync();
+            await _context.Entry(card).Collection(c => c.Attachments).LoadAsync();
+            await _context.Entry(card).Collection(c => c.CardLabels).LoadAsync();
+            await _context.Entry(card).Collection(c => c.CardMembers).LoadAsync();
 
             _context.Comments.RemoveRange(card.Comments);
+            _context.TodoTasks.RemoveRange(card.TodoTasks);
             _context.Attachments.RemoveRange(card.Attachments);
 
             card.CardLabels.Clear();
@@ -81,6 +92,18 @@ namespace TaskNetic.Services.Implementations
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<ApplicationUser>> GetCardMembersAsync(int cardId)
+        {
+            var card = await _context.Cards
+            .Include(c => c.CardMembers)
+            .FirstOrDefaultAsync(c => c.CardId == cardId);
+
+            if (card == null)
+                throw new KeyNotFoundException($"Card with ID {cardId} not found.");
+
+            return card.CardMembers.ToList();
         }
     }
 }

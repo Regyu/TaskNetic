@@ -38,8 +38,6 @@ namespace TaskNetic.Services.Implementations
 
         public async Task AddProjectWithCurrentUserAsync(Project project)
         {
-            //var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
-            //var user = authState.User;
             var user = await _applicationUserService.GetCurrentUserAsync();
 
             if (user == null)
@@ -74,7 +72,49 @@ namespace TaskNetic.Services.Implementations
                 throw new ArgumentNullException(nameof(project), "Project cannot be null.");
             }
 
+            _context.Entry(project).Collection(p => p.ProjectRoles).Load();
+            _context.Entry(project).Collection(p => p.ProjectBoards).Load();
+
+            foreach (var board in project.ProjectBoards)
+            {
+                _context.Entry(board).Collection(b => b.BoardPermissions).Load();
+                _context.Entry(board).Collection(b => b.Lists).Load();
+                _context.Entry(board).Collection(b => b.Labels).Load();
+
+                foreach (var list in board.Lists)
+                {
+                    _context.Entry(list).Collection(l => l.Cards).Load();
+
+                    foreach (var card in list.Cards)
+                    {
+                        _context.Entry(card).Collection(c => c.Comments).Load();
+                        _context.Entry(card).Collection(c => c.Attachments).Load();
+                        _context.Entry(card).Collection(c => c.TodoTasks).Load();
+                        _context.Entry(card).Collection(c => c.CardLabels).Load();
+                        _context.Entry(card).Collection(c => c.CardMembers).Load();
+
+                        _context.Comments.RemoveRange(card.Comments);
+                        _context.Attachments.RemoveRange(card.Attachments);
+                        _context.TodoTasks.RemoveRange(card.TodoTasks);
+
+                        card.CardLabels.Clear();
+                        card.CardMembers.Clear();
+
+                        _context.Cards.Remove(card);
+                    }
+                    _context.Cards.RemoveRange(list.Cards);
+                    _context.Lists.Remove(list);
+                }
+                _context.BoardPermissions.RemoveRange(board.BoardPermissions);
+
+                _context.RemoveRange(board.Lists);
+                _context.RemoveRange(board.Labels);
+
+                _context.Boards.Remove(board);
+            }
+            _context.Boards.RemoveRange(project.ProjectBoards);
             _context.ProjectRoles.RemoveRange(project.ProjectRoles);
+
             _context.Projects.Remove(project);
 
             await _context.SaveChangesAsync();

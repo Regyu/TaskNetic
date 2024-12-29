@@ -142,5 +142,15 @@ namespace TaskNetic.Services.Implementations
             await _context.BoardPermissions.AddAsync(boardPermission);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<bool> CanUserEditBoardAsync(int boardId, string userId)
+        {
+            var boardPermissions = await _context.BoardPermissions
+                .Include(bp => bp.Role)
+                .ThenInclude(role => role.ApplicationUser)
+                .FirstOrDefaultAsync(bp => bp.Board.BoardId == boardId && bp.Role.ApplicationUser.Id == userId);
+
+            return boardPermissions.CanEdit;
+        }
     }
 }

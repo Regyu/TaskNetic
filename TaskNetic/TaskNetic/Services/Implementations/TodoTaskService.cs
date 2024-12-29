@@ -9,24 +9,24 @@ namespace TaskNetic.Services.Implementations
     { 
         public TodoTaskService(ApplicationDbContext context) : base(context) {}
 
-        public async Task<IEnumerable<TodoTask>> GetTodoTasksByTaskListAsync(TaskList taskList)
+        public async Task<List<TodoTask>> GetTodoTasksByCardAsync(Card card)
         {
-            if (taskList == null)
+            if (card == null)
             {
-                throw new ArgumentNullException(nameof(taskList), "TaskList cannot be null.");
+                throw new ArgumentNullException(nameof(card), "Card cannot be null.");
             }
 
-            await _context.Entry(taskList).Collection(c => c.TodoTasks).LoadAsync();
+            await _context.Entry(card).Collection(c => c.TodoTasks).LoadAsync();
 
-            return taskList.TodoTasks.AsEnumerable();
+            return card.TodoTasks.ToList();
         }
 
-        public async Task AddTodoTaskToTaskListAsync(TaskList taskList, TodoTask todoTask)
+        public async Task AddTodoTaskToCardAsync(Card card, TodoTask todoTask)
         {
 
-            if (taskList == null)
+            if (card == null)
             {
-                throw new ArgumentNullException(nameof(taskList), "TaskList cannot be null.");
+                throw new ArgumentNullException(nameof(card), "Card cannot be null.");
             }
 
             if (todoTask == null)
@@ -35,7 +35,7 @@ namespace TaskNetic.Services.Implementations
             }
 
 
-            taskList.TodoTasks.Add(todoTask);
+            card.TodoTasks.Add(todoTask);
 
             await _context.SaveChangesAsync();
         }
@@ -48,6 +48,20 @@ namespace TaskNetic.Services.Implementations
             }
 
             _context.TodoTasks.Remove(todoTask);
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateTodoTaskAsync(TodoTask todoTask)
+        {
+            if (todoTask == null)
+            {
+                throw new ArgumentNullException(nameof(TodoTask), "TodoTask cannot be null.");
+            }
+            var task = _context.Find<TodoTask>(todoTask.Id);
+            task.TaskName = todoTask.TaskName;
+            task.TaskFinished = todoTask.TaskFinished;
+            _context.TodoTasks.Update(task);
 
             await _context.SaveChangesAsync();
         }

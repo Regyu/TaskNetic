@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TaskNetic.Data;
@@ -11,9 +12,11 @@ using TaskNetic.Data;
 namespace TaskNetic.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241227142122_TaskListChanged")]
+    partial class TaskListChanged
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -318,6 +321,23 @@ namespace TaskNetic.Migrations
                     b.ToTable("Cards");
                 });
 
+            modelBuilder.Entity("TaskNetic.Models.Color", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ColorName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Colors");
+                });
+
             modelBuilder.Entity("TaskNetic.Models.Comment", b =>
                 {
                     b.Property<int>("Id")
@@ -394,15 +414,14 @@ namespace TaskNetic.Migrations
                     b.Property<int?>("CardId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("ColorCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Comment")
-                        .HasColumnType("text");
+                    b.Property<int?>("ColorId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("LabelName")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("comment")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -410,6 +429,8 @@ namespace TaskNetic.Migrations
                     b.HasIndex("BoardId");
 
                     b.HasIndex("CardId");
+
+                    b.HasIndex("ColorId");
 
                     b.ToTable("Labels");
                 });
@@ -522,7 +543,7 @@ namespace TaskNetic.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CardId")
+                    b.Property<int>("CardId")
                         .HasColumnType("integer");
 
                     b.Property<bool>("TaskFinished")
@@ -667,6 +688,12 @@ namespace TaskNetic.Migrations
                     b.HasOne("TaskNetic.Models.Card", null)
                         .WithMany("CardLabels")
                         .HasForeignKey("CardId");
+
+                    b.HasOne("TaskNetic.Models.Color", "Color")
+                        .WithMany()
+                        .HasForeignKey("ColorId");
+
+                    b.Navigation("Color");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.List", b =>
@@ -706,7 +733,9 @@ namespace TaskNetic.Migrations
                 {
                     b.HasOne("TaskNetic.Models.Card", "Card")
                         .WithMany("TodoTasks")
-                        .HasForeignKey("CardId");
+                        .HasForeignKey("CardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Card");
                 });

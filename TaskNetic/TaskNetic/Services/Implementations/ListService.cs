@@ -12,9 +12,7 @@ namespace TaskNetic.Services.Implementations
 {
     public class ListService : Repository<List>, IListService
     {
-
         public ListService(ApplicationDbContext context) : base(context) { }
-
         public async Task<IEnumerable<List>> GetListsForBoardAsync(Board board)
         {
             var baseBoard = await _context.Boards
@@ -57,6 +55,24 @@ namespace TaskNetic.Services.Implementations
             }
 
             _context.Entry(list).Collection(l => l.Cards).Load();
+
+            foreach (var card in list.Cards)
+            {
+                _context.Entry(card).Collection(c => c.Comments).Load();
+                _context.Entry(card).Collection(c => c.Attachments).Load();
+                _context.Entry(card).Collection(c => c.TodoTasks).Load();
+                _context.Entry(card).Collection(c => c.CardLabels).Load();
+                _context.Entry(card).Collection(c => c.CardMembers).Load();
+
+                _context.Comments.RemoveRange(card.Comments);
+                _context.Attachments.RemoveRange(card.Attachments);
+                _context.TodoTasks.RemoveRange(card.TodoTasks);
+
+                card.CardLabels.Clear();
+                card.CardMembers.Clear();
+
+                _context.Cards.Remove(card);
+            }
 
             _context.Cards.RemoveRange(list.Cards);
 
