@@ -12,7 +12,7 @@ namespace TaskNetic.Client.Models
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
         public DateTime? DueDate { get; set; }
         public ICollection<FileAttachment> Attachments { get; set; } = new List<FileAttachment>();
-        public TaskList? TaskList { get; set; }
+        public ICollection<TodoTask> TodoTasks { get; set; } = new List<TodoTask>();
         public ICollection<Label> CardLabels { get; set; } = new List<Label>();
         public ICollection<ApplicationUser> CardMembers { get; set; } = new List<ApplicationUser>();
     }

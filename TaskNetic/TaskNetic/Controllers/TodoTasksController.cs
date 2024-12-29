@@ -8,7 +8,6 @@ namespace TaskNetic.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class TodoTasksController : ControllerBase
     {
         private readonly ITodoTaskService _todoTaskService;
@@ -45,15 +44,15 @@ namespace TaskNetic.Api.Controllers
 
         // POST: api/todotasks/card/{cardId}
         [HttpPost("card/{cardId}")]
-        public async Task<IActionResult> AddTodoTaskToCard(int cardId, [FromBody] TodoTask todoTask)
+        public async Task<IActionResult> AddTodoTaskToCard(int cardId, [FromBody] string taskName)
         {
             try
             {
                 var card = await _cardRepository.GetByIdAsync(cardId);
                 if (card == null)
                     return NotFound(new { message = $"Card with ID {cardId} not found." });
-
-                await _todoTaskService.AddTodoTaskToCardAsync(card, todoTask);
+                TodoTask newTask = new TodoTask { TaskName = taskName, Card = card, TaskFinished = false };
+                await _todoTaskService.AddTodoTaskToCardAsync(card, newTask);
                 return Ok(new { message = "TodoTask added to Card successfully." });
             }
             catch (ArgumentNullException ex)
@@ -84,6 +83,19 @@ namespace TaskNetic.Api.Controllers
                 return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateTodoTask([FromBody] TodoTask newTask)
+        {
+            try
+            {
+                await _todoTaskService.UpdateTodoTaskAsync(newTask);
+                return Ok(new { message = "TodoTask updated successfullly" });
+            }catch(Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
             }

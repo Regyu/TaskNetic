@@ -1,11 +1,12 @@
 ﻿@using Blazorise
 @using TaskNetic.Client.DTO
 @inject HttpClient Http
+@inject ICardModalService cardModalService
 
-<Modal @bind-Visible="IsVisible"  Scrollable ShowBackdrop="false">
+<Modal @bind-Visible="IsVisible"  Scrollable ShowBackdrop="false" class="manage-modal">
     <ModalContent Size="ModalSize.Small">
         <ModalHeader>
-            <ModalTitle>Card members</ModalTitle>
+            <ModalTitle HeadingSize.Is3>Card members</ModalTitle>
             <CloseButton @onclick="CloseModal" />
         </ModalHeader>
 
@@ -38,7 +39,7 @@
     [Parameter] public bool IsVisible { get; set; }
     [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
     [Parameter] public int BoardId { get; set; }
-    [Parameter] public int? CardId { get; set; }
+    [Parameter] public int CardId { get; set; }
     [Parameter] public IEnumerable<ApplicationUser> CardMembers { get; set; } = new List<ApplicationUser>();
     [Parameter] public EventCallback OnMemberChanged { get; set; }
 
@@ -61,8 +62,8 @@
 
     private async Task AddMember(string userId)
     {
-        var request = await Http.PostAsJsonAsync($"api/cards/{CardId}/members", userId);
-        if (request.IsSuccessStatusCode)
+        var request = await cardModalService.AddMemberToCardAsync(CardId, userId);
+        if (request)
         {
             await OnMemberChanged.InvokeAsync();
         }
@@ -70,10 +71,20 @@
 
     private async Task RemoveMember(string userId)
     {
-        var request = await Http.DeleteAsync($"api/cards/{CardId}/members/{userId}");
-        if (request.IsSuccessStatusCode)
+        var request = await cardModalService.RemoveMemberFromCardAsync(CardId, userId);
+        if (request)
         {
             await OnMemberChanged.InvokeAsync();
         }
     }
 }
+
+<style>
+    .manage-modal{
+        position: absolute;
+        top: 0;
+    }
+    .modal-sm{
+        margin-top: 0;
+    }
+</style>

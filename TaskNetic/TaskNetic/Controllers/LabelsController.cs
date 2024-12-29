@@ -72,7 +72,7 @@ namespace TaskNetic.Api.Controllers
         {
             try
             {
-                var label = await _labelService.GetByIdAsync(labelId); // Ensure GetByIdAsync exists in Repository
+                var label = await _labelService.GetByIdAsync(labelId);
                 if (label == null)
                     return NotFound(new { message = "Label not found." });
 

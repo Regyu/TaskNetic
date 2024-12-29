@@ -27,5 +27,7 @@ builder.Services
     .AddBootstrap5Components()
     .AddBootstrap5Providers()
     .AddFontAwesomeIcons();
+
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICardModalService, CardModalService>();
 await builder.Build().RunAsync();

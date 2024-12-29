@@ -5,6 +5,7 @@ using TaskNetic.Services.Interfaces;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 
 namespace TaskNetic.Services.Implementations
 {
@@ -23,7 +24,7 @@ namespace TaskNetic.Services.Implementations
                 throw new ArgumentNullException(nameof(card), "Comment cannot be null.");
             }
 
-            await _context.Entry(card).Collection(c => c.Comments).LoadAsync();
+            await _context.Entry(card).Collection(c => c.Comments).Query().Include(comment => comment.User).LoadAsync();
 
             return card.Comments.AsEnumerable();
         }
@@ -40,13 +41,6 @@ namespace TaskNetic.Services.Implementations
             {
                 throw new ArgumentNullException(nameof(comment), "List cannot be null.");
             }
-            var user = await _applicationUserService.GetCurrentUserAsync();
-
-            if (user == null)
-            {
-                throw new UnauthorizedAccessException("User is not authenticated.");
-            }
-            comment.User = user;
 
             card.Comments.Add(comment);
 

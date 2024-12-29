@@ -9,7 +9,7 @@ namespace TaskNetic.Services.Implementations
     { 
         public TodoTaskService(ApplicationDbContext context) : base(context) {}
 
-        public async Task<IEnumerable<TodoTask>> GetTodoTasksByCardAsync(Card card)
+        public async Task<List<TodoTask>> GetTodoTasksByCardAsync(Card card)
         {
             if (card == null)
             {
@@ -18,7 +18,7 @@ namespace TaskNetic.Services.Implementations
 
             await _context.Entry(card).Collection(c => c.TodoTasks).LoadAsync();
 
-            return card.TodoTasks.AsEnumerable();
+            return card.TodoTasks.ToList();
         }
 
         public async Task AddTodoTaskToCardAsync(Card card, TodoTask todoTask)
@@ -48,6 +48,20 @@ namespace TaskNetic.Services.Implementations
             }
 
             _context.TodoTasks.Remove(todoTask);
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateTodoTaskAsync(TodoTask todoTask)
+        {
+            if (todoTask == null)
+            {
+                throw new ArgumentNullException(nameof(TodoTask), "TodoTask cannot be null.");
+            }
+            var task = _context.Find<TodoTask>(todoTask.Id);
+            task.TaskName = todoTask.TaskName;
+            task.TaskFinished = todoTask.TaskFinished;
+            _context.TodoTasks.Update(task);
 
             await _context.SaveChangesAsync();
         }

@@ -162,6 +162,15 @@ namespace TaskNetic.Api.Controllers
             return Ok(new { message = "Card title updated successfully" });
         }
 
+        [HttpGet("{cardId}/members")]
+        public async Task<IActionResult> GetCardMembers(int cardId)
+        {
+            var members = await _cardService.GetCardMembersAsync(cardId);
+            if (members == null)
+                return NotFound(new { message = "Card not found" });
+            return Ok(members);
+        }
+
         [HttpPost("{cardId}/members")]
         public async Task<IActionResult> AddMemberToCard(int cardId, [FromBody] string userId)
         {
@@ -200,6 +209,20 @@ namespace TaskNetic.Api.Controllers
             await _cardService.UpdateAsync(card);
 
             return Ok(new { message = "Member removed successfully" });
+        }
+
+        [HttpPut("{cardId}/description")]
+        public async Task<IActionResult> UpdateCardDescription(int cardId, [FromBody] string description)
+        {
+            var card = await _cardService.GetByIdAsync(cardId);
+
+            if (card == null)
+                return NotFound(new { message = "Card not found" });
+
+            card.CardDescription = description;
+            await _cardService.UpdateAsync(card);
+
+            return Ok(new { message = "Card description updated successfully" });
         }
     }
 }
