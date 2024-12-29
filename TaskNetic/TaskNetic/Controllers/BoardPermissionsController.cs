@@ -89,5 +89,19 @@ namespace TaskNetic.Api.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        [HttpGet("can-edit/{boardId}/{userId}")]
+        public async Task<IActionResult> IsUserAdmin(int boardId, string userId)
+        {
+            try
+            {
+                var canEdit = await _boardPermissionService.CanUserEditBoardAsync(boardId, userId);
+                return Ok(canEdit);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

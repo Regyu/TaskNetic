@@ -69,6 +69,7 @@ namespace TaskNetic.Services.Implementations
             await _context.Entry(card).Collection(c => c.CardMembers).LoadAsync();
 
             _context.Comments.RemoveRange(card.Comments);
+            _context.TodoTasks.RemoveRange(card.TodoTasks);
             _context.Attachments.RemoveRange(card.Attachments);
 
             card.CardLabels.Clear();

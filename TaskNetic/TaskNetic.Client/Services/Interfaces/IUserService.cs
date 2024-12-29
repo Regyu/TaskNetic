@@ -6,5 +6,6 @@ namespace TaskNetic.Client.Services.Interfaces
         Task<string?> GetCurrentUserIdAsync();
         string GetCurrentUserId();
         Task<bool> IsUserAdminInProjectAsync(int projectId, string userId);
+        Task<bool> CanUserEditBoardAsync(int boardId, string userId);
     }
 }

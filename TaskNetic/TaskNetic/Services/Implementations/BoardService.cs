@@ -89,9 +89,38 @@ namespace TaskNetic.Services.Implementations
                 throw new ArgumentNullException(nameof(board), "Board cannot be null.");
             }
 
-            await _context.Entry(board).Collection(b => b.BoardPermissions).LoadAsync();
+            _context.Entry(board).Collection(b => b.BoardPermissions).Load();
+            _context.Entry(board).Collection(b => b.Lists).Load();
+            _context.Entry(board).Collection(b => b.Labels).Load();
 
+            foreach (var list in board.Lists)
+            {
+                _context.Entry(list).Collection(l => l.Cards).Load();
+
+                foreach (var card in list.Cards)
+                {
+                    _context.Entry(card).Collection(c => c.Comments).Load();
+                    _context.Entry(card).Collection(c => c.Attachments).Load();
+                    _context.Entry(card).Collection(c => c.TodoTasks).Load();
+                    _context.Entry(card).Collection(c => c.CardLabels).Load();
+                    _context.Entry(card).Collection(c => c.CardMembers).Load();
+
+                    _context.Comments.RemoveRange(card.Comments);
+                    _context.Attachments.RemoveRange(card.Attachments);
+                    _context.TodoTasks.RemoveRange(card.TodoTasks);
+
+                    card.CardLabels.Clear();
+                    card.CardMembers.Clear();
+
+                    _context.Cards.Remove(card);
+                }
+                _context.Cards.RemoveRange(list.Cards);
+                _context.Lists.Remove(list);
+            }
             _context.BoardPermissions.RemoveRange(board.BoardPermissions);
+
+            _context.RemoveRange(board.Lists);
+            _context.RemoveRange(board.Labels);
 
             _context.Boards.Remove(board);
 

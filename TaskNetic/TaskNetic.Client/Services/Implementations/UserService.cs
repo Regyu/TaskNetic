@@ -38,5 +38,12 @@ namespace TaskNetic.Client.Services.Implementations
             var response = await request.Content.ReadAsStringAsync();
             return bool.Parse(response);
         }
+
+        public async Task<bool> CanUserEditBoardAsync(int boardId, string userId)
+        {
+            var request = await _httpClient.GetAsync($"api/boardpermissions/can-edit/{boardId}/{userId}");
+            var response = await request.Content.ReadAsStringAsync();
+            return bool.Parse(response);
+        }
     }
 }
