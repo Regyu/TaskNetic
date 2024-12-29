@@ -493,6 +493,13 @@
         await SignalRService.NotifyGroupAboutListUpdate(currentBoard.BoardId);
         await LoadLists();
     }
+    
+   public async ValueTask DisposeAsync()
+    {
+        await SignalRService.StopConnectionAsync();
+    }
+
+
 }
 
 

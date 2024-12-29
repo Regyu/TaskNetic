@@ -1,8 +1,9 @@
 ﻿@using Blazorise
 @inject HttpClient Http
+@inject ISignalRService SignalRService
 @inject IApplicationUserService ApplicationUserService
 @inject IUserService UserService
-@inject ISignalRService SignalRService
+
 @using TaskNetic.Client.DTO
 
 <Modal @bind-Visible="IsVisible" Centered>

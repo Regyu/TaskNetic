@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR.Client;
 using TaskNetic.Client.Services.Implementations;
 using TaskNetic.Client.Services.Interfaces;
 

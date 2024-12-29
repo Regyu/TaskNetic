@@ -7,44 +7,44 @@ namespace TaskNetic.Hubs
     {
         private static readonly Dictionary<string, HashSet<string>> GroupConnections = new();
 
-        
+
         public async Task JoinGroup(string groupName)
         {
-            
+
             if (!GroupConnections.ContainsKey(groupName))
             {
                 GroupConnections[groupName] = new HashSet<string>();
             }
 
-            
+
             if (GroupConnections[groupName].Contains(Context.ConnectionId))
-            {                
+            {
                 return;
             }
-            
+
             GroupConnections[groupName].Add(Context.ConnectionId);
-            
+
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
         }
 
-        
+
         public async Task LeaveGroup(string groupName)
         {
-            
+
             if (GroupConnections.ContainsKey(groupName) && GroupConnections[groupName].Contains(Context.ConnectionId))
             {
-                
+
                 GroupConnections[groupName].Remove(Context.ConnectionId);
 
-                
+
                 if (GroupConnections[groupName].Count == 0)
                 {
                     GroupConnections.Remove(groupName);
                 }
 
-                
+
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
-         
+
             }
         }
         public async Task NotifyBoardGroupAboutUpdate(string groupName)
@@ -53,8 +53,8 @@ namespace TaskNetic.Hubs
         }
 
         public async Task NotifyUserAboutBoardUpdate(string userId)
-        {         
-         await Clients.User(userId).SendAsync("ReceiveBoardNotification");
+        {
+            await Clients.User(userId).SendAsync("ReceiveBoardNotification");
         }
         public async Task NotifyGroupAboutAddedList(string groupName)
         {
@@ -64,7 +64,7 @@ namespace TaskNetic.Hubs
         {
             await Clients.Group(groupName).SendAsync("AddNewCard");
         }
-       
+
         public override Task OnConnectedAsync()
         {
             return base.OnConnectedAsync();

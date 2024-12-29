@@ -8,12 +8,14 @@ using TaskNetic.Components.Account;
 using TaskNetic.Data;
 using TaskNetic.Data.Repository;
 using TaskNetic.Models;
-using TaskNetic.Hubs;
+using Microsoft.Azure.SignalR;
 using TaskNetic.Services.Implementations;
 using TaskNetic.Services.Interfaces;
 using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
+using TaskNetic.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -22,8 +24,11 @@ builder.Services.AddSignalR()
     .AddAzureSignalR(options =>
     {
         options.ConnectionString = builder.Configuration.GetConnectionString("AzureSignalR");
-    });
+        options.InitialHubServerConnectionCount = 1;
+        options.MaxHubServerConnectionCount = 3;
+        options.ServerStickyMode = Microsoft.Azure.SignalR.ServerStickyMode.Required;
 
+    });
 
 
 builder.Services.AddRazorComponents()
@@ -116,5 +121,7 @@ app.MapRazorComponents<App>()
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
+
+
 app.MapHub<ApplicationHub>("/applicationhub");
 app.Run();

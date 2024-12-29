@@ -2,6 +2,7 @@
 @inject HttpClient Http
 @inject ISignalRService SignalRService
 
+
 @if (isEditingListTitle)
 {
     <input type="text" @bind="Title" class="form-control form-control-sm me-2 mb-2 h-75" @onblur="SaveTitle" @ref="listTitleInput" />

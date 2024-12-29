@@ -6,7 +6,7 @@ using TaskNetic.Client.Services.Interfaces;
 
 namespace TaskNetic.Client.Services.Implementations
 {
-    public class SignalRService : ISignalRService
+    public class SignalRService : ISignalRService, IAsyncDisposable
     {
         private readonly HubConnection _hubConnection;
 
@@ -16,7 +16,6 @@ namespace TaskNetic.Client.Services.Implementations
                 .WithUrl(navigationManager.ToAbsoluteUri("/applicationhub"))
                 .Build();
         }
-
         public async Task RegisterUser(string userId)
         {
             await _hubConnection.SendAsync("RegisterUser", userId);
@@ -79,10 +78,17 @@ namespace TaskNetic.Client.Services.Implementations
         }
         public async Task StopConnectionAsync()
         {
-            if (_hubConnection.State == HubConnectionState.Connected)
+            if (_hubConnection != null && _hubConnection.State == HubConnectionState.Connected)
             {
                 await _hubConnection.StopAsync();
+                await _hubConnection.DisposeAsync();
             }
+        }
+
+       
+        public async ValueTask DisposeAsync()
+        {  
+            await StopConnectionAsync();
         }
     }
 }
