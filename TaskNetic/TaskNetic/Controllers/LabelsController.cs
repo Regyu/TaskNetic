@@ -88,5 +88,24 @@ namespace TaskNetic.Api.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        // PUT: api/labels
+        [HttpPut]
+        public async Task<IActionResult> UpdateLabel([FromBody] Label label)
+        {
+            try
+            {
+                await _labelService.UpdateAsync(label);
+                return Ok(new { message = "Label updated successfully." });
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 }

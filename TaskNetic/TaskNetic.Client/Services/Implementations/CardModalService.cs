@@ -15,7 +15,13 @@ namespace TaskNetic.Client.Services.Implementations
             UserService = userService;
         }
 
-        public async Task<bool> AddMemberToCardAsync(int cardId, string userId)
+        public async Task<bool> RemoveCardAsync(int cardId)
+        {
+            var response = await _httpClient.DeleteAsync($"api/cards/{cardId}");
+            return response.IsSuccessStatusCode;
+        }
+
+            public async Task<bool> AddMemberToCardAsync(int cardId, string userId)
         {
             var response = await _httpClient.PostAsJsonAsync($"api/cards/{cardId}/members/", userId);
             return response.IsSuccessStatusCode;

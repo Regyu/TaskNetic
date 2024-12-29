@@ -1,0 +1,87 @@
+﻿@using Blazorise
+
+<Modal @bind-Visible="IsVisible" Closed="CloseModal" Size="ModalSize.Small">
+    <ModalContent>
+        <ModalHeader>
+            <ModalTitle>Edytuj Termin</ModalTitle>
+            <CloseButton @onclick="CloseModal" />
+        </ModalHeader>
+
+        <ModalBody>
+            <!-- Date Picker -->
+            <div class="mb-3">
+                <label for="datePicker" class="form-label">Data</label>
+                <DatePicker TValue="DateTime?" @bind-Date="SelectedDate"
+                            Min="@DateTime.Now"
+                            Placeholder="Wybierz datę"
+                            Class="form-control"
+                            Id="datePicker" />
+            </div>
+
+            <!-- Time Picker -->
+            <div class="mb-3">
+                <label for="timePicker" class="form-label">Czas</label>
+                <TimePicker TValue="DateTime?" @bind-Time="SelectedDate"
+                            Placeholder="Wybierz czas"
+                            TimeAs24hr="true"
+                            Class="form-control"
+                            Id="timePicker" />
+            </div>
+        </ModalBody>
+
+        <ModalFooter>
+            <!-- Save Button -->
+            <button class="btn btn-success me-2" @onclick="SaveDueDate">Zapisz</button>
+            <!-- Delete Button -->
+            <button class="btn btn-danger" @onclick="DeleteDueDate">Usuń</button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public DateTime? DueDate { get; set; }
+    [Parameter] public EventCallback<DateTime?> OnDueDateChanged { get; set; }
+
+    private DateTime? SelectedDate { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (DueDate.HasValue)
+        {
+            SelectedDate = DueDate;
+        }
+        else
+        {
+            SelectedDate = DateTime.Now.AddMinutes(1);
+        }
+    }
+
+    private async Task SaveDueDate()
+    {
+        if (SelectedDate.HasValue && SelectedDate > DateTime.Now)
+        {
+            DueDate = SelectedDate;
+            await OnDueDateChanged.InvokeAsync(DueDate);
+            CloseModal();
+        }
+        else
+        {
+            Console.WriteLine("Cannot select a past date or time.");
+        }
+    }
+
+    private async Task DeleteDueDate()
+    {
+        DueDate = null;
+        await OnDueDateChanged.InvokeAsync(DueDate);
+        CloseModal();
+    }
+
+    private void CloseModal()
+    {
+        IsVisible = false;
+        IsVisibleChanged.InvokeAsync(IsVisible);
+    }
+}

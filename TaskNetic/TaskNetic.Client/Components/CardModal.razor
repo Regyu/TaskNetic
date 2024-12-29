@@ -2,6 +2,7 @@
 @inject IUserService userService
 @inject ICardModalService cardModalService
 @using Blazorise
+@using System.Globalization
 
 
 <Modal @bind-Visible="IsVisible" Opened="OpenCardModal" Closed="CloseModal" Scrollable>
@@ -41,6 +42,13 @@
                             }
                         </div>
                     </div>
+                    @if (dueDate.HasValue)
+                    {
+                        <div class="me-3">
+                            <h6 class="fw-semibold">Due date</h6>
+                            <button type="button" class="btn btn-sm @(GetButtonClass(dueDate))">@dueDate.Value.ToString("dd MMMM, HH:mm", CultureInfo.InvariantCulture)</button>
+                        </div>
+                    }
                 </div>
 
                 <div class="mb-4">
@@ -149,6 +157,10 @@
                     <button class="btn btn-light btn-sm mb-1" @onclick="() => isManageMemberModalVisible = true"><img src="images/people.svg" width="22" height="22" />Members</button>
                     <button class="btn btn-light btn-sm mb-1"><img src="images/bookmark.svg" width="22" height="22" />Labels</button>
                     <button class="btn btn-light btn-sm mb-1"><img src="images/deadline.svg" width="22" height="22" />Due date</button>
+                    <DueDatePicker IsVisible="@isDueDatePickerVisible"
+                                   DueDate="@dueDate"
+                                   OnDueDateChanged="(DateTime? date) => dueDate = date"
+                                   IsVisibleChanged="@((visible) => isDueDatePickerVisible = visible)" />
                     <button class="btn btn-light btn-sm mb-1"><img src="images/attachment.svg" width="20" height="20" />Attachment</button>
                 </div>
 
@@ -156,7 +168,7 @@
                     <h6 class="my-2 fw-semibold">Actions</h6>
                     <button class="btn btn-light btn-sm mb-1"><img src="images/move.svg" width="22" height="22" />Move</button>
                     <button class="btn btn-light btn-sm mb-1"><img src="images/copy.svg" width="22" height="22" />Copy</button>
-                    <button class="btn btn-light btn-sm"><img src="images/delete.svg" width="22" height="22" />Delete</button>
+                    <button class="btn btn-light btn-sm" @onclick="() => RemoveCard()"><img src="images/delete.svg" width="22" height="22" />Delete</button>
                 </div>
             </div>
         </ModalBody>
@@ -188,6 +200,8 @@
     private string newComment = "";
     private bool isNewCommentInputVisible = false;
     private bool isEditingComment = false;
+    private DateTime? dueDate;
+    private bool isDueDatePickerVisible = false;
 
     private async Task EnableTitleEdit()
     {
@@ -228,6 +242,7 @@
             tasks.AddRange(selectedCard.TodoTasks);
             completedTasksCount = tasks.Count(t => t.TaskFinished);
             comments.AddRange(selectedCard.Comments);
+            dueDate = selectedCard.DueDate;
             currentUserId = await userService.GetCurrentUserIdAsync() ?? "";
             IsVisible = true;
         }
@@ -375,6 +390,34 @@
         {
             Console.WriteLine("Failed to update comment.");
         }
+    }
+
+    private async Task RemoveCard()
+    {
+        IsVisible = false;
+        await IsVisibleChanged.InvokeAsync();
+        await cardModalService.RemoveCardAsync(CardId);
+        await OnExternalCardChanged.InvokeAsync();
+    }
+
+    private string GetButtonClass(DateTime? dueDate)
+    {
+        if (!dueDate.HasValue)
+            return "btn-light";
+
+        var now = DateTime.Now;
+
+        if (dueDate > now.AddDays(1))
+            return "btn-light";
+        else if (dueDate > now)
+            return "btn-warning";
+        else
+            return "btn-danger";
+    }
+
+    private void HandleDueDateChanged(DateTime? newDueDate)
+    {
+        dueDate = newDueDate;
     }
 }
 

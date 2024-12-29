@@ -15,5 +15,6 @@ namespace TaskNetic.Client.Services.Interfaces
         Task<bool> AddCommentToCardAsync(int cardId, string comment);
         Task<bool> DeleteCommentAsync(int commentId);
         Task<bool> UpdateCommentAsync(int commentId, string comment);
+        Task<bool> RemoveCardAsync(int cardId);
     }
 }
