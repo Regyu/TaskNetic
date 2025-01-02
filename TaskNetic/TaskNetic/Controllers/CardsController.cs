@@ -18,13 +18,15 @@ namespace TaskNetic.Api.Controllers
         private readonly IListService _listService;
         private readonly IRepository<List> _listRepository;
         private readonly IApplicationUserService _aplicationUserService;
+        private readonly INotificationService _notificationService;
 
-        public CardsController(ICardService cardService, IListService listService,IRepository<List> listRepository, IApplicationUserService aplicationUserService)
+        public CardsController(ICardService cardService, IListService listService,IRepository<List> listRepository, IApplicationUserService aplicationUserService, INotificationService notificationService)
         {
             _cardService = cardService;
             _listService = listService;
             _listRepository = listRepository;
             _aplicationUserService = aplicationUserService;
+            _notificationService = notificationService;
         }
 
         // GET: api/cards/list/{listId}
@@ -98,14 +100,26 @@ namespace TaskNetic.Api.Controllers
         }
 
         // DELETE: api/cards/{cardId}
-        [HttpDelete("{cardId}")]
-        public async Task<IActionResult> DeleteCard(int cardId)
+        [HttpDelete("{cardId}/{userId}")]
+        public async Task<IActionResult> DeleteCard(int cardId, string userId)
         {
             try
             {
-                var card = await _cardService.GetByIdAsync(cardId);
+                var card = await _cardService.GetCardWithMembersAsync(cardId);
                 if (card == null)
                     return NotFound(new { message = "Card not found." });
+
+                var user = await _aplicationUserService.GetUserByIdAsync(userId);
+                if (user == null)
+                    return NotFound(new { message = "User not found." });
+
+                foreach (var member in card.CardMembers)
+                {
+                    if (member.Id == userId)
+                    {
+                        await _notificationService.AddNotificationAsync(member.Id, member.UserName, $"has removed card \"{card.CardTitle}\".");
+                    }
+                }
 
                 await _cardService.DeleteCardAsync(card);
                 return Ok(new { message = "Card deleted successfully." });
@@ -125,6 +139,18 @@ namespace TaskNetic.Api.Controllers
         {
             try
             {
+                var card = await _cardService.GetCardWithMembersAsync(cardId);
+                var list = await _listService.GetByIdAsync(request.TargetListId);
+                var user = await _aplicationUserService.GetUserByIdAsync(request.CurrentUserId);
+
+                foreach (var member in card.CardMembers)
+                {
+                    if (member.Id != user?.Id)
+                    {
+                        await _notificationService.AddNotificationAsync(member.Id, user.UserName, $"has moved card \"{card.CardTitle}\" to list \"{list.Title}\".");
+                    }
+                }
+
                 await _listService.MoveCardAsync(cardId, request.SourceListId, request.TargetListId, request.NewPosition);
                 return Ok();
             }
@@ -149,14 +175,24 @@ namespace TaskNetic.Api.Controllers
         }
 
         [HttpPut("{cardId}/title")]
-        public async Task<IActionResult> UpdateCardTitle(int cardId, [FromBody] string title)
+        public async Task<IActionResult> UpdateCardTitle(int cardId, [FromBody] NewUserString title)
         {
-            var card = await _cardService.GetByIdAsync(cardId);
+            var card = await _cardService.GetCardWithMembersAsync(cardId);
 
             if (card == null)
                 return NotFound(new { message = "Card not found" });
 
-            card.CardTitle = title;
+            var user = await _aplicationUserService.GetUserByIdAsync(title.CurrentUserId);
+
+            foreach (var member in card.CardMembers)
+            {
+                if (member.Id != user.Id)
+                {
+                    await _notificationService.AddNotificationAsync(member.Id, user.UserName, $"has changed name of card \"{card.CardTitle}\" to \"{title.Text}\".");
+                }
+            }
+
+            card.CardTitle = title.Text;
             await _cardService.UpdateAsync(card);
 
             return Ok(new { message = "Card title updated successfully" });
@@ -172,9 +208,11 @@ namespace TaskNetic.Api.Controllers
         }
 
         [HttpPost("{cardId}/members")]
-        public async Task<IActionResult> AddMemberToCard(int cardId, [FromBody] string userId)
+        public async Task<IActionResult> AddMemberToCard(int cardId, [FromBody] NewUserString userString)
         {
             var card = await _cardService.GetFullCardInfoAsync(cardId);
+            var userId = userString.Text;
+            var currentUser = await _aplicationUserService.GetUserByIdAsync(userString.CurrentUserId);
 
             if (card == null)
                 return NotFound(new { message = "Card not found" });
@@ -187,15 +225,27 @@ namespace TaskNetic.Api.Controllers
                 return NotFound(new { message = "User not found" });
             card.CardMembers.Add(user);
 
+            foreach (var member in card.CardMembers)
+            {
+                if (member.Id != userId && member.Id != currentUser?.Id)
+                {
+                    await _notificationService.AddNotificationAsync(member.Id, user.UserName, $"has been added to card \"{card.CardTitle}\".");
+                }
+            }
+            await _notificationService.AddNotificationAsync(userId, currentUser.UserName, $"has added you to card \"{card.CardTitle}\".");
+
             await _cardService.UpdateAsync(card);
 
             return Ok(new { message = "Member added successfully" });
         }
 
-        [HttpDelete("{cardId}/members/{userId}")]
-        public async Task<IActionResult> RemoveMemberFromCard(int cardId, string userId)
+        [HttpDelete("{cardId}/members")]
+        public async Task<IActionResult> RemoveMemberFromCard(int cardId, [FromBody] NewUserString userString)
         {
             var card = await _cardService.GetFullCardInfoAsync(cardId);
+            var userId = userString.Text;
+
+            var currentUser = await _aplicationUserService.GetUserByIdAsync(userString.CurrentUserId);
 
             if (card == null)
                 return NotFound(new { message = "Card not found" });
@@ -206,21 +256,40 @@ namespace TaskNetic.Api.Controllers
 
             card.CardMembers.Remove(memberToRemove);
 
+            foreach (var member in card.CardMembers)
+            {
+                if (member.Id != userId && member.Id != currentUser?.Id)
+                {
+                    await _notificationService.AddNotificationAsync(member.Id, memberToRemove.UserName, $"has been removed from card \"{card.CardTitle}\".");
+                }
+            }
+            await _notificationService.AddNotificationAsync(userId, currentUser.UserName, $"has removed you from card \"{card.CardTitle}\".");
+
             await _cardService.UpdateAsync(card);
 
             return Ok(new { message = "Member removed successfully" });
         }
 
         [HttpPut("{cardId}/description")]
-        public async Task<IActionResult> UpdateCardDescription(int cardId, [FromBody] string description)
+        public async Task<IActionResult> UpdateCardDescription(int cardId, [FromBody] NewUserString description)
         {
-            var card = await _cardService.GetByIdAsync(cardId);
+            var card = await _cardService.GetCardWithMembersAsync(cardId);
 
             if (card == null)
                 return NotFound(new { message = "Card not found" });
 
-            card.CardDescription = description;
+            card.CardDescription = description.Text;
             await _cardService.UpdateAsync(card);
+
+            var user = await _aplicationUserService.GetUserByIdAsync(description.CurrentUserId);
+
+            foreach (var member in card.CardMembers)
+            {
+                if (member.Id != user.Id)
+                {
+                    await _notificationService.AddNotificationAsync(member.Id, user.UserName, $"has changed description of card \"{card.CardTitle}\".");
+                }
+            }
 
             return Ok(new { message = "Card description updated successfully" });
         }

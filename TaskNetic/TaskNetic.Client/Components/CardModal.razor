@@ -2,6 +2,7 @@
 @inject IUserService userService
 @inject ICardModalService cardModalService
 @using Blazorise
+@using TaskNetic.Client.DTO
 
 
 <Modal @bind-Visible="IsVisible" Opened="OpenCardModal" Closed="CloseModal" Scrollable>
@@ -200,7 +201,13 @@
     {
         isEditingTitle = false;
 
-        var response = await Http.PutAsJsonAsync($"api/cards/{CardId}/title", selectedCard.CardTitle);
+        var cardTitle = new NewUserString
+        {
+            Text = selectedCard.CardTitle,
+            CurrentUserId = userService.GetCurrentUserId()
+        };
+
+        var response = await Http.PutAsJsonAsync($"api/cards/{CardId}/title", cardTitle);
         if (!response.IsSuccessStatusCode)
         {
             Console.WriteLine("Failed to update card title.");
@@ -258,7 +265,13 @@
     {
         if (!string.IsNullOrWhiteSpace(cardDescription))
         {
-            var response = await Http.PutAsJsonAsync($"api/cards/{CardId}/description", cardDescription);
+            var description = new NewUserString
+            {
+                Text = cardDescription,
+                CurrentUserId = userService.GetCurrentUserId()
+            };
+
+            var response = await Http.PutAsJsonAsync($"api/cards/{CardId}/description", description);
             if (!response.IsSuccessStatusCode)
             {
                 Console.WriteLine("Failed to update card description.");
