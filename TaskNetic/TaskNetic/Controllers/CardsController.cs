@@ -117,7 +117,7 @@ namespace TaskNetic.Api.Controllers
                 {
                     if (member.Id == userId)
                     {
-                        await _notificationService.AddNotificationAsync(member.Id, member.UserName, $"has removed card \"{card.CardTitle}\".");
+                        await _notificationService.AddNotificationAsync(member.Id, user.UserName, $"has removed card \"{card.CardTitle}\".");
                     }
                 }
 
