@@ -46,6 +46,7 @@
                                 </div>
 
                                 <button class="btn btn-secondary btn-sm" @onclick="() => showEditForm(label)">Edit</button>
+                                <CloseButton @onclick="() => RemoveLabel(label.Id)" Class="ms-2"></CloseButton>
                             </div>
                         }
 
@@ -156,6 +157,14 @@
         boardLabels.Clear();
         boardLabels = await cardLabelsService.GetBoardLabelsAsync(boardId);
         StateHasChanged();
+    }
+
+    private async Task RemoveLabel(int labelId)
+    {
+        await cardLabelsService.DeleteLabelFromBoardAsync(labelId);
+        await LoadBoardLabels();
+        cardLabelsList.RemoveAll(cardListLabel => cardListLabel.Id == labelId);
+        await OnCardLabelsChanged.InvokeAsync(cardLabelsList);
     }
 }
 
