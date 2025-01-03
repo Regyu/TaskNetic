@@ -11,6 +11,7 @@ namespace TaskNetic.Services.Interfaces
         Task DeleteCardAsync(Card card);
         Task UpdateCardPositionsAsync(IEnumerable<CardPositionUpdate> updates);
         Task<Card?> GetFullCardInfoAsync(int cardId);
+        Task<Card?> GetCardWithMembersAsync(int cardId);
         Task<List<ApplicationUser>> GetCardMembersAsync(int cardId);
     }
 }

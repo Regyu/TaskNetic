@@ -1,7 +1,9 @@
 ﻿using System.Net.Http.Json;
 using TaskNetic.Client.DTO;
 using TaskNetic.Client.Models;
+using TaskNetic.Client.Pages;
 using TaskNetic.Client.Services.Interfaces;
+using static System.Net.WebRequestMethods;
 
 namespace TaskNetic.Client.Services.Implementations
 {
@@ -23,7 +25,12 @@ namespace TaskNetic.Client.Services.Implementations
 
             public async Task<bool> AddMemberToCardAsync(int cardId, string userId)
         {
-            var response = await _httpClient.PostAsJsonAsync($"api/cards/{cardId}/members/", userId);
+            var newMember = new NewUserString
+            {
+                Text = userId,
+                CurrentUserId = UserService.GetCurrentUserId()
+            };
+            var response = await _httpClient.PostAsJsonAsync($"api/cards/{cardId}/members/", newMember);
             return response.IsSuccessStatusCode;
         }
 
@@ -31,7 +38,22 @@ namespace TaskNetic.Client.Services.Implementations
         {
             if(cardId == null)
                 return false;
-            var response = await _httpClient.DeleteAsync($"api/cards/{cardId}/members/{userId}");
+
+            var currentUserId = UserService.GetCurrentUserId();
+
+            var removeMember = new NewUserString
+            {
+                Text = userId,
+                CurrentUserId = currentUserId
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Delete, $"api/cards/{cardId}/members")
+            {
+                Content = JsonContent.Create(removeMember)
+            };
+
+            var response = await _httpClient.SendAsync(request);
+            //var response = await _httpClient.DeleteFromJsonAsync($"api/cards/{cardId}/members/", removeMember);
             return response.IsSuccessStatusCode;
         }
 
@@ -42,7 +64,14 @@ namespace TaskNetic.Client.Services.Implementations
 
         public async Task<bool> CreateTodoTaskAsync(int cardId, string taskName)
         {
-            var response = await _httpClient.PostAsJsonAsync($"api/todotasks/card/{cardId}", taskName);
+            var currentUserId = UserService.GetCurrentUserId();
+            var todoTask = new NewUserString
+            {
+                CurrentUserId = currentUserId,
+                Text = taskName
+            };
+
+            var response = await _httpClient.PostAsJsonAsync($"api/todotasks/card/{cardId}", todoTask);
             return response.IsSuccessStatusCode;
         }
 

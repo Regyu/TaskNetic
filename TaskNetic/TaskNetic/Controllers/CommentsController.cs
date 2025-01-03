@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using TaskNetic.Client.DTO;
 using TaskNetic.Data.Repository;
 using TaskNetic.Models;
+using TaskNetic.Services.Implementations;
 using TaskNetic.Services.Interfaces;
 
 namespace TaskNetic.Api.Controllers
@@ -13,12 +14,16 @@ namespace TaskNetic.Api.Controllers
     {
         private readonly ICommentService _commentService;
         private readonly IRepository<Card> _cardRepository;
+        private readonly ICardService _cardService;
         private readonly IApplicationUserService _userService;
+        private readonly INotificationService _notificationService;
 
-        public CommentsController(ICommentService commentService, IRepository<Card> cardRepository, IApplicationUserService userService)
+        public CommentsController(ICommentService commentService, IRepository<Card> cardRepository, ICardService cardService, INotificationService notificationService, IApplicationUserService userService)
         {
             _commentService = commentService;
             _cardRepository = cardRepository;
+            _cardService = cardService;
+            _notificationService = notificationService;
             _userService = userService;
         }
 
@@ -51,7 +56,7 @@ namespace TaskNetic.Api.Controllers
         {
             try
             {
-                var card = await _cardRepository.GetByIdAsync(cardId);
+                var card = await _cardService.GetCardWithMembersAsync(cardId);
                 if (card == null)
                     return NotFound(new { message = $"Card with ID {cardId} not found." });
 
@@ -65,6 +70,14 @@ namespace TaskNetic.Api.Controllers
                     User = user,
                     Time = comment.creationDate,
                 };
+
+                foreach(var member in card.CardMembers)
+                {
+                    if(member != user)
+                    {
+                        await _notificationService.AddNotificationAsync(member.Id, user.UserName, $"has added a comment to card \"{card.CardTitle}\".");
+                    }
+                }
 
                 await _commentService.AddCommentToCardAsync(card, newComment);
                 return Ok(new { message = "Comment added successfully." });
@@ -89,7 +102,7 @@ namespace TaskNetic.Api.Controllers
         {
             try
             {
-                var comment = await _commentService.GetByIdAsync(commentId); // Ensure GetByIdAsync is implemented in Repository
+                var comment = await _commentService.GetByIdAsync(commentId);
                 if (comment == null)
                     return NotFound(new { message = "Comment not found." });
 

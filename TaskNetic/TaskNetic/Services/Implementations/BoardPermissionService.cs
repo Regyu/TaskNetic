@@ -70,10 +70,10 @@ namespace TaskNetic.Services.Implementations
                 {
                     if (currentUserId != permission.Role.ApplicationUser.Id && user.Id != permission.Role.ApplicationUser.Id)
                     {
-                        await _notificationService.AddNotificationAsync(permission.Role.ApplicationUser.Id, user.UserName, $"has been removed from the board {permission.Board.Title}.");
+                        await _notificationService.AddNotificationAsync(permission.Role.ApplicationUser.Id, user.UserName, $"has been removed from the board \"{permission.Board.Title}\".");
                     }
                 }
-                await _notificationService.AddNotificationAsync(user.Id, currentUser.UserName, $"has removed you from the board {boardPermission.Board.Title}.");
+                await _notificationService.AddNotificationAsync(user.Id, currentUser.UserName, $"has removed you from the board \"{boardPermission.Board.Title}\".");
 
                 await _context.SaveChangesAsync();
             }
@@ -127,10 +127,10 @@ namespace TaskNetic.Services.Implementations
             {
                 if (currentUserId != permission.Role.ApplicationUser.Id)
                 {
-                    await _notificationService.AddNotificationAsync(permission.Role.ApplicationUser.Id, user.UserName, $"has been added to the board {board.Title}.");
+                    await _notificationService.AddNotificationAsync(permission.Role.ApplicationUser.Id, user.UserName, $"has been added to the board \"{board.Title}\".");
                 }
             }
-            await _notificationService.AddNotificationAsync(user.Id, currentUser.UserName, $"has added you to the board {board.Title}.");
+            await _notificationService.AddNotificationAsync(user.Id, currentUser.UserName, $"has added you to the board \"{board.Title}\".");
 
             var boardPermission = new BoardPermission
             {

@@ -231,7 +231,10 @@
             isUserAdmin = await UserService.IsUserAdminInProjectAsync(projectId, userId);
             await LoadBoards();
             await LoadLists();
-            canUserEdit = await UserService.CanUserEditBoardAsync(currentBoard.BoardId, userId);
+            if(currentBoard != null)
+            {
+                canUserEdit = await UserService.CanUserEditBoardAsync(currentBoard.BoardId, userId);
+            }
         }
         catch (Exception ex)
         {
@@ -343,6 +346,7 @@
         var card = args.Item;
         var newListId = int.Parse(args.DropZoneName);
         var sourceListId = int.Parse(args.SourceDropZoneName);
+        var currentUserId = UserService.GetCurrentUserId();
 
         if (CardToListMapping.TryGetValue(card.CardId, out var oldListId) && oldListId != newListId)
         {
@@ -360,7 +364,7 @@
 
             StateHasChanged();
 
-            await Http.PutAsJsonAsync($"api/cards/move/{card.CardId}", new MoveCardRequest { SourceListId = sourceListId, TargetListId = newListId, NewPosition = args.IndexInZone });
+            await Http.PutAsJsonAsync($"api/cards/move/{card.CardId}", new MoveCardRequest { SourceListId = sourceListId, TargetListId = newListId, NewPosition = args.IndexInZone, CurrentUserId = currentUserId });
 
         }
     }
