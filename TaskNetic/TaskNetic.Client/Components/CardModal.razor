@@ -1,6 +1,7 @@
 ﻿@inject HttpClient Http
 @inject IUserService userService
 @inject ICardModalService cardModalService
+@inject ICardLabelsService cardLabelsService
 @using Blazorise
 @using System.Globalization
 
@@ -42,11 +43,27 @@
                             }
                         </div>
                     </div>
+                    @if (cardLabels.Any())
+                    {
+                        <div class="me-3">
+                            <h6 class="fw-semibold">Labels</h6>
+                            <div class="d-flex flex-grow labels-badges">
+                                @foreach (var label in cardLabels)
+                                {
+                                    <div class="label-badge me-2 px-3 py-1 rounded-2 flex-fill text-center" style="background-color: @(label.ColorCode);color: @(label.ColorCode.ToLower() == "#ffffff" ? "black" : "white")">
+                                        <Tooltip Text="@label.Comment">
+                                            @label.LabelName
+                                        </Tooltip>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
                     @if (dueDate.HasValue)
                     {
                         <div class="me-3">
                             <h6 class="fw-semibold">Due date</h6>
-                            <button type="button" class="btn btn-sm @(GetButtonClass(dueDate))">@dueDate.Value.ToString("dd MMMM, HH:mm", CultureInfo.InvariantCulture)</button>
+                            <button type="button" class="btn btn-sm @(GetButtonClass(dueDate))" @onclick="() => isDueDatePickerVisible = true">@dueDate.Value.ToString("dd MMMM, HH:mm", CultureInfo.InvariantCulture)</button>
                         </div>
                     }
                 </div>
@@ -122,7 +139,7 @@
                                         <span class="comment-date ms-3 align-baseline">@comment.Time.ToLongDateString()</span>
                                     </div>
                                     <div class="comment-text fs-6 w-100">
-                                        @if(isEditingComment && comment.User?.Id == currentUserId)
+                                        @if (isEditingComment && comment.User?.Id == currentUserId)
                                         {
                                             <textarea type="text" @bind="comment.CommentText" @onblur="() => UpdateCommentAsync(comment.Id, comment.CommentText)" class="form-control form-control-sm w-100" />
                                         }
@@ -155,12 +172,21 @@
                         </button>
                     }
                     <button class="btn btn-light btn-sm mb-1" @onclick="() => isManageMemberModalVisible = true"><img src="images/people.svg" width="22" height="22" />Members</button>
-                    <button class="btn btn-light btn-sm mb-1"><img src="images/bookmark.svg" width="22" height="22" />Labels</button>
-                    <button class="btn btn-light btn-sm mb-1"><img src="images/deadline.svg" width="22" height="22" />Due date</button>
-                    <DueDatePicker IsVisible="@isDueDatePickerVisible"
-                                   DueDate="@dueDate"
-                                   OnDueDateChanged="(DateTime? date) => dueDate = date"
-                                   IsVisibleChanged="@((visible) => isDueDatePickerVisible = visible)" />
+                    <button class="btn btn-light btn-sm mb-1" @onclick="() => isCardLabelsModalVisible = true"><img src="images/bookmark.svg" width="22" height="22" />Labels</button>
+                    @if (isCardLabelsModalVisible)
+                    {
+                        <CardLabels IsVisible="isCardLabelsModalVisible" IsVisibleChanged="visible => isCardLabelsModalVisible = visible"
+                                    cardLabels="@cardLabels" OnCardLabelsChanged="OnCardLabelsChanged" boardId="BoardId" cardId="CardId" />
+                    }
+
+                    <button class="btn btn-light btn-sm mb-1" @onclick="() => isDueDatePickerVisible = true"><img src="images/deadline.svg" width="22" height="22" />Due date</button>
+                    @if (isDueDatePickerVisible)
+                    {
+                        <DueDatePicker IsVisible="@isDueDatePickerVisible"
+                                       DueDate="@dueDate"
+                                       OnDueDateChanged="(DateTime? date) => HandleDueDateChanged(date)"
+                                       IsVisibleChanged="@((visible) => isDueDatePickerVisible = visible)" />
+                    }
                     <button class="btn btn-light btn-sm mb-1"><img src="images/attachment.svg" width="20" height="20" />Attachment</button>
                 </div>
 
@@ -202,6 +228,8 @@
     private bool isEditingComment = false;
     private DateTime? dueDate;
     private bool isDueDatePickerVisible = false;
+    private bool isCardLabelsModalVisible = false;
+    private List<LabelModel> cardLabels = new List<LabelModel>();
 
     private async Task EnableTitleEdit()
     {
@@ -242,7 +270,8 @@
             tasks.AddRange(selectedCard.TodoTasks);
             completedTasksCount = tasks.Count(t => t.TaskFinished);
             comments.AddRange(selectedCard.Comments);
-            dueDate = selectedCard.DueDate;
+            dueDate = selectedCard?.DueDate?.ToUniversalTime();
+            cardLabels = selectedCard.CardLabels.ToList();
             currentUserId = await userService.GetCurrentUserIdAsync() ?? "";
             IsVisible = true;
         }
@@ -260,6 +289,7 @@
             cardMembers.Clear();
             cardMembers.AddRange(request);
             StateHasChanged();
+            await OnExternalCardChanged.InvokeAsync();
         }
     }
 
@@ -415,9 +445,19 @@
             return "btn-danger";
     }
 
-    private void HandleDueDateChanged(DateTime? newDueDate)
+    private async Task HandleDueDateChanged(DateTime? newDueDate)
     {
         dueDate = newDueDate;
+        await cardModalService.UpdateCardDueDateAsync(CardId, newDueDate);
+        StateHasChanged();
+    }
+
+    private void OnCardLabelsChanged(List<LabelModel> labels)
+    {
+        cardLabels.Clear();
+        cardLabels.AddRange(labels);
+        StateHasChanged();
+        OnExternalCardChanged.InvokeAsync();
     }
 }
 
@@ -482,5 +522,13 @@
     .comment-date {
         font-size: 0.8em;
         color: gray;
+    }
+
+    .labels-badges{
+        min-height: 30%;
+        overflow-x: scroll;
+    }
+    .labels-badge{
+        min-height: 50px;
     }
 </style>

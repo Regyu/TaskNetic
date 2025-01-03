@@ -1,39 +1,40 @@
 ﻿@using Blazorise
+@inject ICardModalService cardModalService
 
-<Modal @bind-Visible="IsVisible" Closed="CloseModal" Size="ModalSize.Small">
-    <ModalContent>
+<Modal @bind-Visible="IsVisible" Closed="CloseModal" ShowBackdrop="false">
+    <ModalContent Centered Size="ModalSize.Small">
         <ModalHeader>
-            <ModalTitle>Edytuj Termin</ModalTitle>
+            <ModalTitle>Edit due date</ModalTitle>
             <CloseButton @onclick="CloseModal" />
         </ModalHeader>
 
         <ModalBody>
-            <!-- Date Picker -->
-            <div class="mb-3">
-                <label for="datePicker" class="form-label">Data</label>
-                <DatePicker TValue="DateTime?" @bind-Date="SelectedDate"
-                            Min="@DateTime.Now"
-                            Placeholder="Wybierz datę"
-                            Class="form-control"
-                            Id="datePicker" />
+            <div class="mb-3 d-flex align-items-center flex-column">
+                <label for="datePicker" class="form-label">Date</label>
+                <DateEdit TValue="DateTime?" Date="@SelectedDate?.Date"
+                          Min="@DateTime.Now"
+                          Placeholder="Choose date..."
+                          Class="form-control"
+                          Id="datePicker" InputMode="DateInputMode.Date"
+                          DateChanged="@OnDateChanged" />
             </div>
 
-            <!-- Time Picker -->
-            <div class="mb-3">
-                <label for="timePicker" class="form-label">Czas</label>
-                <TimePicker TValue="DateTime?" @bind-Time="SelectedDate"
-                            Placeholder="Wybierz czas"
-                            TimeAs24hr="true"
-                            Class="form-control"
-                            Id="timePicker" />
+            <div class="mb-3 d-flex align-items-center flex-column">
+                <label for="timePicker" class="form-label text-start">Time</label>
+                <TimeEdit TValue="TimeSpan?" Time="@SelectedDate?.TimeOfDay"
+                          Placeholder="Choose time..."
+                          TimeAs24hr="true"
+                          Class="form-control"
+                          Id="timePicker" 
+                          TimeChanged="@OnTimeChanged" />
             </div>
         </ModalBody>
 
-        <ModalFooter>
-            <!-- Save Button -->
-            <button class="btn btn-success me-2" @onclick="SaveDueDate">Zapisz</button>
-            <!-- Delete Button -->
-            <button class="btn btn-danger" @onclick="DeleteDueDate">Usuń</button>
+        <ModalFooter Class="justify-content-between">
+            <div class="d-flex flex-row justify-content-start w-100">
+                <button class="btn btn-success me-2 w-40 d-flex justify-content-center" @onclick="SaveDueDate">Save</button>
+                <button class="btn btn-danger w-40 d-flex justify-content-center" @onclick="DeleteDueDate">Clear</button>
+            </div>
         </ModalFooter>
     </ModalContent>
 </Modal>
@@ -55,6 +56,24 @@
         else
         {
             SelectedDate = DateTime.Now.AddMinutes(1);
+        }
+    }
+
+    private void OnDateChanged(DateTime? newDate)
+    {
+        if (newDate.HasValue)
+        {
+            var currentTime = SelectedDate?.TimeOfDay ?? TimeSpan.Zero;
+            SelectedDate = newDate.Value.Date + currentTime;
+        }
+    }
+
+    private void OnTimeChanged(TimeSpan? newTime)
+    {
+        if (newTime.HasValue)
+        {
+            var currentDate = SelectedDate?.Date ?? DateTime.Now.Date;
+            SelectedDate = currentDate + newTime.Value;
         }
     }
 
@@ -85,3 +104,7 @@
         IsVisibleChanged.InvokeAsync(IsVisible);
     }
 }
+
+<style>
+
+</style>

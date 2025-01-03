@@ -16,5 +16,6 @@ namespace TaskNetic.Client.Services.Interfaces
         Task<bool> DeleteCommentAsync(int commentId);
         Task<bool> UpdateCommentAsync(int commentId, string comment);
         Task<bool> RemoveCardAsync(int cardId);
+        Task<bool> UpdateCardDueDateAsync(int cardId, DateTime? date);
     }
 }

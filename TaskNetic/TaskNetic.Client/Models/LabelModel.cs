@@ -1,6 +1,6 @@
 ﻿namespace TaskNetic.Client.Models
 {
-    public class Label
+    public class LabelModel
     {
         public int Id { get; set; }
         public required string LabelName { get; set; }

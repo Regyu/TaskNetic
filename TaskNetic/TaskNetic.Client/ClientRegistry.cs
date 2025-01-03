@@ -16,6 +16,7 @@ namespace TaskNetic.Client
             });
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ICardModalService, CardModalService>();
+            services.AddScoped<ICardLabelsService, CardLabelsService>();
         }
     }
 }

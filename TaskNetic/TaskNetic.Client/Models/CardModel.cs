@@ -13,7 +13,7 @@ namespace TaskNetic.Client.Models
         public DateTime? DueDate { get; set; }
         public ICollection<FileAttachment> Attachments { get; set; } = new List<FileAttachment>();
         public ICollection<TodoTask> TodoTasks { get; set; } = new List<TodoTask>();
-        public ICollection<Label> CardLabels { get; set; } = new List<Label>();
+        public ICollection<LabelModel> CardLabels { get; set; } = new List<LabelModel>();
         public ICollection<ApplicationUser> CardMembers { get; set; } = new List<ApplicationUser>();
     }
 }

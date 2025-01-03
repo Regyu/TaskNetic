@@ -93,5 +93,11 @@ namespace TaskNetic.Client.Services.Implementations
             var response = await _httpClient.PutAsJsonAsync($"api/comments/{commentId}", comment);
             return response.IsSuccessStatusCode;
         }
+
+        public async Task<bool> UpdateCardDueDateAsync(int cardId, DateTime? date)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"api/cards/{cardId}/due-date", date);
+            return response.IsSuccessStatusCode;
+        }
     }
 }

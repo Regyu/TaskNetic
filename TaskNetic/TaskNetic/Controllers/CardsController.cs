@@ -224,5 +224,19 @@ namespace TaskNetic.Api.Controllers
 
             return Ok(new { message = "Card description updated successfully" });
         }
+
+        [HttpPut("{cardId}/due-date")]
+        public async Task<IActionResult> UpdateCardDueDate(int cardId, [FromBody] DateTime? dueDate)
+        {
+            var card = await _cardService.GetByIdAsync(cardId);
+
+            if (card == null)
+                return NotFound(new { message = "Card not found" });
+
+            card.DueDate = dueDate;
+            await _cardService.UpdateAsync(card);
+
+            return Ok(new { message = "Card due date updated successfully" });
+        }
     }
 }
