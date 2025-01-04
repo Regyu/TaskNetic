@@ -1,4 +1,5 @@
 ﻿using Azure.Core;
+using Blazorise.DeepCloner;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -338,6 +339,34 @@ namespace TaskNetic.Api.Controllers
             {
                 return NotFound(new { message = ex.Message });
             }
+        }
+
+        [HttpPut("board-copy")]
+        public async Task<IActionResult> CopyCardToBoard([FromBody] MoveCardToBoardRequest request)
+        {
+            try
+            {
+                var card = await _cardService.GetByIdAsync(request.CardId);
+                if (card == null)
+                    return NotFound(new { message = "Card not found." });
+                var newCard = card.DeepClone();
+                newCard.CardId = 0;
+                newCard.CardLabels.Clear();
+                newCard.CardMembers.Clear();
+                await _cardService.AddAsync(newCard);
+                var targetList = await _listService.GetByIdAsync(request.targetListId);
+                var targetListCards = await _cardService.GetCardsForListAsync(targetList);
+                var listLastPosition = targetListCards.Any() ? targetListCards.Max(c => c.CardPosition) : 0;
+                newCard.CardPosition = listLastPosition + 1;
+                targetList.Cards.Add(newCard);
+                await _cardService.UpdateAsync(newCard);
+                return Ok();
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(new {message = ex.Message});
+            }
+
         }
     }
 }

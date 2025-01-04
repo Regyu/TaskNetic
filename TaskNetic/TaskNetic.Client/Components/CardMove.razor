@@ -6,12 +6,11 @@
 <Modal @bind-Visible="IsVisible" ShowBackdrop="false" Class="move-modal">
     <ModalContent Size="ModalSize.Small">
         <ModalHeader>
-            <ModalTitle>Move Card</ModalTitle>
+            <ModalTitle>@(IsCopy ? "Copy card" : "Move card")</ModalTitle>
             <CloseButton @onclick="CloseModal" />
         </ModalHeader>
 
         <ModalBody>
-            <!-- Select Board -->
             <div class="mb-3">
                 <label for="boardSelect" class="form-label">Select Board</label>
                 <Select TValue="int" @bind-Value="SelectedBoardId" Id="boardSelect" 
@@ -23,7 +22,6 @@
                 </Select>
             </div>
 
-            <!-- Select List -->
             @if (SelectedBoardId > 0)
             {
                 <div class="mb-3">
@@ -40,7 +38,7 @@
 
         <ModalFooter Class="d-flex justify-content-around">
             <button class="btn btn-danger btn-sm footer-button" @onclick="CloseModal">Cancel</button>
-            <button class="btn btn-success btn-sm me-2 footer-button" @onclick="SaveMove">Save</button>
+            <button class="btn btn-success btn-sm me-2 footer-button" @onclick="@(IsCopy ? SaveCopy : SaveMove)">Save</button>
         </ModalFooter>
     </ModalContent>
 </Modal>
@@ -53,6 +51,7 @@
     [Parameter] public int projectId { get; set; }
     [Parameter] public int listId { get; set; }
     [Parameter] public EventCallback OnCardMoved { get; set; }
+    [Parameter] public bool IsCopy { get; set; }
 
     private List<BoardModel> Boards = new();
     private List<List> Lists = new();
@@ -88,6 +87,24 @@
         if (Lists.Any())
         {
             SelectedListId = Lists.First().Id;
+        }
+    }
+
+    private async Task SaveCopy()
+    {
+        if(SelectedListId > 0)
+        {
+            var response = await Http.PutAsJsonAsync($"api/cards/board-copy", new MoveCardToBoardRequest{CardId=cardId,sourceListId=listId ,targetListId=SelectedListId});
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Card copied successfully.");
+                await OnCardMoved.InvokeAsync();
+                CloseModal();
+            }
+            else
+            {
+                Console.WriteLine("Failed to copy card.");
+            }
         }
     }
 

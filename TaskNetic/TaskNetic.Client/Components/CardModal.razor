@@ -194,12 +194,12 @@
                 <div class="d-flex flex-column ms-auto">
                     <h6 class="my-2 fw-semibold">Actions</h6>
                     <button class="btn btn-light btn-sm mb-1" @onclick="() => isMovingCardVisible = true"><img src="images/move.svg" width="22" height="22" />Move</button>
-                    @if (isMovingCardVisible)
+                    @if (isMovingCardVisible || isCopyCardVisible)
                     {
-                        <CardMove IsVisible="isMovingCardVisible" IsVisibleChanged="value => isMovingCardVisible = value" cardId="CardId"
-                            projectId="ProjectId" boardId="BoardId" OnCardMoved="HandleCardMoved" listId="ListId"/>
+                        <CardMove IsVisible="@(isMovingCardVisible || isCopyCardVisible)" IsVisibleChanged="CloseMoveCopyModal" cardId="CardId"
+                            projectId="ProjectId" boardId="BoardId" OnCardMoved="HandleCardMoved" listId="ListId" IsCopy="isCopyCardVisible"/>
                     }
-                    <button class="btn btn-light btn-sm mb-1"><img src="images/copy.svg" width="22" height="22" />Copy</button>
+                    <button class="btn btn-light btn-sm mb-1" @onclick="() => isCopyCardVisible = true"><img src="images/copy.svg" width="22" height="22" />Copy</button>
                     <button class="btn btn-light btn-sm" @onclick="() => RemoveCard()"><img src="images/delete.svg" width="22" height="22" />Delete</button>
                 </div>
             </div>
@@ -239,6 +239,7 @@
     private bool isCardLabelsModalVisible = false;
     private List<LabelModel> cardLabels = new List<LabelModel>();
     private bool isMovingCardVisible = false;
+    private bool isCopyCardVisible = false;
 
     private async Task EnableTitleEdit()
     {
@@ -485,6 +486,12 @@
     {
         CloseModal();
         await OnExternalCardChanged.InvokeAsync();
+    }
+
+    public void CloseMoveCopyModal()
+    {
+        isMovingCardVisible = false;
+        isCopyCardVisible = false;
     }
 }
 
