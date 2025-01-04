@@ -101,36 +101,38 @@
                                     <Div Class="d-flex flex-column">
                                         <DropZone TItem="CardModel" Name="@list.Id.ToString()" AllowReorder="@canUserEdit" Reordered="OnReordered" Class="card-list rounded-bottom-0">
                                             <Heading Size="HeadingSize.Is5" Margin="Margin.Is3.FromBottom" Style="display:flex; justify-content:space-between">
-                                                <ListTitle Title="@list.Title" BoardId="@currentBoard.BoardId" ListId="@list.Id" @ref="listTitleRefs[list.Id]"/>
-                                                @if(canUserEdit)
-                                                {
 
-                                                <Dropdown>
-                                                    <DropdownToggle ToggleIconVisible="false">
-                                                        <img src="images/three-dots.svg" height="18" width="18" alt="options" style="cursor: pointer;" />
-                                                    </DropdownToggle>
-                                                    <DropdownMenu>
-                                                        <DropdownItem Header>
-                                                            <div class="d-flex justify-content-between align-items-center">
-                                                                <h6 class="flex-fill text-center fw-semibold mb-0">List Menu</h6>
-                                                                <button class="btn-close" style="width: 10px; height: 10px;"></button>
-                                                            </div>
-                                                        </DropdownItem>
-                                                        <DropdownItem @onclick="() => EditListTitle(list.Id)">Change Title</DropdownItem>
-                                                        <DropdownItem @onclick="() => ShowAddCard(list.Id)">Add Card</DropdownItem>
-                                                        <DropdownItem @onclick="() => MoveListLeft(list.Id)">Move Left</DropdownItem>
-                                                        <DropdownItem @onclick="() => MoveListRight(list.Id)">Move Right</DropdownItem>
-                                                        <DropdownItem @onclick="() => DeleteList(list.Id)" Class="text-danger">Delete List</DropdownItem>
-                                                    </DropdownMenu>
-                                                </Dropdown>
+                                                <ListTitle Title="@list.Title" ListId="@list.Id" BoardId="@currentBoard.BoardId" @ref="listTitleRefs[list.Id]" />
+                                                @if (canUserEdit)
+                                                {
+                                                    <Dropdown>
+                                                        <DropdownToggle ToggleIconVisible="false">
+                                                            <img src="images/three-dots.svg" height="18" width="18" alt="options" style="cursor: pointer;" />
+                                                        </DropdownToggle>
+                                                        <DropdownMenu>
+                                                            <DropdownItem Header>
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <h6 class="flex-fill text-center fw-semibold mb-0">List Menu</h6>
+                                                                    <button class="btn-close" style="width: 10px; height: 10px;"></button>
+                                                                </div>
+                                                            </DropdownItem>
+                                                            <DropdownItem @onclick="() => EditListTitle(list.Id)">Change Title</DropdownItem>
+                                                            <DropdownItem @onclick="() => ShowAddCard(list.Id)">Add Card</DropdownItem>
+                                                            <DropdownItem @onclick="() => MoveListLeft(list.Id)">Move Left</DropdownItem>
+                                                            <DropdownItem @onclick="() => MoveListRight(list.Id)">Move Right</DropdownItem>
+                                                            <DropdownItem @onclick="() => DeleteList(list.Id)" Class="text-danger">Delete List</DropdownItem>
+                                                        </DropdownMenu>
+                                                    </Dropdown>
+
                                                 }
 
                                             </Heading>
                                         </DropZone>
 
-                                        @if(canUserEdit)
+                                        @if (canUserEdit)
                                         {
-                                            <AddCard ListId="@list.Id" BoardId="@currentBoard.BoardId" OnCardAdded="async () => await LoadLists()" @ref="listAddRefs[list.Id]"/>
+                                            <AddCard ListId="@list.Id" BoardId="@currentBoard.BoardId" OnCardAdded="async () => await LoadLists()" @ref="listAddRefs[list.Id]" />
+
                                         }
                                         else
                                         {
@@ -141,8 +143,26 @@
                                 }
                             </ChildContent>
                             <ItemTemplate Context="cardContext">
-                                <div class="card-item" @onclick="() => OpenCardModal(cardContext.CardId)">
+                                <div class="card-item d-flex flex-column" @onclick="() => OpenCardModal(cardContext.CardId)">
+                                    @if (cardContext.CardLabels != null)
+                                    {
+                                        <div class="d-flex flex-row mb-2 mt-1">
+                                        @foreach (var label in cardContext.CardLabels)
+                                        {
+                                                <span class="badge me-1 fw-normal" style="background-color: @(label.ColorCode);color: @(label.ColorCode.ToLower() == "#ffffff" ? "black" : "white")">@label.LabelName</span>
+                                        }
+                                        </div>
+                                    }
                                     @cardContext.CardTitle
+                                    <div class="d-flex justify-content-end">
+                                        @if (cardContext.CardMembers != null)
+                                        {
+                                            foreach (var member in cardContext.CardMembers)
+                                            {
+                                                <UserAvatar userName="@member.UserName" isSmall="true"/>
+                                            }
+                                        }
+                                    </div>
                                 </div>
                             </ItemTemplate>
                         </DropContainer>
@@ -169,10 +189,10 @@
                     </div>
                     @if (isCardModalVisible)
                     {
-                        <CardModal IsVisible="isCardModalVisible" CardId="cardModalId" BoardId="currentBoard.BoardId" 
-                        IsVisibleChanged="@((visible) => isCardModalVisible = visible)" OnExternalCardChanged="async () => await LoadLists()"/>
+                        <CardModal IsVisible="isCardModalVisible" CardId="cardModalId" BoardId="currentBoard.BoardId"
+                                   IsVisibleChanged="@((visible) => isCardModalVisible = visible)" OnExternalCardChanged="async () => await LoadLists()" />
                     }
-                    
+
                 </div>
             </div>
         }
@@ -229,8 +249,12 @@
                 }
             }
 
-            canUserEdit = await UserService.CanUserEditBoardAsync(currentBoard.BoardId, userId);
 
+
+            if(currentBoard != null)
+            {
+                canUserEdit = await UserService.CanUserEditBoardAsync(currentBoard.BoardId, userId);
+            }
         }
         catch (Exception ex)
         {
@@ -351,7 +375,7 @@
         if (currentBoard != null)
         {
             Lists = null;
-            Cards = new();
+            Cards.Clear();
             CardToListMapping = new();
             var response = await Http.GetAsync($"api/lists/board/{currentBoard?.BoardId}");
             if (response.IsSuccessStatusCode)
@@ -362,8 +386,9 @@
                     Cards = Lists.SelectMany(l => l.Cards).OrderBy(card => card.CardPosition).ToList();
                     CardToListMapping = Cards.ToDictionary(card => card.CardId, card => Lists.First(list => list.Cards.Contains(card)).Id);
                 }
-
                 StateHasChanged();
+                if (dropContainer != null)
+                    dropContainer.Refresh();
             }
         }
     }
@@ -378,6 +403,7 @@
         var card = args.Item;
         var newListId = int.Parse(args.DropZoneName);
         var sourceListId = int.Parse(args.SourceDropZoneName);
+        var currentUserId = UserService.GetCurrentUserId();
 
         if (CardToListMapping.TryGetValue(card.CardId, out var oldListId) && oldListId != newListId)
         {
@@ -395,7 +421,7 @@
 
             StateHasChanged();
 
-            await Http.PutAsJsonAsync($"api/cards/move/{card.CardId}", new MoveCardRequest { SourceListId = sourceListId, TargetListId = newListId, NewPosition = args.IndexInZone });
+            await Http.PutAsJsonAsync($"api/cards/move/{card.CardId}", new MoveCardRequest { SourceListId = sourceListId, TargetListId = newListId, NewPosition = args.IndexInZone, CurrentUserId = currentUserId });
 
         }
     }
@@ -524,7 +550,7 @@
 
     private async Task ShowAddCard(int listId)
     {
-        if(listAddRefs.TryGetValue(listId, out var listComponent))
+        if (listAddRefs.TryGetValue(listId, out var listComponent))
         {
             await listComponent.ShowAddCardInput();
         }
@@ -662,10 +688,10 @@
         bottom: 0;
         left: 0;
         right: 0;
-        height: 30px; /* Matches the button height */
-        background-color: #f0f2f4; /* Same background color */
-        border-bottom-left-radius: 0.25rem; /* Matches "rounded-bottom-2" */
-        border-bottom-right-radius: 0.25rem; /* Matches "rounded-bottom-2" */
+        height: 30px;
+        background-color: #f0f2f4;
+        border-bottom-left-radius: 0.25rem;
+        border-bottom-right-radius: 0.25rem;
     }
 
 

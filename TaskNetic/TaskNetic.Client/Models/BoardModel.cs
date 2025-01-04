@@ -9,7 +9,7 @@ namespace TaskNetic.Client.Models
 
         public ICollection<List> Lists { get; set; } = new List<List>();
 
-        public ICollection<Label> Labels { get; set; } = new List<Label>();
+        public ICollection<LabelModel> Labels { get; set; } = new List<LabelModel>();
 
     }
 }

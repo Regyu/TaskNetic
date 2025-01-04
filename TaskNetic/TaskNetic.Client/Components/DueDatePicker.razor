@@ -1,0 +1,110 @@
+﻿@using Blazorise
+@inject ICardModalService cardModalService
+
+<Modal @bind-Visible="IsVisible" Closed="CloseModal" ShowBackdrop="false">
+    <ModalContent Centered Size="ModalSize.Small">
+        <ModalHeader>
+            <ModalTitle>Edit due date</ModalTitle>
+            <CloseButton @onclick="CloseModal" />
+        </ModalHeader>
+
+        <ModalBody>
+            <div class="mb-3 d-flex align-items-center flex-column">
+                <label for="datePicker" class="form-label">Date</label>
+                <DateEdit TValue="DateTime?" Date="@SelectedDate?.Date"
+                          Min="@DateTime.Now"
+                          Placeholder="Choose date..."
+                          Class="form-control"
+                          Id="datePicker" InputMode="DateInputMode.Date"
+                          DateChanged="@OnDateChanged" />
+            </div>
+
+            <div class="mb-3 d-flex align-items-center flex-column">
+                <label for="timePicker" class="form-label text-start">Time</label>
+                <TimeEdit TValue="TimeSpan?" Time="@SelectedDate?.TimeOfDay"
+                          Placeholder="Choose time..."
+                          TimeAs24hr="true"
+                          Class="form-control"
+                          Id="timePicker" 
+                          TimeChanged="@OnTimeChanged" />
+            </div>
+        </ModalBody>
+
+        <ModalFooter Class="justify-content-between">
+            <div class="d-flex flex-row justify-content-start w-100">
+                <button class="btn btn-success me-2 w-40 d-flex justify-content-center" @onclick="SaveDueDate">Save</button>
+                <button class="btn btn-danger w-40 d-flex justify-content-center" @onclick="DeleteDueDate">Clear</button>
+            </div>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public DateTime? DueDate { get; set; }
+    [Parameter] public EventCallback<DateTime?> OnDueDateChanged { get; set; }
+
+    private DateTime? SelectedDate { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (DueDate.HasValue)
+        {
+            SelectedDate = DueDate;
+        }
+        else
+        {
+            SelectedDate = DateTime.Now.AddMinutes(1);
+        }
+    }
+
+    private void OnDateChanged(DateTime? newDate)
+    {
+        if (newDate.HasValue)
+        {
+            var currentTime = SelectedDate?.TimeOfDay ?? TimeSpan.Zero;
+            SelectedDate = newDate.Value.Date + currentTime;
+        }
+    }
+
+    private void OnTimeChanged(TimeSpan? newTime)
+    {
+        if (newTime.HasValue)
+        {
+            var currentDate = SelectedDate?.Date ?? DateTime.Now.Date;
+            SelectedDate = currentDate + newTime.Value;
+        }
+    }
+
+    private async Task SaveDueDate()
+    {
+        if (SelectedDate.HasValue && SelectedDate > DateTime.Now)
+        {
+            DueDate = SelectedDate;
+            await OnDueDateChanged.InvokeAsync(DueDate);
+            CloseModal();
+        }
+        else
+        {
+            Console.WriteLine("Cannot select a past date or time.");
+        }
+    }
+
+    private async Task DeleteDueDate()
+    {
+        DueDate = null;
+        await OnDueDateChanged.InvokeAsync(DueDate);
+        CloseModal();
+    }
+
+    private void CloseModal()
+    {
+        IsVisible = false;
+        IsVisibleChanged.InvokeAsync(IsVisible);
+    }
+}
+
+<style>
+
+</style>

@@ -32,4 +32,5 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISignalRService, SignalRService>();
 builder.Services.AddScoped<IApplicationUserService, ApplicationUserService>();
 builder.Services.AddScoped<ICardModalService, CardModalService>();
+builder.Services.AddScoped<ICardLabelsService, CardLabelsService>();
 await builder.Build().RunAsync();

@@ -19,6 +19,7 @@ namespace TaskNetic.Client
             services.AddScoped<ISignalRService, SignalRService>();
             services.AddScoped<IApplicationUserService, ApplicationUserService>();
             services.AddScoped<ICardModalService, CardModalService>();
+            services.AddScoped<ICardLabelsService, CardLabelsService>();
         }
     }
 }

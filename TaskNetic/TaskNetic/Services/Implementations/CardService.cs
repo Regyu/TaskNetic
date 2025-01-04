@@ -21,9 +21,6 @@ namespace TaskNetic.Services.Implementations
 
             await _context.Entry(list).Collection(l => l.Cards).LoadAsync();
 
-            //var cards = list.Cards
-            //    .ToList();
-
             return list.Cards.AsEnumerable();
         }
         public async Task<Card?> GetFullCardInfoAsync(int cardId)
@@ -33,6 +30,13 @@ namespace TaskNetic.Services.Implementations
                 .Include(c => c.Attachments)
                 .Include(c => c.TodoTasks)
                 .Include(c => c.CardLabels)
+                .Include(c => c.CardMembers)
+                .FirstOrDefaultAsync(c => c.CardId == cardId);
+        }
+
+        public async Task<Card?> GetCardWithMembersAsync(int cardId)
+        {
+            return await _context.Cards
                 .Include(c => c.CardMembers)
                 .FirstOrDefaultAsync(c => c.CardId == cardId);
         }

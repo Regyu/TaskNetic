@@ -18,6 +18,10 @@ namespace TaskNetic.Services.Implementations
             var baseBoard = await _context.Boards
             .Include(b => b.Lists)
                 .ThenInclude(l => l.Cards)
+                .ThenInclude(card => card.CardLabels)
+                .Include(b => b.Lists)
+                .ThenInclude(l => l.Cards)
+                .ThenInclude(card => card.CardMembers)
             .FirstOrDefaultAsync(b => b.BoardId == board.BoardId);
 
             if (board == null)

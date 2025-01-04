@@ -4,103 +4,28 @@
 @using TaskNetic.Services.Implementations
 @rendermode InteractiveServer
 
-<div class="dropdown-menu @(Show ? "show d-block" : "d-none") position-absolute notification-dropdown">
-    <!-- Poprawić szerokość tego dziadostwa oraz położenie, dodatkowo po zamknięciu iksem trzeba dwa razy kliknąć na dzwonek żeby się pokazało, poprawić -->
-    <div class="dropdown-header d-flex justify-content-between align-items-center">
-        <strong>Notifications</strong>
-        <button class="btn btn-sm text-muted" @onclick="CloseDropdown">×</button>
-    </div>
-
-    <!-- Scrollable Notifications Area -->
-    <div class="notifications-container" style="max-height: 800px; overflow-y: auto;">
+<div class="dropdown-menu show" style="width: 300px;" @onclick:stopPropagation>
+    <ul class="list-group list-group-flush" style="max-height: 60vh; overflow-y: auto;">
         @if (Notifications.Any())
         {
-            @foreach (var notification in Notifications.Take(5))
+            @foreach (var notification in Notifications)
             {
-                <div class="notification-item d-flex justify-content-between align-items-start px-2">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div class="text-truncate">
                         <strong>@notification.MentionedUserName</strong>
                         <br />
-                        <span>@notification.Message</span>
+                        <span style="white-space: normal; word-wrap: break-word;">@notification.Message</span>
                     </div>
                     <button class="btn btn-sm text-danger" @onclick="() => RemoveNotification(notification)">×</button>
-                </div>
-                <hr class="dropdown-divider" />
-            }
-            @if (Notifications.Count() > 5)
-            {
-                <div class="additional-notifications">
-                    <div class="text-center text-muted mb-2">More notifications below</div>
-                    @foreach (var notification in Notifications.Skip(5))
-                    {
-                        <div class="notification-item d-flex justify-content-between align-items-start px-2">
-                            <div class="text-truncate">
-                                <strong>@notification.MentionedUserName</strong>
-                                <br />
-                                <span>@notification.Message</span>
-                            </div>
-                            <button class="btn btn-sm text-danger" @onclick="() => RemoveNotification(notification)">×</button>
-                        </div>
-                        <hr class="dropdown-divider" />
-                    }
-                </div>
+                </li>
             }
         }
         else
         {
-            <div class="no-notifications text-muted px-3 py-2 text-center">
-                No new notifications
-            </div>
+            <li class="list-group-item text-muted">No notifications</li>
         }
-    </div>
+    </ul>
 </div>
-
-<style>
-    /* Updated Dropdown Styles */
-    .notification-dropdown {
-        width: 100%;
-        max-width: 600px; /* Adjust max width to make it wider */
-        right: auto; /* Prevent clipping on the right */
-        left: 0; /* Align to the left */
-        margin-left: auto; /* Center alignment adjustment */
-        margin-right: auto;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Subtle shadow for visibility */
-    }
-
-    /* Ensure dropdown text and content spacing */
-    .notification-item {
-        background-color: transparent;
-        padding: 10px 5px;
-        cursor: default;
-    }
-
-    .notification-item:hover {
-        background-color: #f8f9fa; /* Light gray hover effect */
-    }
-
-    .notifications-container {
-        max-height: 800px;
-        overflow-y: auto;
-    }
-
-    /* Responsive behavior */
-    @@media (max-width: 576px) {
-        .notification-dropdown {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            left: 10px;
-            width: auto;
-            max-width: none;
-            z-index: 1050;
-        }
-
-        .notifications-container {
-            max-height: 50vh; /* Restrict height on smaller screens */
-        }
-    }
-</style>
-
 
 @code {
     [Parameter]

@@ -1,9 +1,10 @@
-﻿<div class="member-avatar me-1" style="background-color: @GenerateBackgroundColor(userName);">
+﻿<div class="member-avatar me-1 @(isSmall ? "member-avatar-sm" : "member-avatar-bg")" style="background-color: @GenerateBackgroundColor(userName);">
     @GetInitials(userName)
 </div>
 
 @code {
     [Parameter] public string? userName { get; set; } = "user";
+    [Parameter] public bool isSmall { get; set; } = false;
 
     private string GenerateBackgroundColor(string? name)
     {
@@ -32,8 +33,6 @@
 <style>
 
     .member-avatar {
-        width: 32px;
-        height: 32px;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -41,5 +40,15 @@
         font-weight: bold;
         border-radius: 50%;
         border: 2px solid #ddd;
+    }
+
+    .member-avatar-bg{
+        width: 32px;
+        height: 32px;
+    }
+
+    .member-avatar-sm{
+        width: 26px;
+        height: 26px;
     }
 </style>
