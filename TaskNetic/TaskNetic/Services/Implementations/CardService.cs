@@ -109,5 +109,15 @@ namespace TaskNetic.Services.Implementations
 
             return card.CardMembers.ToList();
         }
+
+        public async Task ClearCardLabelsAndMembers(Card card)
+        {
+            await _context.Entry(card).Collection(c => c.CardLabels).LoadAsync();
+            await _context.Entry(card).Collection(c => c.CardMembers).LoadAsync();
+            card.CardLabels.Clear();
+            card.CardMembers.Clear();
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

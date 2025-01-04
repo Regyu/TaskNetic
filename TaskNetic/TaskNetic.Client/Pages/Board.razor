@@ -183,7 +183,7 @@
                     </div>
                     @if (isCardModalVisible)
                     {
-                        <CardModal IsVisible="isCardModalVisible" CardId="cardModalId" BoardId="currentBoard.BoardId"
+                        <CardModal IsVisible="isCardModalVisible" CardId="cardModalId" BoardId="currentBoard.BoardId" ProjectId="projectId" ListId="CardToListMapping[cardModalId]"
                                    IsVisibleChanged="@((visible) => isCardModalVisible = visible)" OnExternalCardChanged="async () => await LoadLists()" />
                     }
 

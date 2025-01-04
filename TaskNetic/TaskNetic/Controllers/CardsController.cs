@@ -302,10 +302,42 @@ namespace TaskNetic.Api.Controllers
             if (card == null)
                 return NotFound(new { message = "Card not found" });
 
-            card.DueDate = dueDate;
+            card.DueDate = dueDate.Value.ToUniversalTime();
             await _cardService.UpdateAsync(card);
 
             return Ok(new { message = "Card due date updated successfully" });
+        }
+
+        [HttpPut("board-move")]
+        public async Task<IActionResult> MoveCardToBoard([FromBody] MoveCardToBoardRequest request)
+        {
+            try
+            {
+                var card = await _cardService.GetByIdAsync(request.CardId);
+                if (card == null)
+                    return NotFound(new { message = "Card not found." });
+                await _cardService.ClearCardLabelsAndMembers(card);
+                var targetList = await _listService.GetByIdAsync(request.targetListId);
+                if (targetList == null)
+                    return NotFound(new { message = "Target list not found." });
+                var targetListCards = await _cardService.GetCardsForListAsync(targetList);
+                var listLastPosition = targetListCards.Any() ? targetListCards.Max(c => c.CardPosition) : 0;
+                var sourceList = await _listService.GetByIdAsync(request.sourceListId);
+                if (sourceList == null)
+                    return NotFound(new { message = "Source list not found." });
+                sourceList.Cards.Remove(card);
+                card.CardPosition = listLastPosition + 1;
+                targetList.Cards.Add(card);
+                await _cardService.UpdateAsync(card);
+                await _listService.UpdateAsync(sourceList);
+                await _listService.UpdateAsync(targetList);
+
+                return Ok($"list last position: ${listLastPosition + 1}");
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
     }
 }
