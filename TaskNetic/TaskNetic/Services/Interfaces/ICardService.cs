@@ -13,5 +13,6 @@ namespace TaskNetic.Services.Interfaces
         Task<Card?> GetFullCardInfoAsync(int cardId);
         Task<Card?> GetCardWithMembersAsync(int cardId);
         Task<List<ApplicationUser>> GetCardMembersAsync(int cardId);
+        Task ClearCardLabelsAndMembers(Card card);
     }
 }

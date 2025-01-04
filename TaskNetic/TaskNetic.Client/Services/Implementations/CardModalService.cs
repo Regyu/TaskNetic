@@ -19,7 +19,8 @@ namespace TaskNetic.Client.Services.Implementations
 
         public async Task<bool> RemoveCardAsync(int cardId)
         {
-            var response = await _httpClient.DeleteAsync($"api/cards/{cardId}");
+            var currentUserId = await UserService.GetCurrentUserIdAsync();
+            var response = await _httpClient.DeleteAsync($"api/cards/{cardId}/{currentUserId}");
             return response.IsSuccessStatusCode;
         }
 
@@ -53,7 +54,6 @@ namespace TaskNetic.Client.Services.Implementations
             };
 
             var response = await _httpClient.SendAsync(request);
-            //var response = await _httpClient.DeleteFromJsonAsync($"api/cards/{cardId}/members/", removeMember);
             return response.IsSuccessStatusCode;
         }
 
@@ -128,5 +128,6 @@ namespace TaskNetic.Client.Services.Implementations
             var response = await _httpClient.PutAsJsonAsync($"api/cards/{cardId}/due-date", date);
             return response.IsSuccessStatusCode;
         }
+
     }
 }

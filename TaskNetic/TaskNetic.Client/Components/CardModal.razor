@@ -193,8 +193,13 @@
 
                 <div class="d-flex flex-column ms-auto">
                     <h6 class="my-2 fw-semibold">Actions</h6>
-                    <button class="btn btn-light btn-sm mb-1"><img src="images/move.svg" width="22" height="22" />Move</button>
-                    <button class="btn btn-light btn-sm mb-1"><img src="images/copy.svg" width="22" height="22" />Copy</button>
+                    <button class="btn btn-light btn-sm mb-1" @onclick="() => isMovingCardVisible = true"><img src="images/move.svg" width="22" height="22" />Move</button>
+                    @if (isMovingCardVisible || isCopyCardVisible)
+                    {
+                        <CardMove IsVisible="@(isMovingCardVisible || isCopyCardVisible)" IsVisibleChanged="CloseMoveCopyModal" cardId="CardId"
+                            projectId="ProjectId" boardId="BoardId" OnCardMoved="HandleCardMoved" listId="ListId" IsCopy="isCopyCardVisible"/>
+                    }
+                    <button class="btn btn-light btn-sm mb-1" @onclick="() => isCopyCardVisible = true"><img src="images/copy.svg" width="22" height="22" />Copy</button>
                     <button class="btn btn-light btn-sm" @onclick="() => RemoveCard()"><img src="images/delete.svg" width="22" height="22" />Delete</button>
                 </div>
             </div>
@@ -208,6 +213,8 @@
     [Parameter] public EventCallback OnExternalCardChanged { get; set; }
     [Parameter] public int CardId { get; set; }
     [Parameter] public int BoardId { get; set; }
+    [Parameter] public int ProjectId { get; set; }
+    [Parameter] public int ListId { get; set; }
 
     private CardModel selectedCard;
     private List<ApplicationUser> cardMembers = new List<ApplicationUser>();
@@ -231,6 +238,8 @@
     private bool isDueDatePickerVisible = false;
     private bool isCardLabelsModalVisible = false;
     private List<LabelModel> cardLabels = new List<LabelModel>();
+    private bool isMovingCardVisible = false;
+    private bool isCopyCardVisible = false;
 
     private async Task EnableTitleEdit()
     {
@@ -244,10 +253,10 @@
         isEditingTitle = false;
 
         var cardTitle = new NewUserString
-        {
-            Text = selectedCard.CardTitle,
-            CurrentUserId = userService.GetCurrentUserId()
-        };
+            {
+                Text = selectedCard.CardTitle,
+                CurrentUserId = userService.GetCurrentUserId()
+            };
 
         var response = await Http.PutAsJsonAsync($"api/cards/{CardId}/title", cardTitle);
         if (!response.IsSuccessStatusCode)
@@ -311,10 +320,10 @@
         if (!string.IsNullOrWhiteSpace(cardDescription))
         {
             var description = new NewUserString
-            {
-                Text = cardDescription,
-                CurrentUserId = userService.GetCurrentUserId()
-            };
+                {
+                    Text = cardDescription,
+                    CurrentUserId = userService.GetCurrentUserId()
+                };
 
             var response = await Http.PutAsJsonAsync($"api/cards/{CardId}/description", description);
             if (!response.IsSuccessStatusCode)
@@ -472,6 +481,18 @@
         StateHasChanged();
         OnExternalCardChanged.InvokeAsync();
     }
+
+    public async Task HandleCardMoved()
+    {
+        CloseModal();
+        await OnExternalCardChanged.InvokeAsync();
+    }
+
+    public void CloseMoveCopyModal()
+    {
+        isMovingCardVisible = false;
+        isCopyCardVisible = false;
+    }
 }
 
 
@@ -537,11 +558,12 @@
         color: gray;
     }
 
-    .labels-badges{
+    .labels-badges {
         min-height: 30%;
         overflow-x: scroll;
     }
-    .labels-badge{
+
+    .labels-badge {
         min-height: 50px;
     }
 </style>
