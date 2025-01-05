@@ -168,6 +168,7 @@
                 await LoadTeamMembers();
                 NewMemberUsername = string.Empty;
                 await SignalRService.NotifyUserAboutBoardUpdate(userId);
+                await SignalRService.NotifyBoardGroupAboutUpdate(Board.BoardId);
             }
         }
         else
