@@ -65,12 +65,6 @@ namespace TaskNetic.Hubs
         {
             await Clients.OthersInGroup(groupName).SendAsync("CardUpdate");
         }
-        public async Task NotifyAboutProjectUpdate(string userId)
-        {
-            Console.WriteLine("Odebrano w Hubie !");
-            await Clients.Client(userId).SendAsync("ProjectUpdate");
-        }
-
         public override Task OnConnectedAsync()
         {
             number+=1;
