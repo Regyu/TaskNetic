@@ -26,7 +26,7 @@
             {
                 <div class="mb-3">
                     <label for="listSelect" class="form-label">Select List</label>
-                    <Select TValue="int" @bind-Value="SelectedListId" Id="listSelect">
+                    <Select TValue="int" @bind-Value="SelectedListId" Id="listSelect" @onchange="OnListChanged">
                         @foreach (var list in Lists)
                         {
                             <SelectItem Value="@list.Id">@list.Title</SelectItem>
@@ -79,6 +79,11 @@
     {
         SelectedBoardId = int.Parse(e.Value.ToString());
         await LoadListsAsync(SelectedBoardId);
+    }
+
+    private void OnListChanged(ChangeEventArgs e)
+    {
+        SelectedListId = int.Parse(e.Value.ToString());
     }
 
     private async Task LoadListsAsync(int boardId)
