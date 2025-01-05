@@ -1,5 +1,6 @@
 ﻿@page "/board/{projectId:int}"
 @using Blazorise
+@using Microsoft.AspNetCore.SignalR.Client
 @using TaskNetic.Client.DTO
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
@@ -147,10 +148,10 @@
                                     @if (cardContext.CardLabels != null)
                                     {
                                         <div class="d-flex flex-row mb-2 mt-1">
-                                        @foreach (var label in cardContext.CardLabels)
-                                        {
+                                            @foreach (var label in cardContext.CardLabels)
+                                            {
                                                 <span class="badge me-1 fw-normal" style="background-color: @(label.ColorCode);color: @(label.ColorCode.ToLower() == "#ffffff" ? "black" : "white")">@label.LabelName</span>
-                                        }
+                                            }
                                         </div>
                                     }
                                     @cardContext.CardTitle
@@ -190,7 +191,7 @@
                     @if (isCardModalVisible)
                     {
                         <CardModal IsVisible="isCardModalVisible" CardId="cardModalId" BoardId="currentBoard.BoardId" ProjectId="projectId" ListId="CardToListMapping[cardModalId]"
-                                   IsVisibleChanged="@((visible) => isCardModalVisible = visible)" OnExternalCardChanged="async () => await LoadLists()" />
+                        IsVisibleChanged="@((visible) => isCardModalVisible = visible)" OnExternalCardChanged="async () => await LoadLists()" />
                     }
 
                 </div>
@@ -226,14 +227,22 @@
     private Dictionary<int, ListTitle> listTitleRefs = new();
     private Dictionary<int, AddCard> listAddRefs = new();
     private DropContainer<CardModel> dropContainer;
+    private bool isConnectionInitialized = false;
+
 
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
-        try
+        if (!isConnectionInitialized)
         {
-            await SignalRService.StartAsync();            
+            await SignalRService.StartAsync();
+            isConnectionInitialized = true;
+        }
+        try
+        {           
+            
             SignalRService.OnListUpdate(RefreshLists);
+            SignalRService.OnCardUpdate(RefreshLists);
             SignalRService.OnNotificationReceived(ReceiveBoardNotification);
             projectInfo = await ProjectService.GetProjectInfoAsync(projectId);
             userId = await UserService.GetCurrentUserIdAsync();

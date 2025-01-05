@@ -1,5 +1,6 @@
 ﻿@using Blazorise
 @inject ICardModalService cardModalService
+@inject ISignalRService SignalRService
 
 <Modal @bind-Visible="IsVisible" Closed="CloseModal" ShowBackdrop="false">
     <ModalContent Centered Size="ModalSize.Small">
@@ -12,21 +13,21 @@
             <div class="mb-3 d-flex align-items-center flex-column">
                 <label for="datePicker" class="form-label">Date</label>
                 <DateEdit TValue="DateTime?" Date="@SelectedDate?.Date"
-                          Min="@DateTime.Now"
-                          Placeholder="Choose date..."
-                          Class="form-control"
-                          Id="datePicker" InputMode="DateInputMode.Date"
-                          DateChanged="@OnDateChanged" />
+                Min="@DateTime.Now"
+                Placeholder="Choose date..."
+                Class="form-control"
+                Id="datePicker" InputMode="DateInputMode.Date"
+                DateChanged="@OnDateChanged" />
             </div>
 
             <div class="mb-3 d-flex align-items-center flex-column">
                 <label for="timePicker" class="form-label text-start">Time</label>
                 <TimeEdit TValue="TimeSpan?" Time="@SelectedDate?.TimeOfDay"
-                          Placeholder="Choose time..."
-                          TimeAs24hr="true"
-                          Class="form-control"
-                          Id="timePicker" 
-                          TimeChanged="@OnTimeChanged" />
+                Placeholder="Choose time..."
+                TimeAs24hr="true"
+                Class="form-control"
+                Id="timePicker" 
+                TimeChanged="@OnTimeChanged" />
             </div>
         </ModalBody>
 
@@ -95,6 +96,7 @@
     {
         DueDate = null;
         await OnDueDateChanged.InvokeAsync(DueDate);
+    //    await SignalRService.NotifyGroupAboutCardUpdate();
         CloseModal();
     }
 

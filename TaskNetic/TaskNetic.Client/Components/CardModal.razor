@@ -2,6 +2,7 @@
 @inject IUserService userService
 @inject ICardModalService cardModalService
 @inject ICardLabelsService cardLabelsService
+@inject ISignalRService SignalRService
 @using Blazorise
 @using System.Globalization
 @using TaskNetic.Client.DTO
@@ -14,7 +15,7 @@
             @if (isEditingTitle)
             {
                 <input type="text" @bind="selectedCard.CardTitle" class="form-control form-control-sm me-2"
-                       @onblur="SaveTitle" @ref="titleInputRef" />
+                @onblur="SaveTitle" @ref="titleInputRef" />
             }
             else if (selectedCard != null)
             {
@@ -40,7 +41,7 @@
                             @if (isManageMemberModalVisible && cardMembers != null)
                             {
                                 <ManageCardMembers IsVisible="isManageMemberModalVisible" IsVisibleChanged="visible => isManageMemberModalVisible = visible"
-                                                   BoardId="@BoardId" CardId="@CardId" CardMembers="@cardMembers" OnMemberChanged="LoadCardMembersAsync" />
+                                BoardId="@BoardId" CardId="@CardId" CardMembers="@cardMembers" OnMemberChanged="LoadCardMembersAsync" />
                             }
                         </div>
                     </div>
@@ -177,16 +178,16 @@
                     @if (isCardLabelsModalVisible)
                     {
                         <CardLabels IsVisible="isCardLabelsModalVisible" IsVisibleChanged="visible => isCardLabelsModalVisible = visible"
-                                    cardLabels="@cardLabels" OnCardLabelsChanged="OnCardLabelsChanged" boardId="BoardId" cardId="CardId" />
+                        cardLabels="@cardLabels" OnCardLabelsChanged="OnCardLabelsChanged" boardId="BoardId" cardId="CardId" />
                     }
 
                     <button class="btn btn-light btn-sm mb-1" @onclick="() => isDueDatePickerVisible = true"><img src="images/deadline.svg" width="22" height="22" />Due date</button>
                     @if (isDueDatePickerVisible)
                     {
                         <DueDatePicker IsVisible="@isDueDatePickerVisible"
-                                       DueDate="@dueDate"
-                                       OnDueDateChanged="(DateTime? date) => HandleDueDateChanged(date)"
-                                       IsVisibleChanged="@((visible) => isDueDatePickerVisible = visible)" />
+                        DueDate="@dueDate"
+                        OnDueDateChanged="(DateTime? date) => HandleDueDateChanged(date)"
+                        IsVisibleChanged="@((visible) => isDueDatePickerVisible = visible)" />
                     }
                     <button class="btn btn-light btn-sm mb-1"><img src="images/attachment.svg" width="20" height="20" />Attachment</button>
                 </div>
@@ -197,7 +198,7 @@
                     @if (isMovingCardVisible || isCopyCardVisible)
                     {
                         <CardMove IsVisible="@(isMovingCardVisible || isCopyCardVisible)" IsVisibleChanged="CloseMoveCopyModal" cardId="CardId"
-                            projectId="ProjectId" boardId="BoardId" OnCardMoved="HandleCardMoved" listId="ListId" IsCopy="isCopyCardVisible"/>
+                        projectId="ProjectId" boardId="BoardId" OnCardMoved="HandleCardMoved" listId="ListId" IsCopy="isCopyCardVisible"/>
                     }
                     <button class="btn btn-light btn-sm mb-1" @onclick="() => isCopyCardVisible = true"><img src="images/copy.svg" width="22" height="22" />Copy</button>
                     <button class="btn btn-light btn-sm" @onclick="() => RemoveCard()"><img src="images/delete.svg" width="22" height="22" />Delete</button>
@@ -259,6 +260,7 @@
             };
 
         var response = await Http.PutAsJsonAsync($"api/cards/{CardId}/title", cardTitle);
+        await SignalRService.NotifyGroupAboutListUpdate(BoardId);
         if (!response.IsSuccessStatusCode)
         {
             Console.WriteLine("Failed to update card title.");
@@ -313,6 +315,7 @@
     {
         await cardModalService.RemoveMemberFromCardAsync(CardId, userId);
         await LoadCardMembersAsync();
+        await SignalRService.NotifyBoardGroupAboutUpdate(BoardId);
     }
 
     private async Task SaveDescription()
@@ -412,6 +415,7 @@
             {
                 newComment = "";
                 await LoadCommentsAsync();
+                await SignalRService.NotifyGroupAboutListUpdate(BoardId);
             }
             else
             {
@@ -423,6 +427,7 @@
     private async Task RemoveCommentAsync(int commentId)
     {
         var response = await cardModalService.DeleteCommentAsync(commentId);
+        await SignalRService.NotifyGroupAboutListUpdate(BoardId);
         if (response)
         {
             comments.RemoveAll(c => c.Id == commentId);
@@ -438,6 +443,7 @@
     {
         isEditingComment = false;
         var response = await cardModalService.UpdateCommentAsync(commentId, commentText);
+        await SignalRService.NotifyGroupAboutListUpdate(BoardId);
         if (!response)
         {
             Console.WriteLine("Failed to update comment.");
@@ -450,6 +456,7 @@
         await IsVisibleChanged.InvokeAsync();
         await cardModalService.RemoveCardAsync(CardId);
         await OnExternalCardChanged.InvokeAsync();
+        await SignalRService.NotifyGroupAboutListUpdate(BoardId);
     }
 
     private string GetButtonClass(DateTime? dueDate)

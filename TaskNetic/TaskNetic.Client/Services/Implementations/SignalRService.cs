@@ -9,16 +9,13 @@ namespace TaskNetic.Client.Services.Implementations
     public class SignalRService : ISignalRService, IAsyncDisposable
     {
         private readonly HubConnection _hubConnection;
+        private bool _isConnected = false;
 
         public SignalRService(NavigationManager navigationManager)
         {
             _hubConnection = new HubConnectionBuilder()
                 .WithUrl(navigationManager.ToAbsoluteUri("/applicationhub"))
                 .Build();
-        }
-        public async Task RegisterUser(string userId)
-        {
-            await _hubConnection.SendAsync("RegisterUser", userId);
         }
 
         public async Task StartAsync()
@@ -45,12 +42,12 @@ namespace TaskNetic.Client.Services.Implementations
         public async Task NotifyGroupAboutListUpdate(int boardId)
         {
             string groupName = boardId.ToString();
-            await _hubConnection.SendAsync("NotifyGroupAboutAddedList",groupName);
+            await _hubConnection.SendAsync("NotifyGroupAboutListUpdate",groupName);
         }
         public async Task NotifyGroupAboutCardUpdate(int boardId)
         {
             string groupName = boardId.ToString();
-            await _hubConnection.SendAsync("NotifyGroupAboutAddedCard",groupName);
+            await _hubConnection.SendAsync("NotifyGroupAboutCardUpdate",groupName);
         }
         public async Task NotifyUserAboutBoardUpdate(string userId)
         {
@@ -69,12 +66,12 @@ namespace TaskNetic.Client.Services.Implementations
 
         public void OnListUpdate(Func<Task> handler)
         {
-            _hubConnection.On("AddNewList", handler);
+            _hubConnection.On("ListUpdate", handler);
         }
 
         public void OnCardUpdate(Func<Task> handler)
         {
-            _hubConnection.On("AddNewCard", handler);
+            _hubConnection.On("CardUpdate", handler);
         }
         public async Task StopConnectionAsync()
         {
@@ -82,13 +79,13 @@ namespace TaskNetic.Client.Services.Implementations
             {
                 await _hubConnection.StopAsync();
                 await _hubConnection.DisposeAsync();
+                _isConnected = false;
             }
         }
-
-       
         public async ValueTask DisposeAsync()
-        {  
-            await StopConnectionAsync();
+        {
+            await _hubConnection.StopAsync();
         }
+
     }
 }

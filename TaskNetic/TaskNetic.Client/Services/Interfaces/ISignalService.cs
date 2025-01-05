@@ -1,4 +1,7 @@
-﻿namespace TaskNetic.Client.Services.Interfaces
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR.Client;
+
+namespace TaskNetic.Client.Services.Interfaces
 {
     public interface ISignalRService
     {
@@ -12,7 +15,7 @@
         Task NotifyGroupAboutCardUpdate(int boardId);
         Task JoinBoardGroup(string userId, int boardId);
         Task LeaveGroupByUserId(string userId, int boardId);
-        Task RegisterUser(string userId);
-        Task StopConnectionAsync();
+        Task StopConnectionAsync();      
+
     }
 }

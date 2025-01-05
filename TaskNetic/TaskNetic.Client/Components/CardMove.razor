@@ -2,6 +2,7 @@
 @using TaskNetic.Client.DTO
 @inject HttpClient Http;
 @inject IUserService userService
+@inject ISignalRService SignalRService
 
 <Modal @bind-Visible="IsVisible" ShowBackdrop="false" Class="move-modal">
     <ModalContent Size="ModalSize.Small">
@@ -14,7 +15,7 @@
             <div class="mb-3">
                 <label for="boardSelect" class="form-label">Select Board</label>
                 <Select TValue="int" @bind-Value="SelectedBoardId" Id="boardSelect" 
-                        @onchange="OnBoardChanged">
+                @onchange="OnBoardChanged">
                     @foreach (var board in Boards)
                     {
                         <SelectItem Value="@board.BoardId" Disabled="@(board.BoardId == boardId)">@board.Title</SelectItem>
@@ -79,6 +80,7 @@
     {
         SelectedBoardId = int.Parse(e.Value.ToString());
         await LoadListsAsync(SelectedBoardId);
+        await SignalRService.NotifyGroupAboutListUpdate(SelectedBoardId);  
     }
 
     private async Task LoadListsAsync(int boardId)
@@ -99,6 +101,7 @@
             {
                 Console.WriteLine("Card copied successfully.");
                 await OnCardMoved.InvokeAsync();
+                await SignalRService.NotifyGroupAboutListUpdate(boardId);
                 CloseModal();
             }
             else
@@ -117,6 +120,7 @@
             {
                 Console.WriteLine($"Card moved successfully. Position: {response.Content}");
                 await OnCardMoved.InvokeAsync();
+                await SignalRService.NotifyGroupAboutListUpdate(boardId);
                 CloseModal();
             }
             else

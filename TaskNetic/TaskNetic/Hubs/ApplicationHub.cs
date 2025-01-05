@@ -5,6 +5,7 @@ namespace TaskNetic.Hubs
 {
     public class ApplicationHub : Hub
     {
+        private static int number = 0;
         private static readonly Dictionary<string, HashSet<string>> GroupConnections = new();
 
 
@@ -49,31 +50,41 @@ namespace TaskNetic.Hubs
         }
         public async Task NotifyBoardGroupAboutUpdate(string groupName)
         {
-            await Clients.Group(groupName).SendAsync("ReceiveBoardNotification");
+            await Clients.OthersInGroup(groupName).SendAsync("ReceiveBoardNotification");
+        
         }
-
         public async Task NotifyUserAboutBoardUpdate(string userId)
         {
             await Clients.User(userId).SendAsync("ReceiveBoardNotification");
         }
-        public async Task NotifyGroupAboutAddedList(string groupName)
+        public async Task NotifyGroupAboutListUpdate(string groupName)
         {
-            await Clients.Group(groupName).SendAsync("AddNewList");
+            await Clients.OthersInGroup(groupName).SendAsync("ListUpdate");
         }
-        public async Task NotifyGroupAboutAddedCard(string groupName)
+        public async Task NotifyGroupAboutCardUpdate(string groupName)
         {
-            await Clients.Group(groupName).SendAsync("AddNewCard");
+            await Clients.OthersInGroup(groupName).SendAsync("CardUpdate");
+        }
+        public async Task NotifyAboutProjectUpdate(string userId)
+        {
+            Console.WriteLine("Odebrano w Hubie !");
+            await Clients.Client(userId).SendAsync("ProjectUpdate");
         }
 
         public override Task OnConnectedAsync()
         {
+            number+=1;
+            Console.WriteLine($"Connection started succesfully, connection count: {number} !");
             return base.OnConnectedAsync();
         }
 
         public override Task OnDisconnectedAsync(Exception? exception)
         {
+            number-=1;
+            Console.WriteLine($"Connection finished succesfully connection count: {number}!");
             return base.OnDisconnectedAsync(exception);
         }
+      
 
     }
 }
