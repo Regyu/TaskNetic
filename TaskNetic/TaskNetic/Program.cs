@@ -1,25 +1,26 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-using System.Data.Common;
+using Microsoft.EntityFrameworkCore.Internal;
+using TaskNetic.Client;
 using TaskNetic.Components;
 using TaskNetic.Components.Account;
 using TaskNetic.Data;
-using TaskNetic.Models;
 using TaskNetic.Data.Repository;
-using TaskNetic.Services;
+using TaskNetic.Models;
 using TaskNetic.Services.Implementations;
 using TaskNetic.Services.Interfaces;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using Blazorise;
+using Blazorise.Bootstrap5;
+using Blazorise.Icons.FontAwesome;
 
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+builder.Services.AddControllers();
+builder.Services.AddRazorPages();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
@@ -33,8 +34,7 @@ builder.Services.AddAuthentication(options =>
     })
     .AddIdentityCookies();
 
-// PO��CZENIE Z BAZ� - DLA VISUAL STUDIO I AZURE
-var connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
+string? connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString)
 );
@@ -49,23 +49,32 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.User.RequireUniqueEmail = true;
     options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
 });
-
-
+builder.Services.AddScoped<IDbContextFactory<ApplicationDbContext>, DbContextFactory<ApplicationDbContext>>();
+builder.Services.AddSingleton<IDbContextFactorySource<ApplicationDbContext>, DbContextFactorySource<ApplicationDbContext>>();
+builder.Services.AddScoped<TaskNetic.Services.Interfaces.INotificationService, NotificationService>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IBoardService, BoardService>();
+builder.Services.AddScoped<IBoardPermissionService, BoardPermissionService>();
 builder.Services.AddScoped<ICardService, CardService>();
-builder.Services.AddScoped<IColorService, ColorService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IFileAttachmentService, FileAttachmentService>();
 builder.Services.AddScoped<ILabelService, LabelService>();
 builder.Services.AddScoped<IListService, ListService>();
-builder.Services.AddScoped<INotificationUserService, NotificationUserService>();
 builder.Services.AddScoped<IProjectRoleService, ProjectRoleService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
-builder.Services.AddScoped<ITaskListService, TaskListService>();
 builder.Services.AddScoped<ITodoTaskService, TodoTaskService>();
-
-var app = builder.Build();
+builder.Services.AddScoped<IApplicationUserService, ApplicationUserService>();
+builder.Services.AddScoped<IBoardPermissionService, BoardPermissionService>();
+builder.Services.AddHttpClient();
+builder.Services
+    .AddBlazorise(options =>
+    {
+        options.Immediate = true;
+    })
+    .AddBootstrap5Providers()
+    .AddFontAwesomeIcons();
+ClientRegistry.RegisterServices(builder.Services);
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -81,10 +90,13 @@ else
 }
 
 app.UseHttpsRedirection();
-
+app.UseRouting();
+app.UseAuthorization();
+app.MapControllers();
 app.UseStaticFiles();
 app.UseAntiforgery();
-
+app.MapRazorPages();
+app.MapDefaultControllerRoute();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()

@@ -1,0 +1,99 @@
+﻿@inject IProjectService ProjectService
+@inject NavigationManager _navigationManager
+@using TaskNetic.Components.Layout
+@rendermode InteractiveServer
+
+<div class="projects-container bg-dark min-vh-100 p-5">
+    <div class="container">
+        <div class="row g-4">
+            @if (projects == null)
+            {
+                <p>Loading...</p>
+            }
+            else
+            {
+                @foreach (var project in projects)
+                {
+                    <ProjectCard 
+                        Title="@project.ProjectName" 
+                        BackgroundId="@project.BackgroundImageId"
+                        OnClick="@(() => HandleProjectClick(project.Id))" 
+                        OnEditClick="@(() => ShowEditModal(project))"/>
+                }
+
+                <ProjectCard 
+                    IsCreateCard="true"
+                    OnClick="ShowCreateModal" />
+            }
+        </div>
+    </div>
+</div>
+<EditProjectModal Show="@showEditModal"
+                  ShowChanged="@((value) => showEditModal = value)" 
+                  Project="@selectedProject"
+                  OnSave="@LoadProjects"
+                  OnDelete="@(() => HandleDeleteProject(selectedProject))"/>
+
+<CreateProjectModal 
+    Show="showCreateModal"
+    ShowChanged="(value => showCreateModal = value)"
+    OnCreate="HandleCreateProject" />
+
+<style>
+    .projects-container {
+        background-color: #1a1d21;
+    }
+</style>
+
+@code {
+    private IEnumerable<Project>? projects;
+    private bool showCreateModal;
+    private bool showEditModal;
+    private Project? selectedProject;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProjects();
+    }
+
+    private async Task LoadProjects()
+    {
+        projects = await ProjectService.GetCurrentUserProjectsAsync();
+        StateHasChanged();
+    }
+
+    private void HandleProjectClick(int projectId)
+    {
+        _navigationManager.NavigateTo($"/board/{projectId}");
+    }
+
+    private void ShowCreateModal()
+    {
+        showCreateModal = true;
+    }
+
+    private void ShowEditModal(Project project)
+    {
+        selectedProject = project;
+        showEditModal = true;
+    }
+
+    private async Task HandleCreateProject(CreateProjectModal.ProjectModel model)
+    {
+        var project = new Project
+            {
+                ProjectName = model.Name,
+            };
+
+        await ProjectService.AddProjectWithCurrentUserAsync(project);
+        await LoadProjects();
+    }
+
+    private async Task HandleDeleteProject(Project project)
+    {
+        await ProjectService.DeleteProjectAndUsersAsync(project);
+        await LoadProjects();
+        showEditModal = false;
+        StateHasChanged();
+    }
+}

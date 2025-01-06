@@ -7,5 +7,8 @@ namespace TaskNetic.Services.Interfaces
     {
         Task<IEnumerable<Project>> GetCurrentUserProjectsAsync();
         Task AddProjectWithCurrentUserAsync(Project project);
+        Task DeleteProjectAndUsersAsync(Project project);
+        Task<IEnumerable<ProjectRole>> GetProjectRoles(Project project);
+        Task<string?> GetProjectBackgroundId(Project project);
     }
 }

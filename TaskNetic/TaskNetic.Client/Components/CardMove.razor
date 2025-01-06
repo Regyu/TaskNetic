@@ -1,0 +1,149 @@
+﻿@using Blazorise
+@using TaskNetic.Client.DTO
+@inject HttpClient Http;
+@inject IUserService userService
+
+<Modal @bind-Visible="IsVisible" ShowBackdrop="false" Class="move-modal">
+    <ModalContent Size="ModalSize.Small">
+        <ModalHeader>
+            <ModalTitle>@(IsCopy ? "Copy card" : "Move card")</ModalTitle>
+            <CloseButton @onclick="CloseModal" />
+        </ModalHeader>
+
+        <ModalBody>
+            <div class="mb-3">
+                <label for="boardSelect" class="form-label">Select Board</label>
+                <Select TValue="int" @bind-Value="SelectedBoardId" Id="boardSelect" 
+                        @onchange="OnBoardChanged">
+                    @foreach (var board in Boards)
+                    {
+                        <SelectItem Value="@board.BoardId" Disabled="@(board.BoardId == boardId)">@board.Title</SelectItem>
+                    }
+                </Select>
+            </div>
+
+            @if (SelectedBoardId > 0)
+            {
+                <div class="mb-3">
+                    <label for="listSelect" class="form-label">Select List</label>
+                    <Select TValue="int" @bind-Value="SelectedListId" Id="listSelect" @onchange="OnListChanged">
+                        @foreach (var list in Lists)
+                        {
+                            <SelectItem Value="@list.Id">@list.Title</SelectItem>
+                        }
+                    </Select>
+                </div>
+            }
+        </ModalBody>
+
+        <ModalFooter Class="d-flex justify-content-around">
+            <button class="btn btn-danger btn-sm footer-button" @onclick="CloseModal">Cancel</button>
+            <button class="btn btn-success btn-sm me-2 footer-button" @onclick="@(IsCopy ? SaveCopy : SaveMove)">Save</button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public int cardId { get; set; }
+    [Parameter] public int boardId { get; set; }
+    [Parameter] public int projectId { get; set; }
+    [Parameter] public int listId { get; set; }
+    [Parameter] public EventCallback OnCardMoved { get; set; }
+    [Parameter] public bool IsCopy { get; set; }
+
+    private List<BoardModel> Boards = new();
+    private List<List> Lists = new();
+    private string currentUserId;
+    private int SelectedBoardId { get; set; }
+    private int SelectedListId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUserId = await userService.GetCurrentUserIdAsync(); 
+        await LoadBoardsAsync();
+    }
+
+    private async Task LoadBoardsAsync()
+    {
+        Boards = (await Http.GetFromJsonAsync<IEnumerable<BoardModel>>($"api/boards/{projectId}/{currentUserId}")).ToList();
+        if (Boards.Any())
+        {
+            SelectedBoardId = Boards.FirstOrDefault(board => board.BoardId != boardId).BoardId;
+            await LoadListsAsync(SelectedBoardId);
+        }
+    }
+
+    private async Task OnBoardChanged(ChangeEventArgs e)
+    {
+        SelectedBoardId = int.Parse(e.Value.ToString());
+        await LoadListsAsync(SelectedBoardId);
+    }
+
+    private void OnListChanged(ChangeEventArgs e)
+    {
+        SelectedListId = int.Parse(e.Value.ToString());
+    }
+
+    private async Task LoadListsAsync(int boardId)
+    {
+        Lists = await Http.GetFromJsonAsync<List<List>>($"api/lists/board/{boardId}");
+        if (Lists.Any())
+        {
+            SelectedListId = Lists.First().Id;
+        }
+    }
+
+    private async Task SaveCopy()
+    {
+        if(SelectedListId > 0)
+        {
+            var response = await Http.PutAsJsonAsync($"api/cards/board-copy", new MoveCardToBoardRequest{CardId=cardId,sourceListId=listId ,targetListId=SelectedListId});
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Card copied successfully.");
+                await OnCardMoved.InvokeAsync();
+                CloseModal();
+            }
+            else
+            {
+                Console.WriteLine("Failed to copy card.");
+            }
+        }
+    }
+
+    private async Task SaveMove()
+    {
+        if (SelectedListId > 0)
+        {
+            var response = await Http.PutAsJsonAsync($"api/cards/board-move", new MoveCardToBoardRequest{CardId=cardId, sourceListId=listId, targetListId=SelectedListId});
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Card moved successfully. Position: {response.Content}");
+                await OnCardMoved.InvokeAsync();
+                CloseModal();
+            }
+            else
+            {
+                Console.WriteLine("Failed to move card.");
+            }
+        }
+    }
+
+    private void CloseModal()
+    {
+        IsVisible = false;
+        IsVisibleChanged.InvokeAsync(IsVisible);
+    }
+}
+
+<style>
+    .move-modal{
+        position: absolute;
+        top: 0;
+    }
+    .footer-button{
+        width: 40% !important;
+    }
+</style>

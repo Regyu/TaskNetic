@@ -1,0 +1,193 @@
+﻿@using Blazorise
+@using TaskNetic.Client.DTO
+@inject ICardLabelsService cardLabelsService
+
+<Modal @bind-Visible="IsVisible" ShowBackdrop="false" Class="manage-modal">
+    <ModalContent Size="ModalSize.Large" Class="py-0">
+        <ModalHeader>
+            <ModalTitle>Card Labels</ModalTitle>
+            <CloseButton @onclick="CloseModal" />
+        </ModalHeader>
+
+        <ModalBody>
+
+            @if (isCreatingNewLabel || isUpdatingLabel)
+            {
+                <div class="mb-3">
+                    <label for="labelTitle" class="form-label">Title</label>
+                    <input type="text" id="labelTitle" class="form-control" @bind="newLabelTitle" placeholder="Enter label title" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="labelComment" class="form-label">Comment</label>
+                    <textarea id="labelComment" class="form-control" @bind="newLabelComment" placeholder="Enter label comment"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="labelColor" class="form-label">Color</label>
+                    <ColorEdit TValue="string" @bind-Color="newLabelColor" />
+                </div>
+            }
+            else
+            {
+                <div class="label-list">
+                    @if (boardLabels.Count > 0)
+                    {
+                        @foreach (var label in boardLabels)
+                        {
+                            <div class="d-flex align-items-center mb-3">
+                                <Check TValue="bool" Checked="@cardLabelsList.Any(cardLabel => cardLabel.Id == label.Id)"
+                                       CheckedChanged="@((bool isChecked) => ToggleLabel(label, isChecked))" />
+
+                                <div class="label-color me-2 flex-fill text-center" style="background-color: @(label.ColorCode);color: @(label.ColorCode.ToLower() == "#ffffff" ? "black" : "white")">
+                                    <Tooltip Text="@label.Comment">
+                                        @label.LabelName
+                                    </Tooltip>
+                                </div>
+
+                                <button class="btn btn-secondary btn-sm" @onclick="() => showEditForm(label)">Edit</button>
+                                <CloseButton @onclick="() => RemoveLabel(label.Id)" Class="ms-2"></CloseButton>
+                            </div>
+                        }
+
+                    }
+                    else
+                    {
+                        <div>
+                            There are no lables in this board.
+                        </div>
+                    }
+                </div>
+            }
+
+        </ModalBody>
+
+        <ModalFooter Class="d-flex flex-row">
+            @if (isUpdatingLabel)
+            {
+                <button class="btn btn-sm btn-danger createLabelFooterButton" @onclick="() => isUpdatingLabel = false">Cancel</button>
+                <button class="btn btn-sm btn-success me-2 createLabelFooterButton" @onclick="UpdateLabel">Update label</button>
+            }
+            else if (isCreatingNewLabel)
+            {
+                <button class="btn btn-sm btn-danger createLabelFooterButton" @onclick="() => isCreatingNewLabel = false">Cancel</button>
+                <button class="btn btn-sm btn-success me-2 createLabelFooterButton" @onclick="AddNewLabel">Save label</button>
+            }
+            else
+            {
+                <button class="btn btn-sm btn-primary w-100" @onclick="() => isCreatingNewLabel = true">Create New Label</button>
+            }
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public int boardId { get; set; }
+    [Parameter] public int cardId { get; set; }
+    [Parameter] public List<LabelModel> cardLabels { get; set; } = new();
+    [Parameter] public EventCallback<List<LabelModel>> OnCardLabelsChanged { get; set; }
+
+    private bool isCreatingNewLabel = false;
+    private bool isUpdatingLabel = false;
+    private string newLabelTitle = string.Empty;
+    private string newLabelComment = string.Empty;
+    private string newLabelColor = "#0FF000";
+    private int updatedLabelId;
+    public List<LabelModel> boardLabels { get; set; } = new();
+    public List<LabelModel> cardLabelsList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBoardLabels();
+        cardLabelsList.AddRange(cardLabels);
+    }
+
+    private void CloseModal()
+    {
+        IsVisible = false;
+        IsVisibleChanged.InvokeAsync(IsVisible);
+    }
+
+    private void showEditForm(LabelModel label)
+    {
+        isUpdatingLabel = true;
+        updatedLabelId = label.Id;
+        newLabelTitle = label.LabelName;
+        newLabelComment = label.Comment;
+        newLabelColor = label.ColorCode;
+    }
+
+    private async Task ToggleLabel(LabelModel label, bool isChecked)
+    {
+        if (isChecked)
+        {
+            cardLabelsList.Add(label);
+            await cardLabelsService.AddLabelToCardAsync(cardId, label.Id);
+        }
+        else
+        {
+            cardLabelsList.RemoveAll(cardListLabel => cardListLabel.Id == label.Id);
+            await cardLabelsService.RemoveLabelFromCardAsync(cardId, label.Id);
+        }
+
+        await OnCardLabelsChanged.InvokeAsync(cardLabelsList);
+    }
+
+    private async Task AddNewLabel()
+    {
+        await cardLabelsService.CreateBoardLabelAsync(boardId, new NewBoardLabel(newLabelTitle, newLabelColor, newLabelComment));
+        await LoadBoardLabels();
+        isCreatingNewLabel = false;
+    }
+
+    private async Task UpdateLabel()
+    {
+        if(updatedLabelId != 0)
+        {
+            await cardLabelsService.UpdateLabelAsync(new LabelModel { Id = updatedLabelId, ColorCode = newLabelColor, Comment = newLabelComment, LabelName = newLabelTitle });
+            await LoadBoardLabels();
+            isUpdatingLabel = false;
+        }
+    }
+
+    private async Task LoadBoardLabels()
+    {
+        boardLabels.Clear();
+        boardLabels = await cardLabelsService.GetBoardLabelsAsync(boardId);
+        StateHasChanged();
+    }
+
+    private async Task RemoveLabel(int labelId)
+    {
+        await cardLabelsService.DeleteLabelFromBoardAsync(labelId);
+        await LoadBoardLabels();
+        cardLabelsList.RemoveAll(cardListLabel => cardListLabel.Id == labelId);
+        await OnCardLabelsChanged.InvokeAsync(cardLabelsList);
+    }
+}
+
+<style>
+
+    .manage-modal {
+        position: absolute;
+        top: 0;
+        left: 250px;
+    }
+    .label-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .label-color {
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+    }
+
+    .createLabelFooterButton {
+        width: 45% !important;
+    }
+
+</style>

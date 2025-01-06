@@ -22,21 +22,6 @@ namespace TaskNetic.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ApplicationUserBoard", b =>
-                {
-                    b.Property<string>("BoardUsersId")
-                        .HasColumnType("text");
-
-                    b.Property<int>("BoardsBoardId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("BoardUsersId", "BoardsBoardId");
-
-                    b.HasIndex("BoardsBoardId");
-
-                    b.ToTable("ApplicationUserBoard");
-                });
-
             modelBuilder.Entity("ApplicationUserCard", b =>
                 {
                     b.Property<string>("CardMembersId")
@@ -52,21 +37,6 @@ namespace TaskNetic.Migrations
                     b.ToTable("ApplicationUserCard");
                 });
 
-            modelBuilder.Entity("ApplicationUserProject", b =>
-                {
-                    b.Property<string>("ProjectUsersId")
-                        .HasColumnType("text");
-
-                    b.Property<int>("ProjectsId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("ProjectUsersId", "ProjectsId");
-
-                    b.HasIndex("ProjectsId");
-
-                    b.ToTable("ApplicationUserProject");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -75,11 +45,6 @@ namespace TaskNetic.Migrations
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
-
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasMaxLength(21)
-                        .HasColumnType("character varying(21)");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
@@ -96,10 +61,6 @@ namespace TaskNetic.Migrations
                         .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasDiscriminator().HasValue("IdentityRole");
-
-                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -283,9 +244,6 @@ namespace TaskNetic.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("BoardId"));
 
-                    b.Property<int>("BackgroundId")
-                        .HasColumnType("integer");
-
                     b.Property<int?>("ProjectId")
                         .HasColumnType("integer");
 
@@ -300,6 +258,32 @@ namespace TaskNetic.Migrations
                     b.ToTable("Boards");
                 });
 
+            modelBuilder.Entity("TaskNetic.Models.BoardPermission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BoardId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("CanEdit")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BoardId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("BoardPermissions");
+                });
+
             modelBuilder.Entity("TaskNetic.Models.Card", b =>
                 {
                     b.Property<int>("CardId")
@@ -309,48 +293,29 @@ namespace TaskNetic.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CardId"));
 
                     b.Property<string>("CardDescription")
-                        .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("CardPosition")
+                        .HasColumnType("integer");
+
                     b.Property<string>("CardTitle")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("DueDate")
+                    b.Property<DateTime?>("DueDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("ListId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TaskListId")
                         .HasColumnType("integer");
 
                     b.HasKey("CardId");
 
                     b.HasIndex("ListId");
 
-                    b.HasIndex("TaskListId");
-
                     b.ToTable("Cards");
-                });
-
-            modelBuilder.Entity("TaskNetic.Models.Color", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ColorName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Colors");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.Comment", b =>
@@ -361,9 +326,6 @@ namespace TaskNetic.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AuthorUserId")
-                        .HasColumnType("integer");
-
                     b.Property<int?>("CardId")
                         .HasColumnType("integer");
 
@@ -371,12 +333,17 @@ namespace TaskNetic.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("timestamp")
+                    b.Property<DateTime>("Time")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CardId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Comments");
                 });
@@ -427,14 +394,15 @@ namespace TaskNetic.Migrations
                     b.Property<int?>("CardId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ColorId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("LabelName")
+                    b.Property<string>("ColorCode")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("comment")
+                    b.Property<string>("Comment")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LabelName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -442,8 +410,6 @@ namespace TaskNetic.Migrations
                     b.HasIndex("BoardId");
 
                     b.HasIndex("CardId");
-
-                    b.HasIndex("ColorId");
 
                     b.ToTable("Labels");
                 });
@@ -459,6 +425,9 @@ namespace TaskNetic.Migrations
                     b.Property<int?>("BoardId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Position")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
@@ -470,7 +439,7 @@ namespace TaskNetic.Migrations
                     b.ToTable("Lists");
                 });
 
-            modelBuilder.Entity("TaskNetic.Models.NotificationUser", b =>
+            modelBuilder.Entity("TaskNetic.Models.Notification", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -478,19 +447,25 @@ namespace TaskNetic.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CardId")
-                        .HasColumnType("integer");
+                    b.Property<string>("MentionedUserName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Time")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CardId");
-
                     b.HasIndex("UserId");
 
-                    b.ToTable("NotificationUsers");
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.Project", b =>
@@ -505,6 +480,7 @@ namespace TaskNetic.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("ProjectName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -520,38 +496,22 @@ namespace TaskNetic.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ApplicationRoleId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("ApplicationUserId")
                         .HasColumnType("text");
 
-                    b.Property<int?>("ProjectId")
+                    b.Property<int>("ProjectId")
                         .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                    b.Property<bool>("isAdmin")
+                        .HasColumnType("boolean");
 
-                    b.HasIndex("ApplicationRoleId");
+                    b.HasKey("Id");
 
                     b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("ProjectId");
 
                     b.ToTable("ProjectRoles");
-                });
-
-            modelBuilder.Entity("TaskNetic.Models.TaskList", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TaskLists");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.TodoTask", b =>
@@ -562,46 +522,21 @@ namespace TaskNetic.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("CardId")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("TaskFinished")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("TaskListId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("TaskName")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TaskListId");
+                    b.HasIndex("CardId");
 
                     b.ToTable("TodoTasks");
-                });
-
-            modelBuilder.Entity("TaskNetic.Models.ApplicationRole", b =>
-                {
-                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityRole");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasDiscriminator().HasValue("ApplicationRole");
-                });
-
-            modelBuilder.Entity("ApplicationUserBoard", b =>
-                {
-                    b.HasOne("TaskNetic.Models.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("BoardUsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TaskNetic.Models.Board", null)
-                        .WithMany()
-                        .HasForeignKey("BoardsBoardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("ApplicationUserCard", b =>
@@ -615,21 +550,6 @@ namespace TaskNetic.Migrations
                     b.HasOne("TaskNetic.Models.Card", null)
                         .WithMany()
                         .HasForeignKey("CardsCardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ApplicationUserProject", b =>
-                {
-                    b.HasOne("TaskNetic.Models.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("ProjectUsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TaskNetic.Models.Project", null)
-                        .WithMany()
-                        .HasForeignKey("ProjectsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -692,19 +612,30 @@ namespace TaskNetic.Migrations
                         .HasForeignKey("ProjectId");
                 });
 
+            modelBuilder.Entity("TaskNetic.Models.BoardPermission", b =>
+                {
+                    b.HasOne("TaskNetic.Models.Board", "Board")
+                        .WithMany("BoardPermissions")
+                        .HasForeignKey("BoardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TaskNetic.Models.ProjectRole", "Role")
+                        .WithMany("BoardPermissions")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Board");
+
+                    b.Navigation("Role");
+                });
+
             modelBuilder.Entity("TaskNetic.Models.Card", b =>
                 {
                     b.HasOne("TaskNetic.Models.List", null)
                         .WithMany("Cards")
                         .HasForeignKey("ListId");
-
-                    b.HasOne("TaskNetic.Models.TaskList", "TaskList")
-                        .WithMany()
-                        .HasForeignKey("TaskListId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TaskList");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.Comment", b =>
@@ -712,6 +643,12 @@ namespace TaskNetic.Migrations
                     b.HasOne("TaskNetic.Models.Card", null)
                         .WithMany("Comments")
                         .HasForeignKey("CardId");
+
+                    b.HasOne("TaskNetic.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.FileAttachment", b =>
@@ -730,12 +667,6 @@ namespace TaskNetic.Migrations
                     b.HasOne("TaskNetic.Models.Card", null)
                         .WithMany("CardLabels")
                         .HasForeignKey("CardId");
-
-                    b.HasOne("TaskNetic.Models.Color", "Color")
-                        .WithMany()
-                        .HasForeignKey("ColorId");
-
-                    b.Navigation("Color");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.List", b =>
@@ -745,12 +676,8 @@ namespace TaskNetic.Migrations
                         .HasForeignKey("BoardId");
                 });
 
-            modelBuilder.Entity("TaskNetic.Models.NotificationUser", b =>
+            modelBuilder.Entity("TaskNetic.Models.Notification", b =>
                 {
-                    b.HasOne("TaskNetic.Models.Card", null)
-                        .WithMany("NotificationUsers")
-                        .HasForeignKey("CardId");
-
                     b.HasOne("TaskNetic.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
@@ -760,38 +687,39 @@ namespace TaskNetic.Migrations
 
             modelBuilder.Entity("TaskNetic.Models.ProjectRole", b =>
                 {
-                    b.HasOne("TaskNetic.Models.ApplicationRole", "ApplicationRole")
-                        .WithMany()
-                        .HasForeignKey("ApplicationRoleId")
+                    b.HasOne("TaskNetic.Models.ApplicationUser", "ApplicationUser")
+                        .WithMany("projectRoles")
+                        .HasForeignKey("ApplicationUserId");
+
+                    b.HasOne("TaskNetic.Models.Project", "Project")
+                        .WithMany("ProjectRoles")
+                        .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TaskNetic.Models.ApplicationUser", "ApplicationUser")
-                        .WithMany()
-                        .HasForeignKey("ApplicationUserId");
-
-                    b.HasOne("TaskNetic.Models.Project", null)
-                        .WithMany("ProjectRoles")
-                        .HasForeignKey("ProjectId");
-
-                    b.Navigation("ApplicationRole");
-
                     b.Navigation("ApplicationUser");
+
+                    b.Navigation("Project");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.TodoTask", b =>
                 {
-                    b.HasOne("TaskNetic.Models.TaskList", "TaskList")
+                    b.HasOne("TaskNetic.Models.Card", "Card")
                         .WithMany("TodoTasks")
-                        .HasForeignKey("TaskListId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CardId");
 
-                    b.Navigation("TaskList");
+                    b.Navigation("Card");
+                });
+
+            modelBuilder.Entity("TaskNetic.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("projectRoles");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.Board", b =>
                 {
+                    b.Navigation("BoardPermissions");
+
                     b.Navigation("Labels");
 
                     b.Navigation("Lists");
@@ -805,7 +733,7 @@ namespace TaskNetic.Migrations
 
                     b.Navigation("Comments");
 
-                    b.Navigation("NotificationUsers");
+                    b.Navigation("TodoTasks");
                 });
 
             modelBuilder.Entity("TaskNetic.Models.List", b =>
@@ -820,9 +748,9 @@ namespace TaskNetic.Migrations
                     b.Navigation("ProjectRoles");
                 });
 
-            modelBuilder.Entity("TaskNetic.Models.TaskList", b =>
+            modelBuilder.Entity("TaskNetic.Models.ProjectRole", b =>
                 {
-                    b.Navigation("TodoTasks");
+                    b.Navigation("BoardPermissions");
                 });
 #pragma warning restore 612, 618
         }

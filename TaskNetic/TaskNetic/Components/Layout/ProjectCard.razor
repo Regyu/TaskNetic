@@ -3,6 +3,13 @@
 <div class="col-lg-3 col-md-4 col-sm-6">
     <div class="project-card card @(IsCreateCard ? "create-card" : "")" @onclick="HandleClick">
         <div class="card-body position-relative">
+            @if (!IsCreateCard)
+            {
+                <img src="images/edit.svg"
+                     class="edit-icon"
+                     alt="Edit Project"
+                     @onclick="HandleEditClick" @onclick:stopPropagation />
+            }
             @if (IsCreateCard)
             {
                 <div class="d-flex flex-column align-items-center justify-content-center h-100">
@@ -40,10 +47,17 @@
     [Parameter]
     public EventCallback OnClick { get; set; }
 
+    [Parameter]
+    public EventCallback OnEditClick { get; set; }
+
     private async Task HandleClick()
     {
-        Console.WriteLine("onclick event");
         await OnClick.InvokeAsync();
+    }
+
+    private async Task HandleEditClick()
+    {
+        await OnEditClick.InvokeAsync();
     }
 }
 
@@ -122,4 +136,21 @@
         color: inherit;
         font-size: 1rem;
     }
+
+    .edit-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        opacity: 0.7;
+        z-index: 1;
+    }
+
+    .project-card:hover .edit-icon {
+        opacity: 1;
+    }
+
+
 </style>
