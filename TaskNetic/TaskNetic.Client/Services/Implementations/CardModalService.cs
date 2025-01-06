@@ -24,7 +24,7 @@ namespace TaskNetic.Client.Services.Implementations
             return response.IsSuccessStatusCode;
         }
 
-            public async Task<bool> AddMemberToCardAsync(int cardId, string userId)
+        public async Task<bool> AddMemberToCardAsync(int cardId, string userId)
         {
             var newMember = new NewUserString
             {
@@ -125,7 +125,12 @@ namespace TaskNetic.Client.Services.Implementations
 
         public async Task<bool> UpdateCardDueDateAsync(int cardId, DateTime? date)
         {
-            var response = await _httpClient.PutAsJsonAsync($"api/cards/{cardId}/due-date", date);
+            var dueDate = new DueDateRequest
+            {
+                Date = date,
+                UserId = UserService.GetCurrentUserId()
+            };
+            var response = await _httpClient.PutAsJsonAsync($"api/cards/{cardId}/due-date", dueDate);
             return response.IsSuccessStatusCode;
         }
 

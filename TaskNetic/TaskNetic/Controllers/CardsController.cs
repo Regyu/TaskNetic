@@ -18,14 +18,16 @@ namespace TaskNetic.Api.Controllers
         private readonly ICardService _cardService;
         private readonly IListService _listService;
         private readonly IRepository<List> _listRepository;
+        private readonly IRepository<Board> _boardRepository;
         private readonly IApplicationUserService _aplicationUserService;
         private readonly INotificationService _notificationService;
 
-        public CardsController(ICardService cardService, IListService listService,IRepository<List> listRepository, IApplicationUserService aplicationUserService, INotificationService notificationService)
+        public CardsController(ICardService cardService, IListService listService, IRepository<List> listRepository, IRepository<Board> boardRepository, IApplicationUserService aplicationUserService, INotificationService notificationService)
         {
             _cardService = cardService;
             _listService = listService;
             _listRepository = listRepository;
+            _boardRepository = boardRepository;
             _aplicationUserService = aplicationUserService;
             _notificationService = notificationService;
         }
@@ -187,7 +189,7 @@ namespace TaskNetic.Api.Controllers
 
             foreach (var member in card.CardMembers)
             {
-                if (member.Id != user.Id)
+                if (member.Id != user.Id && card.CardTitle != title.Text)
                 {
                     await _notificationService.AddNotificationAsync(member.Id, user.UserName, $"has changed name of card \"{card.CardTitle}\" to \"{title.Text}\".");
                 }
@@ -233,7 +235,10 @@ namespace TaskNetic.Api.Controllers
                     await _notificationService.AddNotificationAsync(member.Id, user.UserName, $"has been added to card \"{card.CardTitle}\".");
                 }
             }
-            await _notificationService.AddNotificationAsync(userId, currentUser.UserName, $"has added you to card \"{card.CardTitle}\".");
+            if (userId != currentUser?.Id)
+            {
+                await _notificationService.AddNotificationAsync(userId, currentUser.UserName, $"has added you to card \"{card.CardTitle}\".");
+            }
 
             await _cardService.UpdateAsync(card);
 
@@ -264,7 +269,10 @@ namespace TaskNetic.Api.Controllers
                     await _notificationService.AddNotificationAsync(member.Id, memberToRemove.UserName, $"has been removed from card \"{card.CardTitle}\".");
                 }
             }
-            await _notificationService.AddNotificationAsync(userId, currentUser.UserName, $"has removed you from card \"{card.CardTitle}\".");
+            if (userId != currentUser?.Id)
+            {
+                await _notificationService.AddNotificationAsync(userId, currentUser.UserName, $"has removed you from card \"{card.CardTitle}\".");
+            }
 
             await _cardService.UpdateAsync(card);
 
@@ -296,15 +304,26 @@ namespace TaskNetic.Api.Controllers
         }
 
         [HttpPut("{cardId}/due-date")]
-        public async Task<IActionResult> UpdateCardDueDate(int cardId, [FromBody] DateTime? dueDate)
+        public async Task<IActionResult> UpdateCardDueDate(int cardId, [FromBody] DueDateRequest request)
         {
-            var card = await _cardService.GetByIdAsync(cardId);
+
+            var card = await _cardService.GetCardWithMembersAsync(cardId);
 
             if (card == null)
                 return NotFound(new { message = "Card not found" });
 
-            card.DueDate = dueDate.Value.ToUniversalTime();
+            card.DueDate = request?.Date.Value.ToUniversalTime();
             await _cardService.UpdateAsync(card);
+
+            var user = await _aplicationUserService.GetUserByIdAsync(request.UserId);
+
+            foreach (var member in card.CardMembers)
+            {
+                if (member.Id != user.Id)
+                {
+                    await _notificationService.AddNotificationAsync(member.Id, user.UserName, $"has added a due date for card \"{card.CardTitle}\" at {card.DueDate}.");
+                }
+            }
 
             return Ok(new { message = "Card due date updated successfully" });
         }
@@ -314,13 +333,29 @@ namespace TaskNetic.Api.Controllers
         {
             try
             {
-                var card = await _cardService.GetByIdAsync(request.CardId);
+                var card = await _cardService.GetCardWithMembersAsync(request.CardId);
                 if (card == null)
                     return NotFound(new { message = "Card not found." });
-                await _cardService.ClearCardLabelsAndMembers(card);
+
+                var user = await _aplicationUserService.GetUserByIdAsync(request.CurrentUserId);
+                var board = await _boardRepository.GetByIdAsync(request.BoardId);
+                if (board == null)
+                    return NotFound(new { message = "Board not found." });
+
                 var targetList = await _listService.GetByIdAsync(request.targetListId);
                 if (targetList == null)
                     return NotFound(new { message = "Target list not found." });
+
+                foreach (var member in card.CardMembers)
+                {
+                    Console.WriteLine("XXX - in loop");
+                    if (member.Id != user.Id)
+                    {
+                        await _notificationService.AddNotificationAsync(member.Id, user.UserName, $"has moved card \"{card.CardTitle}\" to list \"{targetList.Title}\" in board \"{board.Title}\".");
+                    }
+                }
+
+                await _cardService.ClearCardLabelsAndMembers(card);
                 var targetListCards = await _cardService.GetCardsForListAsync(targetList);
                 var listLastPosition = targetListCards.Any() ? targetListCards.Max(c => c.CardPosition) : 0;
                 var sourceList = await _listService.GetByIdAsync(request.sourceListId);

@@ -5,6 +5,8 @@
         public int CardId { get; set; }
         public int sourceListId { get; set; }
         public int targetListId { get; set; }
+        public string CurrentUserId {  get; set; }
+        public int BoardId { get; set; }
 
     }
 }

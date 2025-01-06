@@ -13,11 +13,15 @@ namespace TaskNetic.Api.Controllers
     public class LabelsController : ControllerBase
     {
         private readonly ILabelService _labelService;
-        private readonly IRepository<Card> _cardRepository;
-        public LabelsController(ILabelService labelService, IRepository<Card> cardRepository)
+        private readonly ICardService _cardService;
+        private readonly INotificationService _notificationService;
+        private readonly IApplicationUserService _applicationUserService;
+        public LabelsController(ILabelService labelService, ICardService cardService, INotificationService notificationService, IApplicationUserService applicationUserService)
         {
             _labelService = labelService;
-            _cardRepository = cardRepository;
+            _cardService = cardService;
+            _notificationService = notificationService;
+            _applicationUserService = applicationUserService;
         }
 
         // GET: api/labels/card/{cardId}
@@ -64,16 +68,25 @@ namespace TaskNetic.Api.Controllers
 
         // POST: api/labels/card/{cardId}
         [HttpPost("card/{cardId}")]
-        public async Task<IActionResult> AddLabelToCard(int cardId, [FromBody] int labelId)
+        public async Task<IActionResult> AddLabelToCard(int cardId, [FromBody] LabelCardRequest request)
         {
             try
             {
-                var card = await _cardRepository.GetByIdAsync(cardId);
+                var card = await _cardService.GetCardWithMembersAsync(cardId);
                 if (card == null)
                     return NotFound(new { message = $"Card with ID {cardId} not found." });
-                var label = await _labelService.GetByIdAsync(labelId);
+                var label = await _labelService.GetByIdAsync(request.LabelId);
                 if (label == null)
-                    return NotFound(new { message = $"Label with ID {labelId} not found." });
+                    return NotFound(new { message = $"Label with ID {request.LabelId} not found." });
+                var user = await _applicationUserService.GetUserByIdAsync(request.CurrentUserId);
+
+                foreach (var member in card.CardMembers)
+                {
+                    if (member.Id != user.Id)
+                    {
+                        await _notificationService.AddNotificationAsync(member.Id, user.UserName, $"has added label \"{label.LabelName}\" to card \"{card.CardTitle}\".");
+                    }
+                }
                 await _labelService.AddLabelToCardAsync(cardId, label);
                 return Ok(new { message = "Label added to card successfully." });
             }
@@ -130,12 +143,27 @@ namespace TaskNetic.Api.Controllers
         }
 
         //DELETE: api/labels/card/{cardId}/{labelId}
-        [HttpDelete("card/{cardId}/{labelId}")]
-        public async Task<IActionResult> RemoveLabelFromCard(int cardId, int labelId)
+        [HttpDelete("card/{cardId}")]
+        public async Task<IActionResult> RemoveLabelFromCard(int cardId, [FromBody] LabelCardRequest request)
         {
             try
             {
-                await _labelService.RemoveLabelFromCardAsync(cardId, labelId);
+                var card = await _cardService.GetCardWithMembersAsync(cardId);
+                if (card == null)
+                    return NotFound(new { message = $"Card with ID {cardId} not found." });
+                var label = await _labelService.GetByIdAsync(request.LabelId);
+                if (label == null)
+                    return NotFound(new { message = $"Label with ID {request.LabelId} not found." });
+                var user = await _applicationUserService.GetUserByIdAsync(request.CurrentUserId);
+
+                foreach (var member in card.CardMembers)
+                {
+                    if (member.Id != user.Id)
+                    {
+                        await _notificationService.AddNotificationAsync(member.Id, user.UserName, $"has removed label \"{label.LabelName}\" to card \"{card.CardTitle}\".");
+                    }
+                }
+                await _labelService.RemoveLabelFromCardAsync(cardId, request.LabelId);
                 return Ok(new { message = "Label removed from card successfully." });
             }
             catch (ArgumentNullException ex)
