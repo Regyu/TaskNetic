@@ -39,6 +39,8 @@
                             <tbody>
                                 @if (BoardMembers != null && BoardMembers.Any())
                                 {
+                                    var adminCount = BoardMembers.Count(m => m.IsAdmin);
+                                    var isSingleAdmin = adminCount == 1;
                                     @foreach (var member in BoardMembers)
                                     {
                                         <tr class="text-center align-middle">
@@ -49,10 +51,13 @@
                                                 </Div>
                                             </td>
                                             <td>
-                                                <Button Color="Color.Danger" Size="Size.Small"
-                                                        Clicked="@(() => RemoveMember(member.Id))">
-                                                    Remove
-                                                </Button>
+                                                @if (!isSingleAdmin || !member.IsAdmin)
+                                                {
+                                                    <Button Color="Color.Danger" Size="Size.Small"
+                                                            Clicked="@(() => RemoveMember(member.Id))">
+                                                        Remove
+                                                    </Button>
+                                                }
                                             </td>
                                         </tr>
                                     }
