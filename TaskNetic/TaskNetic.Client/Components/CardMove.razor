@@ -99,7 +99,7 @@
     {
         if(SelectedListId > 0)
         {
-            var response = await Http.PutAsJsonAsync($"api/cards/board-copy", new MoveCardToBoardRequest{CardId=cardId,sourceListId=listId ,targetListId=SelectedListId});
+            var response = await Http.PutAsJsonAsync($"api/cards/board-copy", new MoveCardToBoardRequest{CardId=cardId, sourceListId=listId, targetListId=SelectedListId, CurrentUserId=currentUserId, BoardId=boardId});
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine("Card copied successfully.");
@@ -117,7 +117,7 @@
     {
         if (SelectedListId > 0)
         {
-            var response = await Http.PutAsJsonAsync($"api/cards/board-move", new MoveCardToBoardRequest{CardId=cardId, sourceListId=listId, targetListId=SelectedListId});
+            var response = await Http.PutAsJsonAsync($"api/cards/board-move", new MoveCardToBoardRequest { CardId = cardId, sourceListId = listId, targetListId = SelectedListId, CurrentUserId = currentUserId, BoardId = boardId });
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine($"Card moved successfully. Position: {response.Content}");
