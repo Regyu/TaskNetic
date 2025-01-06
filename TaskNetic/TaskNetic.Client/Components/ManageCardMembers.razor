@@ -2,6 +2,7 @@
 @using TaskNetic.Client.DTO
 @inject HttpClient Http
 @inject ICardModalService cardModalService
+@inject ISignalRService SignalRService
 
 <Modal @bind-Visible="IsVisible"  Scrollable ShowBackdrop="false" class="manage-modal">
     <ModalContent Size="ModalSize.Small">
@@ -66,6 +67,7 @@
         if (request)
         {
             await OnMemberChanged.InvokeAsync();
+            await SignalRService.NotifyGroupAboutCardUpdate(BoardId);
         }
     }
 
@@ -75,6 +77,7 @@
         if (request)
         {
             await OnMemberChanged.InvokeAsync();
+            await SignalRService.NotifyGroupAboutCardUpdate(BoardId);
         }
     }
 }
