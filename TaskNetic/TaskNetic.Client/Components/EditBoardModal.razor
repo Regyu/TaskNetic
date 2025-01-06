@@ -54,20 +54,13 @@
                                                 </Div>
                                             </td>
                                             <td>
-<<<<<<< HEAD
                                                 @if (!isSingleAdmin || !member.IsAdmin)
                                                 {
                                                     <Button Color="Color.Danger" Size="Size.Small"
                                                             Clicked="@(() => RemoveMember(member.Id))">
-                                                        Remove
+                                                            Remove
                                                     </Button>
                                                 }
-=======
-                                                <Button Color="Color.Danger" Size="Size.Small"
-                                                Clicked="@(() => RemoveMember(member.Id,member.Name))">
-                                                    Remove
-                                                </Button>
->>>>>>> cc6687e4d196f14de95f7465fd49af0fd41c7a60
                                             </td>
                                         </tr>
                                     }
@@ -189,10 +182,9 @@
         }
     }
 
-    private async Task RemoveMember(string memberId, string memberName)
+    private async Task RemoveMember(string memberId)
     {
         var currentUserId = await UserService.GetCurrentUserIdAsync();
-        var userId = await ApplicationUserService.GetIdByUserNameAsync(memberName);
 
 
 
@@ -204,7 +196,7 @@
         var response = await Http.SendAsync(request);
         if (response.IsSuccessStatusCode)
         {
-            await SignalRService.NotifyUserAboutBoardUpdate(userId);
+            await SignalRService.NotifyUserAboutBoardUpdate(memberId);
             await LoadTeamMembers();
             StateHasChanged();            
         }
