@@ -48,7 +48,7 @@
                     {
                         <div class="me-3">
                             <h6 class="fw-semibold">Labels</h6>
-                            <div class="d-flex flex-grow labels-badges">
+                            <div class="d-flex flex-grow labels-badges text-nowrap">
                                 @foreach (var label in cardLabels)
                                 {
                                     <div class="label-badge me-2 px-3 py-1 rounded-2 flex-fill text-center" style="background-color: @(label.ColorCode);color: @(label.ColorCode.ToLower() == "#ffffff" ? "black" : "white")">
@@ -559,7 +559,8 @@
     }
 
     .labels-badges {
-        min-height: 30%;
+        min-width: 30%;
+        max-width: 18vw;
         overflow-x: scroll;
     }
 

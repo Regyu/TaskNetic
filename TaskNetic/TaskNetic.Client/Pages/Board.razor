@@ -319,7 +319,6 @@
         {
             Lists = null;
             Cards.Clear();
-            CardToListMapping = new();
             var response = await Http.GetAsync($"api/lists/board/{currentBoard?.BoardId}");
             if (response.IsSuccessStatusCode)
             {
