@@ -45,7 +45,7 @@
         Console.WriteLine($"Nowa kartka: ${NewCardName}");
         if (!string.IsNullOrWhiteSpace(NewCardName))
         {
-            var postRequest = await Http.PostAsJsonAsync($"api/cards/list/{ListId}", NewCardName);      
+            var postRequest = await Http.PostAsJsonAsync($"api/cards/list/{ListId}", NewCardName);
             await OnCardAdded.InvokeAsync(NewCardName);
             await SignalRService.NotifyGroupAboutListUpdate(BoardId);
             NewCardName = string.Empty;

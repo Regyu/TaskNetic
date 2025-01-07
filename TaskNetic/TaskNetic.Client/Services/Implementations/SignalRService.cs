@@ -32,7 +32,11 @@ namespace TaskNetic.Client.Services.Implementations
             string groupName = boardId.ToString();
             await _hubConnection.SendAsync("JoinGroup", groupName);
         }
-
+        public async Task AddUserToGroup(string userId, int boardId)
+        {
+            string groupName = boardId.ToString();
+            await _hubConnection.SendAsync("AddUserToGroup", groupName, userId);
+        }
         public async Task LeaveGroupByUserId(string userId,int boardId)
         {
             string groupName = boardId.ToString();

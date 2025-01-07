@@ -5,48 +5,32 @@ namespace TaskNetic.Hubs
 {
     public class ApplicationHub : Hub
     {
-        private static int number = 0;
-        private static readonly Dictionary<string, HashSet<string>> GroupConnections = new();
+        private static int connectionsCounter = 0;
+        private static readonly Dictionary<string, string> UserConnections = new();
+
 
 
         public async Task JoinGroup(string groupName)
         {
-
-            if (!GroupConnections.ContainsKey(groupName))
-            {
-                GroupConnections[groupName] = new HashSet<string>();
-            }
-
-
-            if (GroupConnections[groupName].Contains(Context.ConnectionId))
-            {
-                return;
-            }
-
-            GroupConnections[groupName].Add(Context.ConnectionId);
-
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
         }
-
+        public async Task AddUserToGroup(string groupName, string targetUserId)
+        {
+            if (UserConnections.TryGetValue(targetUserId, out var connectionId))
+            {
+                await Groups.AddToGroupAsync(connectionId, groupName);
+                Console.WriteLine("User added sucessfully!");
+                await Clients.Client(connectionId).SendAsync("ReceiveBoardNotification");
+            }
+            else
+            {
+                Console.WriteLine("Cannot find user!");
+            }
+        }
 
         public async Task LeaveGroup(string groupName)
         {
-
-            if (GroupConnections.ContainsKey(groupName) && GroupConnections[groupName].Contains(Context.ConnectionId))
-            {
-
-                GroupConnections[groupName].Remove(Context.ConnectionId);
-
-
-                if (GroupConnections[groupName].Count == 0)
-                {
-                    GroupConnections.Remove(groupName);
-                }
-
-
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
-
-            }
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);         
         }
         public async Task NotifyBoardGroupAboutUpdate(string groupName)
         {
@@ -67,15 +51,25 @@ namespace TaskNetic.Hubs
         }
         public override Task OnConnectedAsync()
         {
-            number+=1;
-            Console.WriteLine($"Connection started succesfully, connection count: {number} !");
+            var userId = Context.UserIdentifier;
+            if (userId != null)
+            {
+                UserConnections[userId] = Context.ConnectionId;
+            }
+            connectionsCounter += 1;
+            Console.WriteLine($"Connection started succesfully, connection count: {connectionsCounter} !");
             return base.OnConnectedAsync();
         }
 
         public override Task OnDisconnectedAsync(Exception? exception)
         {
-            number-=1;
-            Console.WriteLine($"Connection finished succesfully connection count: {number}!");
+            var userId = Context.UserIdentifier;
+            if (userId != null)
+            {
+                UserConnections.Remove(userId);
+            }
+            connectionsCounter -= 1;
+            Console.WriteLine($"Connection finished succesfully, connection count: {connectionsCounter}!");
             return base.OnDisconnectedAsync(exception);
         }
       

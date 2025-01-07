@@ -67,7 +67,7 @@
         if (request)
         {
             await OnMemberChanged.InvokeAsync();
-            await SignalRService.NotifyGroupAboutCardUpdate(BoardId);
+            await SignalRService.NotifyGroupAboutListUpdate(BoardId);
         }
     }
 
@@ -77,7 +77,7 @@
         if (request)
         {
             await OnMemberChanged.InvokeAsync();
-            await SignalRService.NotifyGroupAboutCardUpdate(BoardId);
+            await SignalRService.NotifyGroupAboutListUpdate(BoardId);
         }
     }
 }

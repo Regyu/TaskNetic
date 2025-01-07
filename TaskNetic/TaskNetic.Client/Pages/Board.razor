@@ -238,11 +238,10 @@
             await SignalRService.StartAsync();
             isConnectionInitialized = true;
         }
+
         try
-        {           
-            
+        {
             SignalRService.OnListUpdate(RefreshLists);
-            SignalRService.OnCardUpdate(RefreshLists);
             SignalRService.OnNotificationReceived(ReceiveBoardNotification);
             projectInfo = await ProjectService.GetProjectInfoAsync(projectId);
             userId = await UserService.GetCurrentUserIdAsync();
@@ -281,7 +280,7 @@
         if (currentBoard != null)
             await RefreshBoards();
         else
-            await LoadBoards();                     
+            await LoadBoards();
         await LoadLists();
         StateHasChanged();
         await Task.CompletedTask;

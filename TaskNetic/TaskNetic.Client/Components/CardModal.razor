@@ -101,7 +101,7 @@
                                     <Check TValue="bool"
                                            Checked="@task.TaskFinished"
                                            CheckedChanged="canUserEdit ? ((bool value) => UpdateTodoTask(task.Id, value)) : null"
-                                           disabled="@(canUserEdit ? null : true)">
+                                           disabled="@(canUserEdit ? false : true)">
                                     </Check>
                                     @if (isEditingTaskName.TryGetValue(task.Id, out var isEditing) && isEditing)
                                     {

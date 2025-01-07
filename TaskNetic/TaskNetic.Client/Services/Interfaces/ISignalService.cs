@@ -10,6 +10,7 @@ namespace TaskNetic.Client.Services.Interfaces
         void OnListUpdate(Func<Task> handler);
         void OnCardUpdate(Func<Task> handler);
         Task NotifyUserAboutBoardUpdate(string userId);
+        Task AddUserToGroup(string userId, int groupId);
         Task NotifyBoardGroupAboutUpdate(int boardId);
         Task NotifyGroupAboutListUpdate(int boardId);
         Task NotifyGroupAboutCardUpdate(int boardId);

@@ -126,13 +126,13 @@
         {
             cardLabelsList.Add(label);
             await cardLabelsService.AddLabelToCardAsync(cardId, label.Id);
-            await SignalRService.NotifyGroupAboutCardUpdate(boardId);
+            await SignalRService.NotifyGroupAboutListUpdate(boardId);
         }
         else
         {
             cardLabelsList.RemoveAll(cardListLabel => cardListLabel.Id == label.Id);
             await cardLabelsService.RemoveLabelFromCardAsync(cardId, label.Id);
-            await SignalRService.NotifyGroupAboutCardUpdate(boardId);
+            await SignalRService.NotifyGroupAboutListUpdate(boardId);
         }
 
         await OnCardLabelsChanged.InvokeAsync(cardLabelsList);
@@ -152,7 +152,7 @@
             await cardLabelsService.UpdateLabelAsync(new LabelModel { Id = updatedLabelId, ColorCode = newLabelColor, Comment = newLabelComment, LabelName = newLabelTitle });
             await LoadBoardLabels();
             isUpdatingLabel = false;
-            await SignalRService.NotifyGroupAboutCardUpdate(boardId);
+            await SignalRService.NotifyGroupAboutListUpdate(boardId);
         }
     }
 
@@ -169,7 +169,7 @@
         await LoadBoardLabels();
         cardLabelsList.RemoveAll(cardListLabel => cardListLabel.Id == labelId);
         await OnCardLabelsChanged.InvokeAsync(cardLabelsList);
-        await SignalRService.NotifyGroupAboutCardUpdate(boardId);
+        await SignalRService.NotifyGroupAboutListUpdate(boardId);
     }
 }
 
