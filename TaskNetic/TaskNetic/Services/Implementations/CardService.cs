@@ -27,6 +27,7 @@ namespace TaskNetic.Services.Implementations
         {
             return await _context.Cards
                 .Include(c => c.Comments)
+                .ThenInclude( comment => comment.User)
                 .Include(c => c.Attachments)
                 .Include(c => c.TodoTasks)
                 .Include(c => c.CardLabels)

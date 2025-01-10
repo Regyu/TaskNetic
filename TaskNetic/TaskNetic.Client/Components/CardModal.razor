@@ -159,7 +159,7 @@
                                 <div class="d-flex flex-column ms-1 flex-fill">
                                     <div class="">
                                         <span class="fs-6 fw-semibold">@(comment.User?.UserName ?? "Unknown")</span>
-                                        <span class="comment-date ms-3 align-baseline">@comment.Time.ToLongDateString()</span>
+                                        <span class="comment-date ms-3 align-baseline">@comment.Time.ToString("HH:mm dd.MM.yyyy", CultureInfo.InvariantCulture)</span>
                                     </div>
                                     <div class="comment-text fs-6 w-100">
                                         @if (isEditingComment && comment.User?.Id == currentUserId)
