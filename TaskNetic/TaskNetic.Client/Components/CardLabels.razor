@@ -1,6 +1,7 @@
 ﻿@using Blazorise
 @using TaskNetic.Client.DTO
 @inject ICardLabelsService cardLabelsService
+@inject ISignalRService SignalRService
 
 <Modal @bind-Visible="IsVisible" ShowBackdrop="false" Class="manage-modal">
     <ModalContent Size="ModalSize.Large" Class="py-0">
@@ -37,7 +38,7 @@
                         {
                             <div class="d-flex align-items-center mb-3">
                                 <Check TValue="bool" Checked="@cardLabelsList.Any(cardLabel => cardLabel.Id == label.Id)"
-                                       CheckedChanged="@((bool isChecked) => ToggleLabel(label, isChecked))" />
+                                CheckedChanged="@((bool isChecked) => ToggleLabel(label, isChecked))" />
 
                                 <div class="label-color me-2 flex-fill text-center" style="background-color: @(label.ColorCode);color: @(label.ColorCode.ToLower() == "#ffffff" ? "black" : "white")">
                                     <Tooltip Text="@label.Comment">
@@ -125,11 +126,13 @@
         {
             cardLabelsList.Add(label);
             await cardLabelsService.AddLabelToCardAsync(cardId, label.Id);
+            await SignalRService.NotifyGroupAboutListUpdate(boardId);
         }
         else
         {
             cardLabelsList.RemoveAll(cardListLabel => cardListLabel.Id == label.Id);
             await cardLabelsService.RemoveLabelFromCardAsync(cardId, label.Id);
+            await SignalRService.NotifyGroupAboutListUpdate(boardId);
         }
 
         await OnCardLabelsChanged.InvokeAsync(cardLabelsList);
@@ -149,6 +152,7 @@
             await cardLabelsService.UpdateLabelAsync(new LabelModel { Id = updatedLabelId, ColorCode = newLabelColor, Comment = newLabelComment, LabelName = newLabelTitle });
             await LoadBoardLabels();
             isUpdatingLabel = false;
+            await SignalRService.NotifyGroupAboutListUpdate(boardId);
         }
     }
 
@@ -165,6 +169,7 @@
         await LoadBoardLabels();
         cardLabelsList.RemoveAll(cardListLabel => cardListLabel.Id == labelId);
         await OnCardLabelsChanged.InvokeAsync(cardLabelsList);
+        await SignalRService.NotifyGroupAboutListUpdate(boardId);
     }
 }
 

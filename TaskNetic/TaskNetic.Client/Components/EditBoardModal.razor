@@ -1,6 +1,9 @@
 ﻿@using Blazorise
 @inject HttpClient Http
+@inject ISignalRService SignalRService
+@inject IApplicationUserService ApplicationUserService
 @inject IUserService UserService
+
 @using TaskNetic.Client.DTO
 
 <Modal @bind-Visible="IsVisible" Centered>
@@ -23,7 +26,7 @@
                         <div class="my-3 text-center d-flex flex-column justify-content-center align-items-center">
                             <label for="boardName" class="fw-semibold fs-5">Board Name:</label>
                             <TextEdit id="boardName" @bind-Text="@Board.Title"
-                                      Class="form-control my-3 text-center" Style="width:50%;" />
+                            Class="form-control my-3 text-center" Style="width:50%;" />
                         </div>
                     </TabPanel>
 
@@ -39,6 +42,8 @@
                             <tbody>
                                 @if (BoardMembers != null && BoardMembers.Any())
                                 {
+                                    var adminCount = BoardMembers.Count(m => m.IsAdmin);
+                                    var isSingleAdmin = adminCount == 1;
                                     @foreach (var member in BoardMembers)
                                     {
                                         <tr class="text-center align-middle">
@@ -49,10 +54,13 @@
                                                 </Div>
                                             </td>
                                             <td>
-                                                <Button Color="Color.Danger" Size="Size.Small"
-                                                        Clicked="@(() => RemoveMember(member.Id))">
-                                                    Remove
-                                                </Button>
+                                                @if (!isSingleAdmin || !member.IsAdmin)
+                                                {
+                                                    <Button Color="Color.Danger" Size="Size.Small"
+                                                            Clicked="@(() => RemoveMember(member.Id))">
+                                                            Remove
+                                                    </Button>
+                                                }
                                             </td>
                                         </tr>
                                     }
@@ -70,8 +78,8 @@
                             <h6>Add a new team member:</h6>
                             <div class="input-group mb-3" style="width:60%;">
                                 <TextEdit Placeholder="Enter username"
-                                          @bind-Text="@NewMemberUsername"
-                                          Class="form-control" />
+                                @bind-Text="@NewMemberUsername"
+                                Class="form-control" />
                                 <Button Color="Color.Primary" Clicked="@AddMember">Add Member</Button>
                             </div>
 
@@ -135,6 +143,7 @@
             );
         }
         Close();
+        await SignalRService.NotifyBoardGroupAboutUpdate(Board.BoardId);
     }
 
     private async Task LoadTeamMembers()
@@ -158,10 +167,12 @@
             }
 
             var response = await Http.PostAsJsonAsync($"api/boardpermissions", new NewBoardMember(Board.BoardId, NewMemberUsername, false, projectId, currentUserId));
+            var userId = await ApplicationUserService.GetIdByUserNameAsync(NewMemberUsername);
             if (response.IsSuccessStatusCode)
-            {
+            {                
                 await LoadTeamMembers();
                 NewMemberUsername = string.Empty;
+                await SignalRService.AddUserToGroup(userId, Board.BoardId);   
             }
         }
         else
@@ -174,17 +185,21 @@
     {
         var currentUserId = await UserService.GetCurrentUserIdAsync();
 
+
+
         var request = new HttpRequestMessage(HttpMethod.Delete, $"api/boardpermissions")
             {
                 Content = JsonContent.Create(new RemoveBoardMember(Board.BoardId, memberId, currentUserId))
             };
-
+        
         var response = await Http.SendAsync(request);
         if (response.IsSuccessStatusCode)
         {
+            await SignalRService.NotifyUserAboutBoardUpdate(memberId);
             await LoadTeamMembers();
-            StateHasChanged();
+            StateHasChanged();            
         }
+
     }
 
     private async Task RemoveBoard()
@@ -192,5 +207,6 @@
         await Http.DeleteAsync($"api/boards/{Board.BoardId}");
         await OnRemove.InvokeAsync();
         Close();
+        await SignalRService.NotifyBoardGroupAboutUpdate(Board.BoardId);
     }
 }

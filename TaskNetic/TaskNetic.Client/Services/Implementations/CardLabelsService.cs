@@ -8,9 +8,11 @@ namespace TaskNetic.Client.Services.Implementations
     public class CardLabelsService : ICardLabelsService
     {
         public HttpClient _httpClient;
-        public CardLabelsService(HttpClient httpClient)
+        private readonly IUserService _userService;
+        public CardLabelsService(HttpClient httpClient, IUserService userService)
         {
             _httpClient = httpClient;
+            _userService = userService;
         }
 
         public async Task<List<LabelModel>> GetBoardLabelsAsync(int boardId)
@@ -31,13 +33,29 @@ namespace TaskNetic.Client.Services.Implementations
 
         public async Task<bool> AddLabelToCardAsync(int cardId, int labelId)
         {
-            var response = await _httpClient.PostAsJsonAsync($"api/labels/card/{cardId}", labelId);
+            var request = new LabelCardRequest
+            {
+                CurrentUserId = _userService.GetCurrentUserId(),
+                LabelId = labelId
+            };
+            var response = await _httpClient.PostAsJsonAsync($"api/labels/card/{cardId}", request);
             return response.IsSuccessStatusCode;
         }
 
         public async Task<bool> RemoveLabelFromCardAsync(int cardId, int labelId)
         {
-            var response = await _httpClient.DeleteAsync($"api/labels/card/{cardId}/{labelId}");
+            var removeRequest = new LabelCardRequest
+            {
+                CurrentUserId = _userService.GetCurrentUserId(),
+                LabelId = labelId
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Delete, $"api/labels/card/{cardId}")
+            {
+                Content = JsonContent.Create(removeRequest)
+            };
+
+            var response = await _httpClient.SendAsync(request);
             return response.IsSuccessStatusCode;
         }
 

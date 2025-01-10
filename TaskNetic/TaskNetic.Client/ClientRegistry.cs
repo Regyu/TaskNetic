@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR.Client;
 using TaskNetic.Client.Services.Implementations;
 using TaskNetic.Client.Services.Interfaces;
 
@@ -15,6 +16,8 @@ namespace TaskNetic.Client
                 return new HttpClient { BaseAddress = new Uri(navigation.BaseUri) };
             });
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ISignalRService, SignalRService>();
+            services.AddScoped<IApplicationUserService, ApplicationUserService>();
             services.AddScoped<ICardModalService, CardModalService>();
             services.AddScoped<ICardLabelsService, CardLabelsService>();
         }

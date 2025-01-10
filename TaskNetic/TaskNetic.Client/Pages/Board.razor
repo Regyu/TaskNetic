@@ -1,8 +1,10 @@
 ﻿@page "/board/{projectId:int}"
 @using Blazorise
+@using Microsoft.AspNetCore.SignalR.Client
 @using TaskNetic.Client.DTO
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
+@inject ISignalRService SignalRService
 @inject IUserService UserService
 @inject IProjectService ProjectService
 @using static TaskNetic.Client.Models.BoardModel
@@ -40,7 +42,7 @@
                                 {
                                     <li class="nav-item" @onclick:stopPropagation>
                                         <div class="nav-link @(currentBoard?.BoardId == board.BoardId ? "active" : "")"
-                                             @onclick="@(() => SwitchBoard(board))">
+                                        @onclick="@(() => SwitchBoard(board))">
                                             @board.Title
                                             @if (currentBoard?.BoardId == board.BoardId && isUserAdmin)
                                             {
@@ -83,10 +85,10 @@
                 @if (currentBoard != null && isEditBoardModalVisible)
                 {
                     <EditBoardModal IsVisible="@isEditBoardModalVisible"
-                                    IsVisibleChanged="@((value) => isEditBoardModalVisible = value)"
-                                    OnRemove="@OnBoardRemove"
-                                    projectId="@projectId"
-                                    Board="@currentBoard" />
+                    IsVisibleChanged="@((value) => isEditBoardModalVisible = value)"
+                    OnRemove="@OnBoardRemove"
+                    projectId="@projectId"
+                    Board="@currentBoard" />
                 }
 
 
@@ -100,7 +102,8 @@
                                     <Div Class="d-flex flex-column">
                                         <DropZone TItem="CardModel" Name="@list.Id.ToString()" AllowReorder="@canUserEdit" Reordered="OnReordered" Class="card-list rounded-bottom-0">
                                             <Heading Size="HeadingSize.Is5" Margin="Margin.Is3.FromBottom" Style="display:flex; justify-content:space-between">
-                                                <ListTitle Title="@list.Title" ListId="@list.Id" @ref="listTitleRefs[list.Id]" />
+
+                                                <ListTitle Title="@list.Title" ListId="@list.Id" BoardId="@currentBoard.BoardId" @ref="listTitleRefs[list.Id]" />
                                                 @if (canUserEdit)
                                                 {
                                                     <Dropdown>
@@ -121,18 +124,22 @@
                                                             <DropdownItem @onclick="() => DeleteList(list.Id)" Class="text-danger">Delete List</DropdownItem>
                                                         </DropdownMenu>
                                                     </Dropdown>
+
                                                 }
 
                                             </Heading>
                                         </DropZone>
+
                                         @if (canUserEdit)
                                         {
-                                            <AddCard ListId="@list.Id" OnCardAdded="async () => await LoadLists()" @ref="listAddRefs[list.Id]" />
+                                            <AddCard ListId="@list.Id" BoardId="@currentBoard.BoardId" OnCardAdded="async () => await LoadLists()" @ref="listAddRefs[list.Id]" />
+
                                         }
                                         else
                                         {
                                             <div class="rounded-bottom-2 w-100 add-card-placeholder" style="height: 20px;"></div>
                                         }
+
                                     </Div>
                                 }
                             </ChildContent>
@@ -141,10 +148,10 @@
                                     @if (cardContext.CardLabels != null)
                                     {
                                         <div class="d-flex flex-row mb-2 mt-1">
-                                        @foreach (var label in cardContext.CardLabels)
-                                        {
+                                            @foreach (var label in cardContext.CardLabels)
+                                            {
                                                 <span class="badge me-1 fw-normal" style="background-color: @(label.ColorCode);color: @(label.ColorCode.ToLower() == "#ffffff" ? "black" : "white")">@label.LabelName</span>
-                                        }
+                                            }
                                         </div>
                                     }
                                     @cardContext.CardTitle
@@ -184,7 +191,7 @@
                     @if (isCardModalVisible)
                     {
                         <CardModal IsVisible="isCardModalVisible" CardId="cardModalId" BoardId="currentBoard.BoardId" ProjectId="projectId" ListId="CardToListMapping[cardModalId]"
-                                   IsVisibleChanged="@((visible) => isCardModalVisible = visible)" OnExternalCardChanged="async () => await LoadLists()" />
+                        IsVisibleChanged="@((visible) => isCardModalVisible = visible)" OnExternalCardChanged="async () => await LoadLists()" />
                     }
 
                 </div>
@@ -220,17 +227,38 @@
     private Dictionary<int, ListTitle> listTitleRefs = new();
     private Dictionary<int, AddCard> listAddRefs = new();
     private DropContainer<CardModel> dropContainer;
+    private bool isConnectionInitialized = false;
+
 
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
+        if (!isConnectionInitialized)
+        {
+            await SignalRService.StartAsync();
+            isConnectionInitialized = true;
+        }
+
         try
         {
+            SignalRService.OnListUpdate(RefreshLists);
+            SignalRService.OnNotificationReceived(ReceiveBoardNotification);
             projectInfo = await ProjectService.GetProjectInfoAsync(projectId);
             userId = await UserService.GetCurrentUserIdAsync();
             isUserAdmin = await UserService.IsUserAdminInProjectAsync(projectId, userId);
             await LoadBoards();
             await LoadLists();
+
+            if (boards != null)
+            {
+                foreach (BoardModel board in boards)
+                {
+                    await SignalRService.JoinBoardGroup(userId, board.BoardId);
+                }
+            }
+
+
+
             if(currentBoard != null)
             {
                 canUserEdit = await UserService.CanUserEditBoardAsync(currentBoard.BoardId, userId);
@@ -247,6 +275,40 @@
         }
 
     }
+    private async Task ReceiveBoardNotification()
+    {
+        if (currentBoard != null)
+            await RefreshBoards();
+        else
+            await LoadBoards();
+        await LoadLists();
+        StateHasChanged();
+        await Task.CompletedTask;
+    }
+
+    private async Task RefreshBoards()
+    {
+        var response = await Http.GetAsync($"api/boards/{projectId}/{userId}");
+        if (response.IsSuccessStatusCode)
+        {
+            isAuthorized = true;
+            boards = await response.Content.ReadFromJsonAsync<IEnumerable<BoardModel>>();
+            currentBoard = boards.Where(l => l.BoardId == currentBoard.BoardId).FirstOrDefault();
+        }
+        else
+        {
+            isAuthorized = false;
+        }
+    }
+
+    private async Task RefreshLists()
+    {
+        await LoadLists();
+        StateHasChanged();
+        dropContainer.Refresh();
+        await Task.CompletedTask;
+    }
+
 
     private bool IsCardDisabled(CardModel card)
     {
@@ -256,12 +318,14 @@
     private async Task SwitchBoard(BoardModel board)
     {
         currentBoard = board;
+        await SignalRService.JoinBoardGroup(userId, board.BoardId);
         canUserEdit = await UserService.CanUserEditBoardAsync(currentBoard.BoardId, userId);
         await LoadLists();
     }
 
     private async Task OnBoardRemove()
     {
+        await SignalRService.NotifyGroupAboutListUpdate(currentBoard.BoardId);
         await LoadBoards();
         await LoadLists();
         StateHasChanged();
@@ -269,6 +333,7 @@
 
     private async Task OnListRemove(int listId)
     {
+        await SignalRService.NotifyBoardGroupAboutUpdate(currentBoard.BoardId);
         await LoadLists();
         StateHasChanged();
     }
@@ -386,6 +451,7 @@
         StateHasChanged();
 
         var response = await Http.PutAsJsonAsync("api/cards/update-positions", updates);
+        await SignalRService.NotifyGroupAboutListUpdate(currentBoard.BoardId);
     }
 
     private async Task MoveListLeft(int listId)
@@ -411,7 +477,8 @@
             await UpdateListsPosition(updates);
 
             await LoadLists();
-            dropContainer.Refresh();
+            await SignalRService.NotifyGroupAboutListUpdate(currentBoard.BoardId);
+            dropContainer.Refresh();            
         }
     }
 
@@ -436,15 +503,18 @@
                 }).ToList();
 
             await UpdateListsPosition(updates);
-
+            
             await LoadLists();
+            await SignalRService.NotifyGroupAboutListUpdate(currentBoard.BoardId);
             dropContainer.Refresh();
+            
         }
     }
 
     private async Task UpdateListsPosition(IEnumerable<MoveListsRequest> updates)
     {
         var response = await Http.PutAsJsonAsync("api/lists/move", updates);
+        
         if (!response.IsSuccessStatusCode)
         {
             Console.WriteLine("Failed to update lists.");
@@ -459,6 +529,7 @@
             var request = await Http.PostAsJsonAsync($"api/lists/board/{currentBoard?.BoardId}", newListName);
             if (request.IsSuccessStatusCode)
             {
+                await SignalRService.NotifyGroupAboutListUpdate(currentBoard.BoardId);
                 await LoadLists();
             }
             newListName = string.Empty;
@@ -495,8 +566,16 @@
     public async Task DeleteList(int listId)
     {
         await Http.DeleteAsync($"api/lists/{listId}");
+        await SignalRService.NotifyGroupAboutListUpdate(currentBoard.BoardId);
         await LoadLists();
     }
+    
+   public async ValueTask DisposeAsync()
+    {
+        await SignalRService.StopConnectionAsync();
+    }
+
+
 }
 
 

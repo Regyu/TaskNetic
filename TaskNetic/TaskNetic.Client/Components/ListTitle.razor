@@ -1,5 +1,7 @@
 ﻿@using Blazorise
 @inject HttpClient Http
+@inject ISignalRService SignalRService
+
 
 @if (isEditingListTitle)
 {
@@ -13,6 +15,7 @@ else
 @code {
     [Parameter] public string Title { get; set; } = string.Empty;
     [Parameter] public int ListId { get; set; }
+    [Parameter] public int BoardId { get; set; }
 
     private bool isEditingListTitle = false;
     private ElementReference listTitleInput;
@@ -29,5 +32,6 @@ else
     {
         isEditingListTitle = false;
         await Http.PutAsJsonAsync($"api/lists/{ListId}/name", Title);
+        await SignalRService.NotifyGroupAboutListUpdate(BoardId);
     }
 }

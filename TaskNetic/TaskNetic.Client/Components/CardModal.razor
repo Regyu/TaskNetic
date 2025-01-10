@@ -2,6 +2,7 @@
 @inject IUserService userService
 @inject ICardModalService cardModalService
 @inject ICardLabelsService cardLabelsService
+@inject ISignalRService SignalRService
 @using Blazorise
 @using System.Globalization
 @using TaskNetic.Client.DTO
@@ -14,11 +15,11 @@
             @if (isEditingTitle)
             {
                 <input type="text" @bind="selectedCard.CardTitle" class="form-control form-control-sm me-2"
-                       @onblur="SaveTitle" @ref="titleInputRef" />
+                @onblur="SaveTitle" @ref="titleInputRef" />
             }
             else if (selectedCard != null)
             {
-                <ModalTitle Class="fs-4" @onclick="EnableTitleEdit">@selectedCard.CardTitle</ModalTitle>
+                <ModalTitle Class="fs-4" @onclick="canUserEdit ? EnableTitleEdit : null">@selectedCard.CardTitle</ModalTitle>
             }
             <CloseButton @onclick="CloseModal" />
         </ModalHeader>
@@ -36,11 +37,14 @@
                                     <UserAvatar userName="@member.UserName" />
                                 }
                             }
-                            <button class="btn btn-light btn-sm" @onclick="() => isManageMemberModalVisible = true">+</button>
+                            @if(canUserEdit)
+                            {
+                                <button class="btn btn-light btn-sm" @onclick="() => isManageMemberModalVisible = true">+</button>
+                            }
                             @if (isManageMemberModalVisible && cardMembers != null)
                             {
                                 <ManageCardMembers IsVisible="isManageMemberModalVisible" IsVisibleChanged="visible => isManageMemberModalVisible = visible"
-                                                   BoardId="@BoardId" CardId="@CardId" CardMembers="@cardMembers" OnMemberChanged="LoadCardMembersAsync" />
+                                BoardId="@BoardId" CardId="@CardId" CardMembers="@cardMembers" OnMemberChanged="LoadCardMembersAsync" />
                             }
                         </div>
                     </div>
@@ -64,14 +68,25 @@
                     {
                         <div class="me-3">
                             <h6 class="fw-semibold">Due date</h6>
-                            <button type="button" class="btn btn-sm @(GetButtonClass(dueDate))" @onclick="() => isDueDatePickerVisible = true">@dueDate.Value.ToString("dd MMMM, HH:mm", CultureInfo.InvariantCulture)</button>
+                            <button type="button"
+                                class="btn btn-sm @(GetButtonClass(dueDate))"
+                                @onclick="canUserEdit ? (() => isDueDatePickerVisible = true) : null">
+                                @dueDate.Value.ToString("dd MMMM, HH:mm", CultureInfo.InvariantCulture)
+                            </button>
                         </div>
                     }
                 </div>
 
                 <div class="mb-4">
                     <h6 class="fw-semibold"><img src="images/document.svg" width="22" height="22" alt="Document" class="me-2" />Description</h6>
-                    <textarea @bind="cardDescription" placeholder="Write detailed description" class="form-control w-100 fs-6 mh-75 text-wrap" @onblur="SaveDescription" />
+                    @if(canUserEdit)
+                    {
+                        <textarea @bind="cardDescription" placeholder="Write detailed description" class="form-control w-100 fs-6 mh-75 text-wrap" @onblur="SaveDescription" />
+                    }
+                    else
+                    {
+                        <div class="w-100 fs-6 mh-75 text-wrap">@cardDescription</div>
+                    }
                 </div>
 
                 <div class="mb-4">
@@ -83,16 +98,23 @@
                             @foreach (var task in tasks)
                             {
                                 <div class="d-flex align-items-center mb-1 ps-2 task-item rounded-2">
-                                    <Check TValue="bool" Checked="@task.TaskFinished" CheckedChanged="(bool value) => UpdateTodoTask(task.Id, value)"></Check>
+                                    <Check TValue="bool"
+                                           Checked="@task.TaskFinished"
+                                           CheckedChanged="canUserEdit ? ((bool value) => UpdateTodoTask(task.Id, value)) : null"
+                                           disabled="@(canUserEdit ? false : true)">
+                                    </Check>
                                     @if (isEditingTaskName.TryGetValue(task.Id, out var isEditing) && isEditing)
                                     {
                                         <input type="text" class="form-control form-control-sm me-4" @bind="task.TaskName" @onblur="() => SaveTaskTitle(task.Id)" @ref="taskTitleInputRef" />
                                     }
                                     else
                                     {
-                                        <p class="ms-0 mb-0 w-50 fs-6 @(task.TaskFinished ? "text-decoration-line-through text-secondary": "")" @onclick="() => EnableTaskEditing(task.Id) ">@task.TaskName</p>
+                                        <p class="ms-0 mb-0 w-50 fs-6 @(task.TaskFinished ? "text-decoration-line-through text-secondary": "")" @onclick="canUserEdit ? (() => EnableTaskEditing(task.Id)) : null">@task.TaskName</p>
                                     }
-                                    <CloseButton @onclick="() => RemoveTodoTaskAsync(task.Id)" Class="ms-auto me-2 task-remove" />
+                                    @if(canUserEdit)
+                                    {
+                                        <CloseButton @onclick="() => RemoveTodoTaskAsync(task.Id)" Class="ms-auto me-2 task-remove" />
+                                    }
                                 </div>
                             }
                         }
@@ -105,7 +127,7 @@
                                 <button class="btn btn-light btn-sm ms-2" @onclick="() => isAddTaskInputVisible = false">Cancel</button>
                             </div>
                         }
-                        else
+                        else if (canUserEdit)
                         {
                             <button class="btn btn-light btn-sm w-100 text-start mt-2 add-task-button" @onclick="() => isAddTaskInputVisible = true">Create task</button>
                         }
@@ -122,7 +144,7 @@
                             <button class="btn btn-secondary btn-sm" @onclick="() => isNewCommentInputVisible = false">Cancel</button>
                         </div>
                     }
-                    else
+                    else if (canUserEdit)
                     {
                         <button class="btn btn-light btn-sm w-100 text-start mt-2 mb-3" @onclick="() => isNewCommentInputVisible = true">Add comment</button>
                     }
@@ -166,41 +188,41 @@
             <div class="side-nav">
                 <div class="d-flex flex-column me-auto">
                     <h6 class="fw-semibold">Add to card</h6>
+                    <button class="btn btn-light btn-sm mb-1" @onclick="() => isManageMemberModalVisible = true" disabled="@(canUserEdit ? null : true)"><img src="images/people.svg" width="22" height="22" />Members</button>
+                    <button class="btn btn-light btn-sm mb-1" @onclick="() => isCardLabelsModalVisible = true" disabled="@(canUserEdit ? null : true)"><img src="images/bookmark.svg" width="22" height="22" />Labels</button>
+                    @if (isCardLabelsModalVisible)
+                    {
+                        <CardLabels IsVisible="isCardLabelsModalVisible" IsVisibleChanged="visible => isCardLabelsModalVisible = visible"
+                        cardLabels="@cardLabels" OnCardLabelsChanged="OnCardLabelsChanged" boardId="BoardId" cardId="CardId" />
+                    }
+
+                    <button class="btn btn-light btn-sm mb-1" @onclick="() => isDueDatePickerVisible = true" disabled="@(canUserEdit ? null : true)"><img src="images/deadline.svg" width="22" height="22" />Due date</button>
+                    @if (isDueDatePickerVisible)
+                    {
+                        <DueDatePicker IsVisible="@isDueDatePickerVisible"
+                        DueDate="@dueDate"
+                        OnDueDateChanged="(DateTime? date) => HandleDueDateChanged(date)"
+                        IsVisibleChanged="@((visible) => isDueDatePickerVisible = visible)" />
+                    }
+                    <button class="btn btn-light btn-sm mb-1" disabled="true"><img src="images/attachment.svg" width="20" height="20" />Attachment</button>
+                </div>
+
+                <div class="d-flex flex-column ms-auto">
+                    <h6 class="my-2 fw-semibold">Actions</h6>
                     @if (cardMembers != null && cardMembers.Any(member => member.Id == currentUserId))
                     {
                         <button class="btn btn-light btn-sm mb-1" @onclick="async () => await RemoveMemberFromCardAsync(currentUserId)">
                             <img src="images/userMinus.svg" width="22" height="22" />Leave Card
                         </button>
                     }
-                    <button class="btn btn-light btn-sm mb-1" @onclick="() => isManageMemberModalVisible = true"><img src="images/people.svg" width="22" height="22" />Members</button>
-                    <button class="btn btn-light btn-sm mb-1" @onclick="() => isCardLabelsModalVisible = true"><img src="images/bookmark.svg" width="22" height="22" />Labels</button>
-                    @if (isCardLabelsModalVisible)
-                    {
-                        <CardLabels IsVisible="isCardLabelsModalVisible" IsVisibleChanged="visible => isCardLabelsModalVisible = visible"
-                                    cardLabels="@cardLabels" OnCardLabelsChanged="OnCardLabelsChanged" boardId="BoardId" cardId="CardId" />
-                    }
-
-                    <button class="btn btn-light btn-sm mb-1" @onclick="() => isDueDatePickerVisible = true"><img src="images/deadline.svg" width="22" height="22" />Due date</button>
-                    @if (isDueDatePickerVisible)
-                    {
-                        <DueDatePicker IsVisible="@isDueDatePickerVisible"
-                                       DueDate="@dueDate"
-                                       OnDueDateChanged="(DateTime? date) => HandleDueDateChanged(date)"
-                                       IsVisibleChanged="@((visible) => isDueDatePickerVisible = visible)" />
-                    }
-                    <button class="btn btn-light btn-sm mb-1"><img src="images/attachment.svg" width="20" height="20" />Attachment</button>
-                </div>
-
-                <div class="d-flex flex-column ms-auto">
-                    <h6 class="my-2 fw-semibold">Actions</h6>
-                    <button class="btn btn-light btn-sm mb-1" @onclick="() => isMovingCardVisible = true"><img src="images/move.svg" width="22" height="22" />Move</button>
+                    <button class="btn btn-light btn-sm mb-1" @onclick="() => isMovingCardVisible = true" disabled="@(canUserEdit ? null : true)"><img src="images/move.svg" width="22" height="22" />Move</button>
                     @if (isMovingCardVisible || isCopyCardVisible)
                     {
                         <CardMove IsVisible="@(isMovingCardVisible || isCopyCardVisible)" IsVisibleChanged="CloseMoveCopyModal" cardId="CardId"
-                            projectId="ProjectId" boardId="BoardId" OnCardMoved="HandleCardMoved" listId="ListId" IsCopy="isCopyCardVisible"/>
+                        projectId="ProjectId" boardId="BoardId" OnCardMoved="HandleCardMoved" listId="ListId" IsCopy="isCopyCardVisible"/>
                     }
-                    <button class="btn btn-light btn-sm mb-1" @onclick="() => isCopyCardVisible = true"><img src="images/copy.svg" width="22" height="22" />Copy</button>
-                    <button class="btn btn-light btn-sm" @onclick="() => RemoveCard()"><img src="images/delete.svg" width="22" height="22" />Delete</button>
+                    <button class="btn btn-light btn-sm mb-1" @onclick="() => isCopyCardVisible = true" disabled="@(canUserEdit ? null : true)"><img src="images/copy.svg" width="22" height="22" />Copy</button>
+                    <button class="btn btn-light btn-sm" @onclick="() => RemoveCard()" disabled="@(canUserEdit ? null : true)"><img src="images/delete.svg" width="22" height="22" />Delete</button>
                 </div>
             </div>
         </ModalBody>
@@ -240,6 +262,7 @@
     private List<LabelModel> cardLabels = new List<LabelModel>();
     private bool isMovingCardVisible = false;
     private bool isCopyCardVisible = false;
+    private bool canUserEdit = false;
 
     private async Task EnableTitleEdit()
     {
@@ -259,6 +282,7 @@
             };
 
         var response = await Http.PutAsJsonAsync($"api/cards/{CardId}/title", cardTitle);
+        await SignalRService.NotifyGroupAboutListUpdate(BoardId);
         if (!response.IsSuccessStatusCode)
         {
             Console.WriteLine("Failed to update card title.");
@@ -290,6 +314,7 @@
             cardLabels = selectedCard.CardLabels.ToList();
             currentUserId = await userService.GetCurrentUserIdAsync() ?? "";
             IsVisible = true;
+            canUserEdit = await userService.CanUserEditBoardAsync(BoardId, currentUserId);
         }
         else
         {
@@ -313,6 +338,7 @@
     {
         await cardModalService.RemoveMemberFromCardAsync(CardId, userId);
         await LoadCardMembersAsync();
+        await SignalRService.NotifyBoardGroupAboutUpdate(BoardId);
     }
 
     private async Task SaveDescription()
@@ -412,6 +438,7 @@
             {
                 newComment = "";
                 await LoadCommentsAsync();
+                await SignalRService.NotifyGroupAboutListUpdate(BoardId);
             }
             else
             {
@@ -423,6 +450,7 @@
     private async Task RemoveCommentAsync(int commentId)
     {
         var response = await cardModalService.DeleteCommentAsync(commentId);
+        await SignalRService.NotifyGroupAboutListUpdate(BoardId);
         if (response)
         {
             comments.RemoveAll(c => c.Id == commentId);
@@ -438,6 +466,7 @@
     {
         isEditingComment = false;
         var response = await cardModalService.UpdateCommentAsync(commentId, commentText);
+        await SignalRService.NotifyGroupAboutListUpdate(BoardId);
         if (!response)
         {
             Console.WriteLine("Failed to update comment.");
@@ -450,6 +479,7 @@
         await IsVisibleChanged.InvokeAsync();
         await cardModalService.RemoveCardAsync(CardId);
         await OnExternalCardChanged.InvokeAsync();
+        await SignalRService.NotifyGroupAboutListUpdate(BoardId);
     }
 
     private string GetButtonClass(DateTime? dueDate)

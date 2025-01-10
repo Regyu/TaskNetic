@@ -16,11 +16,13 @@ namespace TaskNetic.Services.Implementations
         private readonly ApplicationUserService _applicationUserService;
         private readonly NotificationService _notificationService;
         private readonly AuthenticationStateProvider _authenticationStateProvider;
+        private readonly ProjectRoleService _projectRoleService;
         public BoardPermissionService(ApplicationDbContext context, AuthenticationStateProvider authenticationStateProvider, IDbContextFactory<ApplicationDbContext> dbContextFactory) : base(context)
         {
             _applicationUserService = new ApplicationUserService(context, authenticationStateProvider);
             _notificationService = new NotificationService(dbContextFactory, authenticationStateProvider);
             _authenticationStateProvider = authenticationStateProvider;
+            _projectRoleService = new ProjectRoleService(context, authenticationStateProvider);
         }
         public Task<IEnumerable<ProjectRole>> GetBoardRoleByUserId(string userId)
         {
@@ -81,15 +83,35 @@ namespace TaskNetic.Services.Implementations
 
         public async Task<IEnumerable<BoardMember>> GetBoardMembersAsync(int boardId)
         {
-            return await _context.BoardPermissions
+            var projectId = await _context.Projects
+                .Where(p => p.ProjectRoles
+                    .Any(pr => pr.BoardPermissions
+                        .Any(bp => bp.Board.BoardId == boardId)))
+                .Select(p => p.Id)
+                .FirstOrDefaultAsync();
+
+            var boardPermissions = await _context.BoardPermissions
                 .Where(bp => bp.Board.BoardId == boardId)
-                .Select(bp => new BoardMember
+                .Include(bp => bp.Role)
+                .ThenInclude(role => role.ApplicationUser)
+                .ToListAsync();
+
+            var boardMembers = new List<BoardMember>();
+
+            foreach (var bp in boardPermissions)
+            {
+                var isAdmin = await _projectRoleService.IsUserAdminInProjectAsync(projectId, bp.Role.ApplicationUser.Id);
+
+                boardMembers.Add(new BoardMember
                 {
                     Id = bp.Role.ApplicationUser.Id,
                     Name = bp.Role.ApplicationUser.UserName,
-                    CanEdit = bp.CanEdit
-                })
-                .ToListAsync();
+                    CanEdit = bp.CanEdit,
+                    IsAdmin = isAdmin
+                });
+            }
+
+            return boardMembers;
         }
 
         public async Task AddUserToBoardAsync(int boardId, string userName, bool canEdit, int projectId, string currentUserId)
