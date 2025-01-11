@@ -48,6 +48,10 @@ namespace TaskNetic.Client.Services.Implementations
             string groupName = boardId.ToString();
             await _hubConnection.SendAsync("NotifyGroupAboutListUpdate",groupName);
         }
+        public async Task NotifyUserAboutPermissionChange(string userId,bool canEdit)
+        {
+            await _hubConnection.SendAsync("NotifyUserAboutPermissionChange", userId, canEdit);
+        }
         public async Task NotifyGroupAboutCardUpdate(int boardId)
         {
             string groupName = boardId.ToString();
@@ -76,6 +80,10 @@ namespace TaskNetic.Client.Services.Implementations
         public void OnCardUpdate(Func<Task> handler)
         {
             _hubConnection.On("CardUpdate", handler);
+        }
+        public void OnPermissionUpdate(Func<bool, Task> handler)
+        {
+            _hubConnection.On("PermissionUpdate", handler);
         }
         public async Task StopConnectionAsync()
         {

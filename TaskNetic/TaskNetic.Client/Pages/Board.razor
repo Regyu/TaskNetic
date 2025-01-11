@@ -243,6 +243,7 @@
         {
             SignalRService.OnListUpdate(RefreshLists);
             SignalRService.OnNotificationReceived(ReceiveBoardNotification);
+            SignalRService.OnPermissionUpdate(HandlePermissionChange);
             projectInfo = await ProjectService.GetProjectInfoAsync(projectId);
             userId = await UserService.GetCurrentUserIdAsync();
             isUserAdmin = await UserService.IsUserAdminInProjectAsync(projectId, userId);
@@ -275,6 +276,16 @@
         }
 
     }
+    private async Task HandlePermissionChange(bool canEditParameter)
+    {
+        if (currentBoard == null)
+            await Task.CompletedTask;
+        else if (canUserEdit != canEditParameter)
+            canUserEdit = canEditParameter;
+        await RefreshBoards();
+        await Task.CompletedTask;
+    }
+
     private async Task ReceiveBoardNotification()
     {
         if (currentBoard != null)

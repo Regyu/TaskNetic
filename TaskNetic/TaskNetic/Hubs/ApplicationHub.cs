@@ -25,6 +25,16 @@ namespace TaskNetic.Hubs
                 Console.WriteLine("Cannot find user!");
             }
         }
+        public async Task NotifyUserAboutPermissionChange(string targetUserId, bool canEdit)
+        {
+            if (UserConnections.TryGetValue(targetUserId, out var connectionId))
+            {
+                await Clients.User(targetUserId).SendAsync("PermissionUpdate", canEdit);
+            }else
+            {
+                Console.WriteLine("Cannot find user!");
+            }
+        }
         public async Task LeaveGroup(string groupName)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);         

@@ -57,8 +57,8 @@
                                                 @if (!isSingleAdmin || !member.IsAdmin)
                                                 {
                                                     <Button Color="Color.Danger" Size="Size.Small"
-                                                            Clicked="@(() => RemoveMember(member.Id))">
-                                                            Remove
+                                                    Clicked="@(() => RemoveMember(member.Id))">
+                                                        Remove
                                                     </Button>
                                                 }
                                             </td>
@@ -141,6 +141,7 @@
                 $"api/boardpermissions/{Board.BoardId}/user/{member.Id}",
                 member.CanEdit
             );
+            await SignalRService.NotifyUserAboutPermissionChange(member.Id, member.CanEdit);
         }
         Close();
         await SignalRService.NotifyBoardGroupAboutUpdate(Board.BoardId);
