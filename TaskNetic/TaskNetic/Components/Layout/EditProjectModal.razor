@@ -16,23 +16,23 @@
                 <ul class="nav nav-tabs" id="editProjectTabs">
                     <li class="nav-item">
                         <a class="nav-link @(activeTab == "general" ? "active" : "")"
-                           href="#"
-                           @onclick="@(() => SetActiveTab("general"))">General</a>
+                        href="#"
+                        @onclick="@(() => SetActiveTab("general"))">General</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link @(activeTab == "team" ? "active" : "")"
-                           href="#"
-                           @onclick="@(() => SetActiveTab("team"))">Team</a>
+                        href="#"
+                        @onclick="@(() => SetActiveTab("team"))">Team</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link @(activeTab == "background" ? "active" : "")"
-                           href="#"
-                           @onclick="@(() => SetActiveTab("background"))">Background</a>
+                        href="#"
+                        @onclick="@(() => SetActiveTab("background"))">Background</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link @(activeTab == "danger zone" ? "active" : "")"
-                           href="#"
-                           @onclick="@(() => SetActiveTab("danger zone"))">Danger Zone</a>
+                        href="#"
+                        @onclick="@(() => SetActiveTab("danger zone"))">Danger Zone</a>
                     </li>
                 </ul>
                 @if (activeTab == "general")
@@ -42,8 +42,8 @@
                         <div class="my-3 text-center d-flex flex-column justify-content-center align-items-center">
                             <label for="projectName" class="fw-semibold fs-5">Project Name:</label>
                             <InputText id="projectName"
-                                       @bind-Value="@Project.ProjectName"
-                                       class="form-control my-3" style="width:50%; text-align:center;"/>
+                            @bind-Value="@Project.ProjectName"
+                            class="form-control my-3" style="width:50%; text-align:center;"/>
                         </div>
                     }
                     else
@@ -82,17 +82,17 @@
                                         <td class="text-center">
                                             <div class="form-switch">
                                                 <input type="checkbox"
-                                                       @bind="@member.IsAdmin"
-                                                       class="form-check-input"
-                                                       role="switch"
-                                                       disabled="@(isSingleAdmin && member.IsAdmin)" />
+                                                @bind="@member.IsAdmin"
+                                                class="form-check-input"
+                                                role="switch"
+                                                disabled="@(isSingleAdmin && member.IsAdmin)" />
                                             </div>
                                         </td>
                                         <td class="text-center">
                                             @if (!isSingleAdmin || !member.IsAdmin)
                                             {
                                                 <button class="btn btn-danger btn-sm"
-                                                        @onclick="@(() => RemoveMember(member.Id))">
+                                                @onclick="@(() => RemoveMember(member.Id))">
                                                     Delete
                                                 </button>
                                             }
@@ -114,9 +114,9 @@
                         <h6>Add your new member of the team:</h6>
                         <div class="input-group mb-3" style="width:60%">
                             <input type="text"
-                                   placeholder="Enter username"
-                                   @bind-value="@newMemberUsername"
-                                   class="form-control" />
+                            placeholder="Enter username"
+                            @bind-value="@newMemberUsername"
+                            class="form-control" />
                             <button class="btn btn-primary" @onclick="AddMember">Add member</button>
                         </div>
                         @if (!string.IsNullOrEmpty(addMemberError))
@@ -139,9 +139,9 @@
                             {
                                 <div class="col-md-3 col-sm-4 col-6 mb-3">
                                     <img src="@background"
-                                         alt="Available Background"
-                                         class="img-thumbnail clickable-thumbnail"
-                                         @onclick="@(() => SelectBackground(background))" />
+                                    alt="Available Background"
+                                    class="img-thumbnail clickable-thumbnail"
+                                    @onclick="@(() => SelectBackground(background))" />
                                 </div>
                             }
                         </div>
@@ -158,8 +158,8 @@
                         <div class="mt-3 text-center">
                             <h5 class="text-danger mb-3">Deleting a project is irreversible!</h5>
                             <button type="button"
-                                    class="btn btn-danger"
-                                    @onclick="@DeleteProject">
+                            class="btn btn-danger"
+                            @onclick="@DeleteProject">
                                 Delete Project
                             </button>
                         </div>
@@ -169,15 +169,15 @@
 
             <div class="modal-footer">
                 <button type="button"
-                        class="btn btn-secondary"
-                        @onclick="@OnCancel">
+                class="btn btn-secondary"
+                @onclick="@OnCancel">
                     Close
                 </button>
 
                 <button type="submit"
-                        formnovalidate
-                        class="btn btn-primary"
-                        @onclick="@SaveChanges">
+                formnovalidate
+                class="btn btn-primary"
+                @onclick="@SaveChanges">
                     Save changes
                 </button>
             </div>
@@ -202,6 +202,7 @@
     public EventCallback OnSave { get; set; }
     [Parameter]
     public EventCallback OnDelete { get; set; }
+    [Parameter] public EventCallback ProjectUpdate { get; set; }
 
     private List<string> availableBackgrounds = new();
     private string currentBackgroundUrl = string.Empty;
@@ -284,6 +285,7 @@
 
             await ProjectRoleService.AddAsync(newProjectRole);
             await NotificationService.AddNotificationAsync(user.Id, currentUser.UserName, $"has added you to the project \"{Project?.ProjectName}\".");
+            await ProjectUpdate.InvokeAsync();
 
             newMemberUsername = string.Empty;
             addMemberError = string.Empty;
@@ -362,6 +364,8 @@
             }
         }
         await NotificationService.AddNotificationAsync(memberId, currentUser.UserName, $"has removed you from the project \"{Project?.ProjectName}\".");
+        await ProjectUpdate.InvokeAsync();
+
     }
 
     private async Task DeleteProject()
@@ -369,6 +373,7 @@
         await OnDelete.InvokeAsync();
         Show = false;
         await ShowChanged.InvokeAsync(false);
+        await ProjectUpdate.InvokeAsync();
     }
 
     private void OnCancel()

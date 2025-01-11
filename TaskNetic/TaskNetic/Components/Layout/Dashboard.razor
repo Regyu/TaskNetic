@@ -1,6 +1,8 @@
 ﻿@inject IProjectService ProjectService
 @inject NavigationManager _navigationManager
 @using TaskNetic.Components.Layout
+@using Microsoft.AspNetCore.SignalR.Client
+@implements IAsyncDisposable
 @rendermode InteractiveServer
 
 <div class="projects-container bg-dark min-vh-100 p-5">
@@ -15,33 +17,33 @@
                 @foreach (var project in projects)
                 {
                     <ProjectCard 
-                        Title="@project.ProjectName" 
-                        BackgroundId="@project.BackgroundImageId"
-                        OnClick="@(() => HandleProjectClick(project.Id))" 
-                        OnEditClick="@(() => ShowEditModal(project))"/>
+                    Title="@project.ProjectName" 
+                    BackgroundId="@project.BackgroundImageId"
+                    OnClick="@(() => HandleProjectClick(project.Id))" 
+                    OnEditClick="@(() => ShowEditModal(project))"/>
                 }
 
                 <ProjectCard 
-                    IsCreateCard="true"
-                    OnClick="ShowCreateModal" />
+                IsCreateCard="true"
+                OnClick="ShowCreateModal" />
             }
         </div>
     </div>
 </div>
-<EditProjectModal Show="@showEditModal"
-                  ShowChanged="@((value) => showEditModal = value)" 
-                  Project="@selectedProject"
-                  OnSave="@LoadProjects"
-                  OnDelete="@(() => HandleDeleteProject(selectedProject))"/>
+<EditProjectModal ProjectUpdate="@NotifyAboutProjectUpdate" Show="@showEditModal"
+ShowChanged="@((value) => showEditModal = value)" 
+Project="@selectedProject"
+OnSave="@LoadProjects"
+OnDelete="@(() => HandleDeleteProject(selectedProject))"/>
 
 <CreateProjectModal 
-    Show="showCreateModal"
-    ShowChanged="(value => showCreateModal = value)"
-    OnCreate="HandleCreateProject" />
+Show="showCreateModal"
+ShowChanged="(value => showCreateModal = value)"
+OnCreate="HandleCreateProject" />
 
 <style>
     .projects-container {
-        background-color: #1a1d21;
+    background-color: #1a1d21;
     }
 </style>
 
@@ -50,9 +52,21 @@
     private bool showCreateModal;
     private bool showEditModal;
     private Project? selectedProject;
+    private HubConnection? hubConnection;
 
     protected override async Task OnInitializedAsync()
     {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(_navigationManager.ToAbsoluteUri("/applicationhub"))
+            .Build();
+
+        hubConnection.On("ProjectUpdate", () =>
+        {            
+            InvokeAsync(LoadProjects);
+            InvokeAsync(StateHasChanged); 
+        });
+
+        await hubConnection.StartAsync();
         await LoadProjects();
     }
 
@@ -61,7 +75,13 @@
         projects = await ProjectService.GetCurrentUserProjectsAsync();
         StateHasChanged();
     }
-
+    private async Task NotifyAboutProjectUpdate()
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.SendAsync("NotifyGroupAboutProjectUpdate");
+        }
+    }
     private void HandleProjectClick(int projectId)
     {
         _navigationManager.NavigateTo($"/board/{projectId}");
@@ -95,5 +115,12 @@
         await LoadProjects();
         showEditModal = false;
         StateHasChanged();
+    }
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
     }
 }

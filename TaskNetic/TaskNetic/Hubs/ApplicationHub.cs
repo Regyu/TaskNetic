@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace TaskNetic.Hubs
 {
@@ -19,7 +18,6 @@ namespace TaskNetic.Hubs
             if (UserConnections.TryGetValue(targetUserId, out var connectionId))
             {
                 await Groups.AddToGroupAsync(connectionId, groupName);
-                Console.WriteLine("User added sucessfully!");
                 await Clients.Client(connectionId).SendAsync("ReceiveBoardNotification");
             }
             else
@@ -27,10 +25,13 @@ namespace TaskNetic.Hubs
                 Console.WriteLine("Cannot find user!");
             }
         }
-
         public async Task LeaveGroup(string groupName)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);         
+        }
+        public async Task NotifyGroupAboutProjectUpdate()
+        {
+            await Clients.All.SendAsync("ProjectUpdate");
         }
         public async Task NotifyBoardGroupAboutUpdate(string groupName)
         {
