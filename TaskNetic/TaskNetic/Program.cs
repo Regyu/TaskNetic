@@ -23,7 +23,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSignalR()
     .AddAzureSignalR(options =>
     {
-        options.ConnectionString = builder.Configuration.GetConnectionString("MojAzureSignalR");
+        options.ConnectionString = builder.Configuration.GetConnectionString("AzureSignalR");
         options.InitialHubServerConnectionCount = 1;
         options.MaxHubServerConnectionCount = 5;
         options.ServerStickyMode = Microsoft.Azure.SignalR.ServerStickyMode.Required;
@@ -49,7 +49,7 @@ builder.Services.AddAuthentication(options =>
     })
     .AddIdentityCookies();
 
-string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+string? connectionString = builder.Configuration.GetConnectionString("Tasknetic_DB");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString)
 );
