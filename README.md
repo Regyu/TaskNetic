@@ -1,7 +1,8 @@
 # Tasknetic
 #### Simple and intuitive project tracking
 
-[**Client demo**]() (without server features).
+[**Client demo**]() (without server features) - available soon
+[**Application page**](tasknetic.app) (hosted on Azure)
 
 ## Features
 
@@ -16,7 +17,7 @@
 ## Tech stack
 
 - ASP.NET, Blazor (Server and WebAssembly), Bootstrap, Blazorise
-- .NET 8, Entity Framework Core
+- .NET 8, Entity Framework Core, SignalR
 - Azure PostgreSQL
 
 ## License
