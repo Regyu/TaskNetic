@@ -1,7 +1,7 @@
 # Tasknetic
 #### Simple and intuitive project tracking
 
-[**Client demo**]() (without server features - available soon)
+[**Client demo**]() (without server features - available soon)  
 [**Application page**](tasknetic.app) (hosted on Azure)
 
 ## Features
