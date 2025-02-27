@@ -2,7 +2,7 @@
 #### Simple and intuitive project tracking
 
 [**Client demo**]() (without server features - available soon)  
-[**Application page**](tasknetic.app) (hosted on Azure)
+[**Application page**](https://tasknetic.app/) (hosted on Azure)
 
 ## Features
 
