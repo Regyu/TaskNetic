@@ -1,0 +1,7 @@
+C:\Users\DELL\Documents\GitHub\Tasknetic\TaskNeticDemo\obj\Debug\net8.0\TaskNeticDemo.csproj.AssemblyReference.cache
+C:\Users\DELL\Documents\GitHub\Tasknetic\TaskNeticDemo\obj\Debug\net8.0\TaskNeticDemo.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\DELL\Documents\GitHub\Tasknetic\TaskNeticDemo\obj\Debug\net8.0\TaskNeticDemo.AssemblyInfoInputs.cache
+C:\Users\DELL\Documents\GitHub\Tasknetic\TaskNeticDemo\obj\Debug\net8.0\TaskNeticDemo.AssemblyInfo.cs
+C:\Users\DELL\Documents\GitHub\Tasknetic\TaskNeticDemo\obj\Debug\net8.0\TaskNeticDemo.csproj.CoreCompileInputs.cache
+C:\Users\DELL\Documents\GitHub\Tasknetic\TaskNeticDemo\obj\Debug\net8.0\TaskNeticDemo.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\DELL\Documents\GitHub\Tasknetic\TaskNeticDemo\obj\Debug\net8.0\TaskNeticDemo.sourcelink.json

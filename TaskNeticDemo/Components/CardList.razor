@@ -1,0 +1,194 @@
+﻿@using Blazorise
+@inject HttpClient Http
+@inject ISignalRService SignalRService
+@using TaskNetic.Client.DTO
+
+<div class="card-list">
+    <div class="list-header d-flex justify-content-between">
+        @if (isEditingListTitle)
+        {
+            <input type="text" @bind="Title" class="form-control form-control-sm me-2 mb-2 h-75" @onblur="SaveTitle" @ref="listTitleInput" />
+        }
+        else
+        {
+            <h6 class="fw-semibold" @onclick="ShowListTitleEdit">@Title</h6>
+        }
+        <div class="dropdown">
+            <img src="images/three-dots.svg" height="18" width="18" alt="options" @onclick="() => isListMenuVisible = true" class="dropdown-toggle" style="cursor: pointer;" />
+            @if (isListMenuVisible)
+            {
+                <ul class="dropdown-menu show">
+                    <li class="d-flex justify-content-end px-3">
+                        <h6 class="flex-fill text-center fw-semibold">List menu</h6>
+                        <button class="btn-close" @onclick="() => isListMenuVisible = false" style="width: 10px; height: 10px;"></button>
+                    </li>
+                    <li><button class="dropdown-item" @onclick="ShowListTitleEdit">Change Title</button></li>
+                    <li><button class="dropdown-item" @onclick="ShowAddCardInput">Add Card</button></li>
+                    <li><button class="dropdown-item text-danger" @onclick="DeleteList">Delete List</button></li>
+                </ul>
+            }
+        </div>
+    </div>
+        @if (Cards != null)
+        {
+             @* <DropZone TItem="CardModel" Name="@Id.ToString()" AllowReorder="true" Reordered="OnReordered">
+
+             </DropZone> *@
+        }
+
+
+    @if (isAddingCardVisible)
+    {
+        <div class="add-card-input">
+            <input type="text" @bind="newCardName" placeholder="Enter card name" class="form-control form-control-sm" />
+            <div class="d-flex align-items-center justify-content-center mt-2">
+                <button class="btn btn-primary btn-sm " @onclick="AddCard">Add new card</button>
+                <button class="btn-close ms-3" @onclick="() => isAddingCardVisible = false" style="width: 10px; height: 10px;"></button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <button class="btn btn-light btn-sm w-100 text-start" @onclick="ShowAddCardInput">+ Add new card</button>
+    }
+</div>
+
+@code {
+    [Parameter] public BoardModel? Board { get; set; }
+    [Parameter] public int Id { get; set; }
+    [Parameter] public string Title { get; set; } = "List Title";
+    [Parameter] public EventCallback<int> OnListRemove { get; set; }
+    [Parameter] public EventCallback<(int, int)> OnCardUpdate { get; set; }
+
+    private IEnumerable<CardModel>? Cards;
+    private bool isAddingCardVisible = false;
+    private string newCardName = string.Empty;
+    private bool isEditingListTitle = false;
+    private ElementReference listTitleInput;
+    private bool isListMenuVisible = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCards();
+    }
+
+    private void ShowAddCardInput()
+    {
+        isAddingCardVisible = true;
+        isListMenuVisible = false;
+    }
+
+    private async Task AddCard()
+    {
+        if (!string.IsNullOrWhiteSpace(newCardName))
+        {
+            var postRequest = await Http.PostAsJsonAsync($"api/cards/list/{Id}", newCardName);
+            newCardName = string.Empty;
+            isAddingCardVisible = false;
+            if (postRequest.IsSuccessStatusCode)
+            {
+                await LoadCards();
+            }
+        }
+    }
+
+    private async Task LoadCards()
+    {
+        var getRequest = await Http.GetAsync($"api/cards/list/{Id}");
+        if (getRequest.IsSuccessStatusCode)
+        {
+            Cards = await getRequest.Content.ReadFromJsonAsync<IEnumerable<CardModel>>();
+            StateHasChanged();
+        }
+    }
+
+    public async Task SaveTitle()
+    {
+        isEditingListTitle = false;
+        await Http.PutAsJsonAsync($"api/lists/{Id}/name", Title);
+    }
+
+    public async Task ShowListTitleEdit()
+    {
+        isEditingListTitle = true;
+        isListMenuVisible = false;
+        await Task.Delay(1);
+        await listTitleInput.FocusAsync();
+    }
+
+    public async Task DeleteList()
+    {
+        isListMenuVisible = false;
+        await Http.DeleteAsync($"api/lists/{Id}");
+        await OnListRemove.InvokeAsync(Id);
+    }
+
+    
+}
+
+<style>
+    .card-list {
+        width: 250px;
+        background-color: #f0f2f4;
+        border-radius: 5px;
+        padding: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .cards-container {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .card-item {
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin-bottom: 5px;
+        transition: border-color 0.3s ease;
+        cursor: pointer;
+    }
+
+        .card-item:hover {
+            border-color: #007bff;
+        }
+
+    .add-card-button,
+    .add-list-button {
+        background-color: rgba(255,255,255, 0.4);
+        color: #007bff;
+        border: none;
+    }
+
+        .add-card-button:hover,
+        .add-list-button:hover {
+            text-decoration: underline;
+        }
+
+    .add-card-input,
+    .add-list-input {
+        margin-top: 10px;
+    }
+
+    .dropdown-menu {
+        position: absolute;
+        top: 20px;
+        right: 0;
+        z-index: 1000;
+        display: none;
+    }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+    .dropdown-item {
+        cursor: pointer;
+    }
+
+        .dropdown-item.text-danger {
+            color: red;
+        }
+
+</style>

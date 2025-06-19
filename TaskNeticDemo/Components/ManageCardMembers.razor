@@ -1,0 +1,93 @@
+﻿@using Blazorise
+@using TaskNetic.Client.DTO
+@inject HttpClient Http
+@inject ICardModalService cardModalService
+@inject ISignalRService SignalRService
+
+<Modal @bind-Visible="IsVisible"  Scrollable ShowBackdrop="false" class="manage-modal">
+    <ModalContent Size="ModalSize.Small">
+        <ModalHeader>
+            <ModalTitle HeadingSize.Is3>Card members</ModalTitle>
+            <CloseButton @onclick="CloseModal" />
+        </ModalHeader>
+
+        <ModalBody>
+            <div class="member-list">
+                @foreach (var user in BoardUsers)
+                {
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="d-flex align-items-center">
+                            <UserAvatar userName="@user.Name" />
+                            <span>@user.Name</span>
+                        </div>
+
+                        @if (CardMembers.Any(cm => cm.Id == user.Id))
+                        {
+                            <button class="btn btn-danger btn-sm" @onclick="@(() => RemoveMember(user.Id))">Delete</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-primary btn-sm" @onclick="@(() => AddMember(user.Id))">Add</button>
+                        }
+                    </div>
+                }
+            </div>
+        </ModalBody>
+    </ModalContent>
+</Modal>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public int BoardId { get; set; }
+    [Parameter] public int CardId { get; set; }
+    [Parameter] public IEnumerable<ApplicationUser> CardMembers { get; set; } = new List<ApplicationUser>();
+    [Parameter] public EventCallback OnMemberChanged { get; set; }
+
+    private List<BoardMember> BoardUsers { get; set; } = new List<BoardMember>();
+
+    protected async override Task OnInitializedAsync()
+    {
+        var request = (await Http.GetFromJsonAsync<List<BoardMember>>($"api/boardpermissions/{BoardId}/team")).ToList();
+        if(request != null)
+        {
+            BoardUsers = request;
+        }
+    }
+
+    private void CloseModal()
+    {
+        IsVisible = false;
+        IsVisibleChanged.InvokeAsync(IsVisible);
+    }
+
+    private async Task AddMember(string userId)
+    {
+        var request = await cardModalService.AddMemberToCardAsync(CardId, userId);
+        if (request)
+        {
+            await OnMemberChanged.InvokeAsync();
+            await SignalRService.NotifyGroupAboutListUpdate(BoardId);
+        }
+    }
+
+    private async Task RemoveMember(string userId)
+    {
+        var request = await cardModalService.RemoveMemberFromCardAsync(CardId, userId);
+        if (request)
+        {
+            await OnMemberChanged.InvokeAsync();
+            await SignalRService.NotifyGroupAboutListUpdate(BoardId);
+        }
+    }
+}
+
+<style>
+    .manage-modal{
+        position: absolute;
+        top: 0;
+    }
+    .modal-sm{
+        margin-top: 0;
+    }
+</style>

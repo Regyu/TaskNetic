@@ -1,0 +1,26 @@
+﻿@inherits LayoutComponentBase
+
+<head>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="app.css" />
+    <title>TaskNetic</title>
+</head>
+
+<div class="page overflow-x-hidden">
+    <Navbar />
+    @Body
+</div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+<style>
+    .page {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+</style>
