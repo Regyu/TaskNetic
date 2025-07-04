@@ -3,32 +3,48 @@
   "WorkspaceRootPath": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\taskneticdemo\\pages\\navbar.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|solutionrelative:pages\\navbar.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\taskneticdemo\\models\\applicationuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|solutionrelative:models\\applicationuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\taskneticdemo\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\taskneticdemo\\services\\implementations\\projectservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|solutionrelative:services\\implementations\\projectservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\taskneticdemo\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|solutionrelative:app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\taskneticdemo\\services\\interfaces\\inotificationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|solutionrelative:services\\interfaces\\inotificationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\taskneticdemo\\pages\\editprojectmodal.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|solutionrelative:pages\\editprojectmodal.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\taskneticdemo\\services\\implementations\\notificationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|solutionrelative:services\\implementations\\notificationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\taskneticdemo\\models\\notification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|solutionrelative:models\\notification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\taskneticdemo\\services\\implementations\\applicationuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|solutionrelative:services\\implementations\\applicationuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\taskneticdemo\\models\\project.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|solutionrelative:models\\project.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\taskneticdemo\\services\\implementations\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|solutionrelative:services\\implementations\\userservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\taskneticdemo\\services\\interfaces\\iuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|solutionrelative:services\\interfaces\\iuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|c:\\users\\dell\\documents\\github\\tasknetic\\taskneticdemo\\services\\interfaces\\iapplicationuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3727D430-ADB0-4405-A0DC-BBEC1E1B7056}|TaskNeticDemo.csproj|solutionrelative:services\\interfaces\\iapplicationuserservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Interfaces\\IProjectRoleService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Services\\Interfaces\\IProjectRoleService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Implementations\\ProjectRoleService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Services\\Implementations\\ProjectRoleService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -38,32 +54,49 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 15,
+          "SelectedChildIndex": 20,
           "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:20:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "INotificationService.cs",
-              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Interfaces\\INotificationService.cs",
-              "RelativeDocumentMoniker": "Services\\Interfaces\\INotificationService.cs",
-              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Interfaces\\INotificationService.cs",
-              "RelativeToolTip": "Services\\Interfaces\\INotificationService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAABAAAAAAAAAA==",
+              "Title": "NotificationService.cs",
+              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Implementations\\NotificationService.cs",
+              "RelativeDocumentMoniker": "Services\\Implementations\\NotificationService.cs",
+              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Implementations\\NotificationService.cs",
+              "RelativeToolTip": "Services\\Implementations\\NotificationService.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAxwBAAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-18T17:08:27.978Z",
+              "WhenOpened": "2025-07-04T16:05:52.32Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ApplicationUserService.cs",
+              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Implementations\\ApplicationUserService.cs",
+              "RelativeDocumentMoniker": "Services\\Implementations\\ApplicationUserService.cs",
+              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Implementations\\ApplicationUserService.cs",
+              "RelativeToolTip": "Services\\Implementations\\ApplicationUserService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-04T15:54:07.57Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
-              "Title": "Notification.cs",
-              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Models\\Notification.cs",
-              "RelativeDocumentMoniker": "Models\\Notification.cs",
-              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Models\\Notification.cs",
-              "RelativeToolTip": "Models\\Notification.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAqAAAAAAAAAA==",
+              "Title": "Project.cs",
+              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Models\\Project.cs",
+              "RelativeDocumentMoniker": "Models\\Project.cs",
+              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Models\\Project.cs",
+              "RelativeToolTip": "Models\\Project.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-18T17:00:02.226Z",
+              "WhenOpened": "2025-07-04T15:46:32.542Z",
               "EditorCaption": ""
             },
             {
@@ -111,72 +144,102 @@
               "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
-            },
-            {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "NotificationService.cs",
-              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Implementations\\NotificationService.cs",
-              "RelativeDocumentMoniker": "Services\\Implementations\\NotificationService.cs",
-              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Implementations\\NotificationService.cs",
-              "RelativeToolTip": "Services\\Implementations\\NotificationService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAFAAAAAAAAAA==",
+              "DocumentIndex": 1,
+              "Title": "ProjectService.cs",
+              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Implementations\\ProjectService.cs",
+              "RelativeDocumentMoniker": "Services\\Implementations\\ProjectService.cs",
+              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Implementations\\ProjectService.cs",
+              "RelativeToolTip": "Services\\Implementations\\ProjectService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAKAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-18T16:55:56.497Z",
+              "WhenOpened": "2025-07-04T15:44:33.112Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Navbar.razor",
-              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Pages\\Navbar.razor",
-              "RelativeDocumentMoniker": "Pages\\Navbar.razor",
-              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Pages\\Navbar.razor",
-              "RelativeToolTip": "Pages\\Navbar.razor",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAA4AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-06-18T16:29:02.642Z",
-              "EditorCaption": ""
+              "DocumentIndex": 9,
+              "Title": "IProjectRoleService.cs",
+              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Interfaces\\IProjectRoleService.cs",
+              "RelativeDocumentMoniker": "Services\\Interfaces\\IProjectRoleService.cs",
+              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Interfaces\\IProjectRoleService.cs",
+              "RelativeToolTip": "Services\\Interfaces\\IProjectRoleService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-25T13:29:28.654Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 6,
-              "Title": "ApplicationUserService.cs",
-              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Implementations\\ApplicationUserService.cs",
-              "RelativeDocumentMoniker": "Services\\Implementations\\ApplicationUserService.cs",
-              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Implementations\\ApplicationUserService.cs",
-              "RelativeToolTip": "Services\\Implementations\\ApplicationUserService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAvAAAAAAAAAA==",
+              "Title": "UserService.cs",
+              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Implementations\\UserService.cs",
+              "RelativeDocumentMoniker": "Services\\Implementations\\UserService.cs",
+              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Implementations\\UserService.cs",
+              "RelativeToolTip": "Services\\Implementations\\UserService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAArAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-18T16:22:51.956Z",
+              "WhenOpened": "2025-06-25T13:27:41.057Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "IUserService.cs",
+              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Interfaces\\IUserService.cs",
+              "RelativeDocumentMoniker": "Services\\Interfaces\\IUserService.cs",
+              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Interfaces\\IUserService.cs",
+              "RelativeToolTip": "Services\\Interfaces\\IUserService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-25T13:26:47.466Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "ProjectRoleService.cs",
+              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Implementations\\ProjectRoleService.cs",
+              "RelativeDocumentMoniker": "Services\\Implementations\\ProjectRoleService.cs",
+              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Implementations\\ProjectRoleService.cs",
+              "RelativeToolTip": "Services\\Implementations\\ProjectRoleService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-25T13:18:36.787Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ApplicationUser.cs",
+              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Models\\ApplicationUser.cs",
+              "RelativeDocumentMoniker": "Models\\ApplicationUser.cs",
+              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Models\\ApplicationUser.cs",
+              "RelativeToolTip": "Models\\ApplicationUser.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-25T10:29:29.853Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAeAAAAAAAAAA==",
+              "DocumentIndex": 8,
+              "Title": "IApplicationUserService.cs",
+              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Interfaces\\IApplicationUserService.cs",
+              "RelativeDocumentMoniker": "Services\\Interfaces\\IApplicationUserService.cs",
+              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Services\\Interfaces\\IApplicationUserService.cs",
+              "RelativeToolTip": "Services\\Interfaces\\IApplicationUserService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAYAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-17T16:59:48.286Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-25T10:26:11.05Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "App.razor",
-              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\App.razor",
-              "RelativeDocumentMoniker": "App.razor",
-              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\App.razor",
-              "RelativeToolTip": "App.razor",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAOAAAAAAAAAA==",
+              "Title": "EditProjectModal.razor",
+              "DocumentMoniker": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Pages\\EditProjectModal.razor",
+              "RelativeDocumentMoniker": "Pages\\EditProjectModal.razor",
+              "ToolTip": "C:\\Users\\DELL\\Documents\\GitHub\\Tasknetic\\TaskNeticDemo\\Pages\\EditProjectModal.razor",
+              "RelativeToolTip": "Pages\\EditProjectModal.razor",
+              "ViewState": "AgIAAEcBAAAAAAAAAAAAAFYBAAAaAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-06-17T16:47:15.895Z",
+              "WhenOpened": "2025-06-25T10:13:56.795Z",
               "EditorCaption": ""
             }
           ]

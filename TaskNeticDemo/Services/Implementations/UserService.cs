@@ -1,8 +1,6 @@
-﻿using TaskNetic.Client.Services.Interfaces;
-using Microsoft.AspNetCore.Components.Authorization;
-using System.Security.Claims;
+﻿using TaskNeticDemo.Services.Interfaces;
 
-namespace TaskNetic.Client.Services.Implementations
+namespace TaskNeticDemo.Services.Implementations
 {
     public class UserService : IUserService
     {

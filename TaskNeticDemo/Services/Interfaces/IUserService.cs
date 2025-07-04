@@ -1,5 +1,5 @@
 ﻿
-namespace TaskNetic.Client.Services.Interfaces
+namespace TaskNeticDemo.Services.Interfaces
 {
     public interface IUserService
     {

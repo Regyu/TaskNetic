@@ -1,20 +1,29 @@
 ﻿using Microsoft.AspNetCore.Components;
-using System.Net.Http.Json;
-using TaskNetic.Client.DTO;
-using TaskNetic.Client.Services.Interfaces;
+using TaskNeticDemo.Models;
+using TaskNeticDemo.Services.Interfaces;
 
 namespace TaskNetic.Client.Services.Implementations
 {
     public class ProjectService: IProjectService
     {
-        private readonly HttpClient _httpClient;
-        public ProjectService(HttpClient httpClient) {
-            _httpClient = httpClient;
-        }
-        public async Task<ProjectInfo> GetProjectInfoAsync(int projectId)
+        private List<Project> projects = new List<Project>()
         {
-            var request = await _httpClient.GetFromJsonAsync<ProjectInfo>($"api/projects/{projectId}/info");
-            return request;
+
+        };
+        public List<ProjectRole> GetProjectRoles(Project project)
+        {
+            
+        }
+    public async Task UpdateAsync(Project project)
+        {
+            var projectToUpdate = projects.FirstOrDefault(p => p.Id == project.Id);
+            if (projectToUpdate != null)
+            {
+                projectToUpdate.ProjectName = project.ProjectName;
+                projectToUpdate.BackgroundImageId = project.BackgroundImageId;
+                projectToUpdate.ProjectRoles = project.ProjectRoles;
+                projectToUpdate.ProjectBoards = project.ProjectBoards;
+            }
         }
     }
 }

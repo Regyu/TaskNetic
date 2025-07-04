@@ -1,23 +1,24 @@
-﻿using Microsoft.AspNetCore.Components;
-using System.Net.Http.Json;
-using TaskNetic.Client.DTO;
-using TaskNetic.Client.Services.Interfaces;
+﻿using TaskNeticDemo.Models;
+using TaskNeticDemo.Services.Interfaces;
 
 
-namespace TaskNetic.Client.Services.Implementations
+namespace TaskNeticDemo.Services.Implementations
 {
     public class ApplicationUserService : IApplicationUserService
     {
-        private readonly HttpClient _httpClient;
-
-        public ApplicationUserService(HttpClient httpClient)
+        new List<ApplicationUser> users = new()
         {
-            _httpClient = httpClient;
+
+
+        };
+
+        public ApplicationUser GetByUserNameAsync(string userName)
+        {
+
         }
-
-        public async Task<string> GetIdByUserNameAsync(string userName)
+        public ApplicationUser GetCurrentUserAsync()
         {
-            
+            return users[0];
         }
     }
 }

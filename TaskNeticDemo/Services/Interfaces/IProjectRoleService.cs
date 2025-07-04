@@ -1,6 +1,6 @@
 ﻿namespace TaskNeticDemo.Services.Interfaces
 {
-    public interface IApplicationUserService
+    public interface IProjectRoleService
     {
     }
 }

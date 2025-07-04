@@ -16,5 +16,16 @@ namespace TaskNeticDemo.Services.Implementations
             return await Task.FromResult(_notifications);
         }
 
+        private int GetFreeId()
+        {
+            var existingIds = new HashSet<int>(_notifications.Select(m => m.Id));
+            int potentialId = 1;
+            while (existingIds.Contains(potentialId))
+            {
+                potentialId++;
+            }
+
+            return potentialId;
+        }
     }
 }

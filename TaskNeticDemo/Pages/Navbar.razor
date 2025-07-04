@@ -2,6 +2,7 @@
 @inject NavigationManager NavigationManager
 @using TaskNeticDemo.Services.Implementations;
 @using TaskNeticDemo.Services.Interfaces;
+@using TaskNeticDemo.Models;
 
 <nav class="navbar navbar-expand-lg bg-body-tertiary py-1">
     <div class="container fluid">
@@ -9,51 +10,42 @@
             <img src="images/logo.png" alt="TaskNetic" width="35" height="35" class="d-inline-block align-text-bottom">
             <span class="fs-4">TaskNetic</span>
         </a>
-        <AuthorizeView>
-            <Authorized>
-                <div class="navbar-nav ms-auto align-items-center">
-                    <div class="nav-item me-4 dropdown">
-                        <a class="nav-link position-relative" @onclick="ShowDropdown" style="cursor: pointer;">
-                            <img src="images/bell.svg" alt="Notifications" width="20" height="20" />
-                            @if (UnreadCount > 0)
-                            {
-                                <span class="position-absolute top-20 start-100 translate-middle badge rounded-pill bg-danger">
-                                    @UnreadCount
-                                </span>
-                            }
-                        </a>
-                        @if (showDropdown)
-                        {
-                            <NotificationDropdown Show="showDropdown"
-                                                  Notifications="notifications"
-                                                  OnNotificationRemoved="RemoveNotification" />
-                        }
-                    </div>
+        <div class="navbar-nav ms-auto align-items-center">
+            <div class="nav-item me-4 dropdown">
+                <a class="nav-link position-relative" @onclick="ShowDropdown" style="cursor: pointer;">
+                    <img src="images/bell.svg" alt="Notifications" width="20" height="20" />
+                    @if (UnreadCount > 0)
+                    {
+                        <span class="position-absolute top-20 start-100 translate-middle badge rounded-pill bg-danger">
+                            @UnreadCount
+                        </span>
+                    }
+                </a>
+                @if (showDropdown)
+                {
+                    <NotificationDropdown Show="showDropdown"
+                                          Notifications="notifications"
+                                          OnNotificationRemoved="RemoveNotification" />
+                }
+            </div>
 
-                    <a href="/Account/Manage" class="text-decoration-none">
-                        <img src="images/person.svg" alt="Person Image" width="20" height="20" class="d-inline-block me-1" />
-                        <span class="navbar-text me-4">@username</span>
-                    </a>
+            <a href="/Account/Manage" class="text-decoration-none">
+                <img src="images/person.svg" alt="Person Image" width="20" height="20" class="d-inline-block me-1" />
+                <span class="navbar-text me-4">@username</span>
+            </a>
 
-                        <a class="nav-link text-dark" style="cursor:pointer;" @onclick="Logout">Sign out</a>
-                        </div>
-                        </Authorized>
-                        <NotAuthorized>
-                            <div class="navbar-nav ms-auto">
-                                <a class="nav-link active" aria-current="page" href="/account/login">Sign in</a>
-                                <a class="nav-link" href="/account/register">Sign up</a>
-                            </div>
-                        </NotAuthorized>
-                        </AuthorizeView>
+            <a class="nav-link text-dark" style="cursor:pointer;" @onclick="Logout">Sign out</a>
+        </div>
 
-                        </div>
-                        </nav>
+
+    </div>
+</nav>
 
 
 
 @code {
     private string? username;
-    private IEnumerable<Notification>? notifications;
+    private List<Notification>? notifications;
     private int UnreadCount = 0;
     private bool showDropdown = false;
 
@@ -72,7 +64,7 @@
 
     private void RemoveNotification(Notification notification)
     {
-        notifications = notifications?.Where(n => n != notification).ToList();
+        notifications?.Remove(notification);
         UnreadCount = notifications?.Count() ?? 0;
         StateHasChanged();
     }

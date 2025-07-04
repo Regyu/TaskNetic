@@ -1,5 +1,4 @@
 ﻿@inject HttpClient Http
-@inject ISignalRService SignalRService
 
 <div class="add-card-container rounded-bottom-2">
     @if (isAddingCardVisible)
@@ -47,7 +46,6 @@
         {
             var postRequest = await Http.PostAsJsonAsync($"api/cards/list/{ListId}", NewCardName);
             await OnCardAdded.InvokeAsync(NewCardName);
-            await SignalRService.NotifyGroupAboutListUpdate(BoardId);
             NewCardName = string.Empty;
             isAddingCardVisible = false;
         }

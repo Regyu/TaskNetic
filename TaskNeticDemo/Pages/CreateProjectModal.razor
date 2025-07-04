@@ -1,4 +1,6 @@
-﻿<div class="modal @(Show ? "show" : "")" style="display: @(Show ? "block" : "none")" tabindex="-1">
+﻿@using TaskNeticDemo.Models;
+
+<div class="modal @(Show ? "show" : "")" style="display: @(Show ? "block" : "none")" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -11,9 +13,9 @@
                     <div class="mb-3">
                         <label for="projectName" class="form-label">Project Name</label>
                         <InputText id="projectName" 
-                                 @bind-Value="projectModel.Name" 
+                                 @bind-Value="projectModel.ProjectName" 
                                  class="form-control" />
-                        <ValidationMessage For="@(() => projectModel.Name)" />
+                        <ValidationMessage For="@(() => projectModel.ProjectName)" />
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
@@ -31,7 +33,7 @@
 }
 
 @code {
-    private ProjectModel projectModel = new();
+    public Project? projectModel;
 
     [Parameter]
     public bool Show { get; set; }
@@ -40,24 +42,16 @@
     public EventCallback<bool> ShowChanged { get; set; }
 
     [Parameter]
-    public EventCallback<ProjectModel> OnCreate { get; set; }
+    public EventCallback<Project> OnCreate { get; set; }
 
     private async Task HandleValidSubmit()
     {
         await OnCreate.InvokeAsync(projectModel);
-        projectModel = new();
         await OnCancel();
     }
 
     private async Task OnCancel()
     {
         await ShowChanged.InvokeAsync(false);
-    }
-
-    public class ProjectModel
-    {
-        [Required(ErrorMessage = "Project name is required")]
-        [StringLength(50, ErrorMessage = "Name is too long")]
-        public string Name { get; set; } = string.Empty;
     }
 }

@@ -1,9 +1,7 @@
-﻿using TaskNetic.Client.DTO;
-
-namespace TaskNetic.Client.Services.Interfaces
+﻿
+namespace TaskNeticDemo.Services.Interfaces;
+using TaskNeticDemo.Models;
+public interface IProjectService
 {
-    public interface IProjectService
-    {
-        Task<ProjectInfo> GetProjectInfoAsync(int projectId);
-    }
+    Task UpdateAsync(Project project);
 }

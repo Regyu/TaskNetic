@@ -1,8 +1,7 @@
-﻿@inject INotificationService NotificationService
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.EntityFrameworkCore
-@using TaskNetic.Services.Implementations
-@rendermode InteractiveServer
+﻿@inject INotificationService NotificationService;
+@using TaskNeticDemo.Services.Implementations;
+@using TaskNeticDemo.Services.Interfaces;
+@using TaskNeticDemo.Models;
 
 <div class="dropdown-menu show" style="width: 300px;" @onclick:stopPropagation>
     <ul class="list-group list-group-flush" style="max-height: 60vh; overflow-y: auto;">
@@ -32,15 +31,14 @@
     public bool Show { get; set; }
 
     [Parameter]
-    public IEnumerable<Notification> Notifications { get; set; } = Enumerable.Empty<Notification>();
+    public List<Notification> Notifications { get; set; } = new();
 
     [Parameter]
     public EventCallback<Notification> OnNotificationRemoved { get; set; }
 
     private void RemoveNotification(Notification notification)
     {
-        Notifications = Notifications.Where(n => n != notification).ToList();
-        NotificationService.DeleteNotificationAsync(notification);
+        Notifications.Remove(notification);
         StateHasChanged();
         OnNotificationRemoved.InvokeAsync(notification);
     }
