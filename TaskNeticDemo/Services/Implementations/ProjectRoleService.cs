@@ -1,77 +1,86 @@
-﻿using TaskNeticDemo.Services.Interfaces;
-using TaskNeticDemo.Models;
+﻿using TaskNeticDemo.Models;
+using TaskNeticDemo.Services.Interfaces;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace TaskNeticDemo.Services.Implementations
 {
     public class ProjectRoleService : IProjectRoleService
     {
-        private readonly ApplicationUserService _applicationUserService;
-        public ProjectRoleService()
-        {
+        private readonly IApplicationUserService _applicationUserService;
+        private readonly List<ProjectRole> _projectRoles;
 
+        public ProjectRoleService(IApplicationUserService applicationUserService)
+        {
+            _applicationUserService = applicationUserService;
+            _projectRoles = new List<ProjectRole>();
+            InitializeProjectRoles();
+        }
+
+        private void InitializeProjectRoles()
+        {
+            var users = _applicationUserService.GetAllUsers();
+
+            var projects = new List<Project>
+            {
+                new Project { Id = 1, Name = "Project Alpha" },
+                new Project { Id = 2, Name = "Project Beta" }
+            };
+
+            _projectRoles.Add(new ProjectRole { Id = 1, ApplicationUser = users[0], Project = projects[0], isAdmin = true });
+            _projectRoles.Add(new ProjectRole { Id = 2, ApplicationUser = users[1], Project = projects[0], isAdmin = false });
+            _projectRoles.Add(new ProjectRole { Id = 3, ApplicationUser = users[2], Project = projects[1], isAdmin = true });
+            _projectRoles.Add(new ProjectRole { Id = 4, ApplicationUser = users[3], Project = projects[1], isAdmin = false });
+            _projectRoles.Add(new ProjectRole { Id = 5, ApplicationUser = users[4], Project = projects[1], isAdmin = false });
         }
 
         public Task<IEnumerable<ProjectRole>> GetProjectRoleByUserId(string userId)
         {
-            throw new NotImplementedException();
+            var roles = _projectRoles.Where(pr => pr.ApplicationUser.Id == userId);
+            return Task.FromResult(roles.AsEnumerable());
         }
 
-        public async Task UpdateProjectRoleWithParametersAsync(int projectId, string userId, bool isAdmin)
+        public Task<IEnumerable<ProjectRole>> GetAllProjectRoles()
         {
-            var projectRole = await _context.ProjectRoles
-                .FirstOrDefaultAsync(pr => pr.Project.Id == projectId && pr.ApplicationUser.Id == userId);
-
-            if (projectRole == null)
-            {
-                throw new InvalidOperationException("Project role not found.");
-            }
-
-            projectRole.isAdmin = isAdmin;
-
-            await _context.SaveChangesAsync();
+            return Task.FromResult(_projectRoles.AsEnumerable());
         }
 
-        public async Task RemoveUserFromProjectAsync(int projectId, string userId)
+        public Task UpdateProjectRoleWithParametersAsync(int projectId, string userId, bool isAdmin)
         {
-            var projectRole = await _context.ProjectRoles
-                .Include(pr => pr.BoardPermissions)
-                .FirstOrDefaultAsync(pr => pr.Project.Id == projectId && pr.ApplicationUser.Id == userId);
-
+            var projectRole = _projectRoles.FirstOrDefault(pr => pr.Project.Id == projectId && pr.ApplicationUser.Id == userId);
             if (projectRole != null)
             {
-
-                if (projectRole.BoardPermissions != null && projectRole.BoardPermissions.Any())
-                {
-                    _context.BoardPermissions.RemoveRange(projectRole.BoardPermissions);
-                }
-
-                _context.ProjectRoles.Remove(projectRole);
-
-                await _context.SaveChangesAsync();
+                projectRole.isAdmin = isAdmin;
             }
+            return Task.CompletedTask;
+        }
+
+        public Task RemoveUserFromProjectAsync(int projectId, string userId)
+        {
+            var projectRole = _projectRoles.FirstOrDefault(pr => pr.Project.Id == projectId && pr.ApplicationUser.Id == userId);
+            if (projectRole != null)
+            {
+                _projectRoles.Remove(projectRole);
+            }
+            return Task.CompletedTask;
         }
 
         public async Task<bool> IsCurrentUserAdmin(int projectId)
         {
-            var user = await _applicationUserService.GetCurrentUserAsync();
-
+            var user = _applicationUserService.GetCurrentUserAsync();
             if (user == null)
             {
-                throw new UnauthorizedAccessException("User is not authenticated.");
+                return false;
             }
-
-            var projectRole = await _context.ProjectRoles
-                .FirstOrDefaultAsync(pr => pr.Project.Id == projectId && pr.ApplicationUser.Id == user.Id);
-
-            return projectRole.isAdmin;
+            var projectRole = _projectRoles.FirstOrDefault(pr => pr.Project.Id == projectId && pr.ApplicationUser.Id == user.Id);
+            return projectRole?.isAdmin ?? false;
         }
 
-        public async Task<bool> IsUserAdminInProjectAsync(int projectId, string userId)
+        public Task<bool> IsUserAdminInProjectAsync(int projectId, string userId)
         {
-            var projectRole = await _context.ProjectRoles
-                .FirstOrDefaultAsync(pr => pr.Project.Id == projectId && pr.ApplicationUser.Id == userId);
-
-            return projectRole.isAdmin;
+            var projectRole = _projectRoles.FirstOrDefault(pr => pr.Project.Id == projectId && pr.ApplicationUser.Id == userId);
+            return Task.FromResult(projectRole?.isAdmin ?? false);
         }
     }
 }

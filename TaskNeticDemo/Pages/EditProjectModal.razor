@@ -277,18 +277,6 @@
         }
         try
         {
-            foreach (TeamMember teamMember in teamMembers)
-            {
-                if(currentUser?.Id != teamMember.Id)
-                {
-                    await NotificationService.AddNotificationAsync(teamMember.Id, user.UserName, $"has been added to the project \"{Project?.ProjectName}\".");
-                }
-            }
-
-            await ProjectRoleService.AddAsync(newProjectRole);
-            await NotificationService.AddNotificationAsync(user.Id, currentUser.UserName, $"has added you to the project \"{Project?.ProjectName}\".");
-            await ProjectUpdate.InvokeAsync();
-
             newMemberUsername = string.Empty;
             addMemberError = string.Empty;
             await LoadTeamMembers();
@@ -357,15 +345,6 @@
         await ProjectRoleService.RemoveUserFromProjectAsync(Project.Id, memberId);
         var user = await ApplicationUserService.GetUserByIdAsync(memberId);
         await LoadTeamMembers();
-
-        foreach (TeamMember teamMember in teamMembers)
-        {
-            if (currentUser.Id != teamMember.Id)
-            {
-                await NotificationService.AddNotificationAsync(teamMember.Id, user.UserName, $"has been removed from the project \"{Project?.ProjectName}\".");
-            }
-        }
-        await NotificationService.AddNotificationAsync(memberId, currentUser.UserName, $"has removed you from the project \"{Project?.ProjectName}\".");
         await ProjectUpdate.InvokeAsync();
 
     }
